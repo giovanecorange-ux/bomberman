@@ -6,6 +6,7 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt
 version = 1.0
 requirements = python3,pygame
+p4a.branch = develop
 orientation = landscape
 fullscreen = 0
 android.api = 34
