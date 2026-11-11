@@ -5,10 +5,9 @@ package.domain = org.corange.videogame
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt,ogg
 source.include_patterns = main.py,cobrinha.py,tetris.py,bomberman.py,icon.png,recorde*.txt
-version = 1.1
-requirements = python3,pygame-ce
+version = 1.2
+requirements = python3,pygame
 p4a.bootstrap = sdl2
-p4a.branch = master
 orientation = portrait
 fullscreen = 1
 android.api = 33
@@ -19,6 +18,10 @@ android.allow_backup = True
 android.accept_sdk_license = True
 icon.filename = %(source.dir)s/icon.png
 presplash.filename = %(source.dir)s/icon.png
+
+# ESSENCIAL PRO SOM NÃO CRASHAR
+android.gradle_dependencies = 
+android.add_jars = 
 
 [buildozer]
 log_level = 2
