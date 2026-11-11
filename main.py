@@ -8,7 +8,7 @@ from kivy.graphics import Color, Rectangle, Ellipse
 from kivy.clock import Clock
 from kivy.core.window import Window
 import random, math, struct, wave, os, tempfile
-Window.clearcolor = (0,0,0,1)
+Window.clearcolor = (0, 0, 0, 1)
 PIX = "51993359782"
 
 def carregar(arq):
@@ -113,7 +113,6 @@ class MenuScreen(Screen):
         lay.add_widget(self.lb_rec)
         lay.add_widget(Label(text='Corange Sistemas - PIX ' + PIX, font_size=11, color=(0, 1, 0.4, 1)))
         self.add_widget(lay)
-
     def on_enter(self):
         self.lb_rec.text = "REC Tetris: %s  |  REC Cobrinha: %s  |  REC Bomber: %s" % (carregar('recorde_tetris.txt'), carregar('recorde_cobrinha.txt'), carregar('recorde.txt'))
         Clock.schedule_once(play_music, 0.2)
@@ -124,7 +123,6 @@ class BaseScreen(Screen):
         b = Button(text='< VOLTAR AO MENU', size_hint_y=0.07, background_color=(0.3, 0.3, 0.3, 1))
         b.bind(on_press=lambda x: setattr(self.manager, 'current', 'menu'))
         return b
-
     def ctrls(self, L, R, U, D, extra=None, et='BOMBA'):
         c = BoxLayout(size_hint_y=0.22, spacing=6, padding=6)
         bL = Button(text='<', font_size=32, bold=True)
@@ -146,7 +144,6 @@ class BaseScreen(Screen):
             be.bind(on_press=lambda x: extra())
             c.add_widget(be)
         return c
-
     def on_enter(self):
         stop_music()
 
@@ -165,14 +162,12 @@ class TBoard(Widget):
         self.sp()
         Clock.schedule_interval(self.tk, 1 / 30)
         self.bind(size=self.dr, pos=self.dr)
-
     def sp(self):
         i = random.randint(0, 6)
         self.sh = PECAS[i]
         self.co = CORES[i]
         self.x = 4
         self.y = 0
-
     def col(self, dx, dy, sh=None):
         if sh is None:
             sh = self.sh
@@ -186,7 +181,6 @@ class TBoard(Widget):
                     if ny >= 0 and self.grid[ny][nx]:
                         return True
         return False
-
     def tk(self, dt):
         self.timer += 1
         if self.timer > 18:
@@ -215,7 +209,6 @@ class TBoard(Widget):
                     self.grid = [[None] * 10 for _ in range(20)]
                     self.score = 0
         self.dr()
-
     def dr(self, *a):
         self.canvas.clear()
         if self.width < 10:
@@ -245,7 +238,6 @@ class TScreen(BaseScreen):
         self.main.add_widget(self.lb)
         self.add_widget(self.main)
         self.board = None
-
     def on_enter(self):
         super().on_enter()
         if not self.board:
@@ -255,22 +247,18 @@ class TScreen(BaseScreen):
             self.main.add_widget(ctrl, index=0)
             self.main.add_widget(Label(text='Corange Sistemas - PIX ' + PIX, size_hint_y=0.05, color=(0, 1, 0.4, 1), font_size=11), index=0)
             Clock.schedule_interval(self.upd, 0.1)
-
     def upd(self, dt):
         self.lb.text = 'Score: %s Rec: %s' % (self.board.score, self.board.recorde)
-
     def mv(self, d):
         if not self.board.col(d, 0):
             self.board.x += d
             self.board.dr()
             beep("mv")
-
     def dn(self):
         if not self.board.col(0, 1):
             self.board.y += 1
             self.board.dr()
             beep("down")
-
     def rt(self):
         beep("rot")
         ns = [list(r) for r in zip(*self.board.sh[::-1])]
@@ -286,21 +274,18 @@ class CBoard(Widget):
         self.rs()
         Clock.schedule_interval(self.tk, 0.10)
         self.bind(size=self.dr, pos=self.dr)
-
     def rs(self):
         self.sn = [(15, 10), (14, 10), (13, 10)]
         self.di = (1, 0)
         self.sc = 0
         self.recorde = carregar('recorde_cobrinha.txt')
         self.nf()
-
     def nf(self):
         while True:
             f = (random.randint(0, self.cols - 1), random.randint(0, self.rows - 1))
             if f not in self.sn:
                 self.fr = f
                 break
-
     def tk(self, dt):
         hx, hy = self.sn[0]
         nx = hx + self.di[0]
@@ -320,7 +305,6 @@ class CBoard(Widget):
         else:
             self.sn.pop()
         self.dr()
-
     def dr(self, *a):
         self.canvas.clear()
         if self.width < 10:
@@ -350,7 +334,6 @@ class CScreen(BaseScreen):
         self.main.add_widget(self.lb)
         self.add_widget(self.main)
         self.board = None
-
     def on_enter(self):
         super().on_enter()
         if not self.board:
@@ -360,10 +343,8 @@ class CScreen(BaseScreen):
             self.main.add_widget(ctrl, index=0)
             self.main.add_widget(Label(text='Corange Sistemas - PIX ' + PIX, size_hint_y=0.05, color=(0, 1, 0.4, 1), font_size=11), index=0)
             Clock.schedule_interval(self.upd, 0.1)
-
     def upd(self, dt):
         self.lb.text = 'Score: %s Rec: %s' % (self.board.sc, self.board.recorde)
-
     def sd(self, d):
         if (d[0] * -1, d[1] * -1) != self.board.di:
             self.board.di = d
@@ -381,7 +362,6 @@ class BBoard(Widget):
         self.setup()
         Clock.schedule_interval(self.tk, 0.085)
         self.bind(size=self.dr, pos=self.dr)
-
     def setup(self):
         self.pl = [1, 1]
         self.bombs = []
@@ -403,7 +383,6 @@ class BBoard(Widget):
         qtd = 3 + (self.fase - 1)
         ps = [[11, 1], [11, 9], [1, 9], [11, 5], [1, 5], [6, 9], [11, 3], [1, 3]]
         self.ens = [[ps[i][0], ps[i][1], i % 3, -1, 0, 0] for i in range(min(qtd, len(ps)))]
-
     def perder_vida(self):
         beep("over")
         self.vidas -= 1
@@ -420,7 +399,6 @@ class BBoard(Widget):
             self.invencivel = 25
             self.bombs.clear()
             self.fires.clear()
-
     def move(self, dx, dy):
         nx = self.pl[0] + dx
         ny = self.pl[1] + dy
@@ -436,13 +414,11 @@ class BBoard(Widget):
                     self.recorde = self.pontos
                     salvar('recorde.txt', self.recorde)
         self.dr()
-
     def bomb(self):
         x, y = self.pl
         if len(self.bombs) < 2 and not any(b[0] == x and b[1] == y for b in self.bombs):
             self.bombs.append([x, y, 28])
             beep("bomb")
-
     def tk(self, dt):
         if self.invencivel > 0:
             self.invencivel -= 1
@@ -520,7 +496,6 @@ class BBoard(Widget):
                 self.fase = 1
             self.setup()
         self.dr()
-
     def dr(self, *a):
         self.canvas.clear()
         if self.width < 10:
@@ -621,7 +596,6 @@ class BScreen(BaseScreen):
         self.main.add_widget(self.lb)
         self.add_widget(self.main)
         self.board = None
-
     def on_enter(self):
         super().on_enter()
         if not self.board:
@@ -631,7 +605,6 @@ class BScreen(BaseScreen):
             self.main.add_widget(ctrl, index=0)
             self.main.add_widget(Label(text='Corange Sistemas - PIX ' + PIX, size_hint_y=0.05, color=(0, 1, 0.4, 1), font_size=11), index=0)
             Clock.schedule_interval(self.upd, 0.1)
-
     def upd(self, dt):
         self.lb.text = 'VIDAS: %s FASE: %s PONTOS: %s REC: %s' % (self.board.vidas, self.board.fase, self.board.pontos, self.board.recorde)
 
