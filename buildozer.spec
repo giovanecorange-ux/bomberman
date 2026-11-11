@@ -1,10 +1,10 @@
 [app]
-title = Corange Jogos
+title = Video Game
 package.name = corangejogos
 package.domain = org.corange
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp3,wav,ttf,json
-version = 1.0
+version = 1.1
 requirements = python3,kivy
 orientation = portrait
 fullscreen = 0
@@ -14,6 +14,8 @@ android.minapi = 21
 android.ndk = 25b
 android.accept_sdk_license = True
 android.archs = arm64-v8a
+icon.filename = %(source.dir)s/icon.png
+presplash.filename = %(source.dir)s/icon.png
 
 [buildozer]
 log_level = 2
