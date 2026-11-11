@@ -5,7 +5,7 @@ package.domain = org.corange.bomberman
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt
 version = 1.0
-requirements = python3,pygame==2.5.2
+requirements = python3,pygame
 orientation = landscape
 fullscreen = 0
 android.api = 33
@@ -14,8 +14,6 @@ android.ndk = 23b
 android.archs = arm64-v8a
 android.allow_backup = True
 android.accept_sdk_license = True
-p4a.bootstrap = sdl2
-p4a.branch = master
 
 [buildozer]
 log_level = 2
