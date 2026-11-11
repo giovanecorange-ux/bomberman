@@ -7,9 +7,42 @@ from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.clock import Clock
 from kivy.core.window import Window
-import random
+from kivy.core.audio import SoundLoader
+import random, math, wave, struct, os
 Window.clearcolor = (0,0,0,1)
 PIX="51993359782"
+
+# ===== SOM - SO ACRESCENTADO, NADA MUDADO =====
+def make_beep(freq, ms, name):
+    path=f"/tmp/{name}.wav"
+    try:
+        if os.path.exists(path): return SoundLoader.load(path)
+        sr=44100; n=int(sr*ms/1000)
+        with wave.open(path,'w') as wf:
+            wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr)
+            for i in range(n):
+                s=int(32000*math.sin(2*math.pi*freq*i/sr)*(1-i/n*0.5))
+                wf.writeframes(struct.pack('<h',s))
+        return SoundLoader.load(path)
+    except:
+        return None
+snd_move = make_beep(400,80,"mv")
+snd_rot = make_beep(1200,120,"rt")
+snd_down = make_beep(300,50,"dn")
+snd_eat = make_beep(900,150,"eat")
+snd_over = make_beep(120,500,"over")
+snd_bomb = make_beep(300,80,"bomb")
+snd_exp = make_beep(80,200,"exp")
+snd_coin = make_beep(1000,80,"coin")
+def play(s):
+    try:
+        if s: s.play()
+    except: pass
+try:
+    music = SoundLoader.load('nes.mp3')
+    if music: music.loop=True
+except:
+    music=None
 
 class MenuScreen(Screen):
     def __init__(self,**kw):
@@ -24,6 +57,10 @@ class MenuScreen(Screen):
             lay.add_widget(b)
         lay.add_widget(Label(text=f'Corange Sistemas - PIX {PIX}',font_size=11,color=(0,1,0.4,1)))
         self.add_widget(lay)
+    def on_enter(self):
+        if music:
+            try: music.play()
+            except: pass
 
 class BaseScreen(Screen):
     def top_bar(self):
@@ -38,6 +75,10 @@ class BaseScreen(Screen):
         if extra:
             be=Button(text=et,bold=True,background_color=(0.4,0.2,0.8,1)); be.bind(on_press=lambda x:extra()); c.add_widget(be)
         return c
+    def on_enter(self):
+        if music:
+            try: music.stop()
+            except: pass
 
 # ============ TETRIS ORIGINAL ============
 C_T=[(1,0,0,1),(0,1,0,1),(0,0.47,1,1),(1,1,0,1),(1,0,1,1),(0,1,1,1),(1,0.55,0,1)]
@@ -62,10 +103,10 @@ class TBoard(Widget):
                 for xx,v in enumerate(r):
                     if v and self.y+yy<self.rows: self.grid[self.y+yy][self.x+xx]=self.co
             ng=[row for row in self.grid if any(c is None for c in row)]; cl=self.rows-len(ng)
-            if cl: self.score+=cl*100; self.rec=max(self.rec,self.score)
+            if cl: self.score+=cl*100; self.rec=max(self.rec,self.score); play(snd_eat)
             while len(ng)<self.rows: ng.insert(0,[None]*self.cols)
             self.grid=ng; self.sp()
-            if self.col(0,0): self.grid=[[None]*10 for _ in range(20)]; self.score=0
+            if self.col(0,0): play(snd_over); self.grid=[[None]*10 for _ in range(20)]; self.score=0
         self.dr()
     def dr(self,*a):
         self.canvas.clear()
@@ -89,12 +130,12 @@ class TScreen(BaseScreen):
         m.add_widget(Label(text=f'Corange Sistemas - PIX {PIX}',size_hint_y=0.05,color=(0,1,0.4,1),font_size=11))
         self.add_widget(m); Clock.schedule_interval(lambda dt:setattr(self.lb,'text',f'Score: {self.b.score} Rec: {self.b.rec}'),0.1)
     def mv(self,d): 
-        if not self.b.col(d,0): self.b.x+=d; self.b.dr()
+        if not self.b.col(d,0): self.b.x+=d; self.b.dr(); play(snd_move)
     def dn(self): 
-        if not self.b.col(0,1): self.b.y+=1; self.b.dr()
+        if not self.b.col(0,1): self.b.y+=1; self.b.dr(); play(snd_down)
     def rt(self):
         ns=[list(r) for r in zip(*self.b.sh[::-1])]
-        if not self.b.col(0,0,ns): self.b.sh=ns; self.b.dr()
+        if not self.b.col(0,0,ns): self.b.sh=ns; self.b.dr(); play(snd_rot)
 
 # ============ COBRINHA ORIGINAL ============
 class CBoard(Widget):
@@ -108,9 +149,9 @@ class CBoard(Widget):
             if f not in self.sn: self.fr=f; break
     def tk(self,dt):
         hx,hy=self.sn[0]; nx=hx+self.di[0]; ny=hy+self.di[1]
-        if nx<0 or nx>=self.cols or ny<0 or ny>=self.rows or (nx,ny) in self.sn: self.rs(); return
+        if nx<0 or nx>=self.cols or ny<0 or ny>=self.rows or (nx,ny) in self.sn: play(snd_over); self.rs(); return
         self.sn.insert(0,(nx,ny))
-        if (nx,ny)==self.fr: self.sc+=10; self.rec=max(self.rec,self.sc); self.nf()
+        if (nx,ny)==self.fr: self.sc+=10; self.rec=max(self.rec,self.sc); self.nf(); play(snd_eat)
         else: self.sn.pop()
         self.dr()
     def dr(self,*a):
@@ -134,7 +175,7 @@ class CScreen(BaseScreen):
         m.add_widget(Label(text=f'Corange Sistemas - PIX {PIX}',size_hint_y=0.05,color=(0,1,0.4,1),font_size=11))
         self.add_widget(m); Clock.schedule_interval(lambda dt:setattr(self.lb,'text',f'Score: {self.b.sc} Rec: {self.b.rec}'),0.1)
     def sd(self,d):
-        if (d[0]*-1,d[1]*-1)!=self.b.di: self.b.di=d
+        if (d[0]*-1,d[1]*-1)!=self.b.di: self.b.di=d; play(snd_move)
 
 # ============ BOMBERMAN 6 FASES ORIGINAL ============
 class BBoard(Widget):
@@ -156,13 +197,13 @@ class BBoard(Widget):
     def move(self,dx,dy):
         nx=self.pl[0]+dx; ny=self.pl[1]+dy
         if 0<=nx<self.cols and 0<=ny<self.rows and self.grid[ny][nx]==0:
-            self.pl=[nx,ny]
+            self.pl=[nx,ny]; play(snd_move)
             for c in self.coins[:]:
-                if c[0]==nx and c[1]==ny: self.pontos+=100; self.coins.remove(c)
+                if c[0]==nx and c[1]==ny: self.pontos+=100; self.coins.remove(c); play(snd_coin)
         self.dr()
     def bomb(self):
         x,y=self.pl
-        if len(self.bombs)<2 and not any(b[0]==x and b[1]==y for b in self.bombs): self.bombs.append([x,y,18])
+        if len(self.bombs)<2 and not any(b[0]==x and b[1]==y for b in self.bombs): self.bombs.append([x,y,18]); play(snd_bomb)
     def tk(self,dt):
         for b in self.bombs[:]:
             b[2]-=1
@@ -178,9 +219,10 @@ class BBoard(Widget):
                             self.grid[ny][nx]=0
                             if random.random()<0.4: self.coins.append([nx,ny,0])
                             break
+                play(snd_exp)
                 for fx,fy in pts:
                     self.fires.append([fx,fy,10])
-                    if fx==self.pl[0] and fy==self.pl[1]: self.vidas-=1; self.pl=[1,1]
+                    if fx==self.pl[0] and fy==self.pl[1]: self.vidas-=1; self.pl=[1,1]; play(snd_over)
                     self.ens=[e for e in self.ens if not (e[0]==fx and e[1]==fy)]
                 self.bombs.remove(b)
                 if self.vidas<=0: self.reset()
@@ -191,7 +233,7 @@ class BBoard(Widget):
             if random.random()<0.25:
                 dx,dy=random.choice([(1,0),(-1,0),(0,1),(0,-1)]); nx,ny=e[0]+dx,e[1]+dy
                 if 0<=nx<self.cols and 0<=ny<self.rows and self.grid[ny][nx]==0: e[0],e[1]=nx,ny
-                if e[0]==self.pl[0] and e[1]==self.pl[1]: self.vidas-=1; self.pl=[1,1]
+                if e[0]==self.pl[0] and e[1]==self.pl[1]: self.vidas-=1; self.pl=[1,1]; play(snd_over)
                 if self.vidas<=0: self.reset()
         if len(self.ens)==0:
             if self.fase<6: self.fase+=1
