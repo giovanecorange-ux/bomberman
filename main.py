@@ -8,41 +8,58 @@ from kivy.graphics import Color, Rectangle, Ellipse, Line
 from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.core.audio import SoundLoader
-import random, math, wave, struct, os
+import random, math, wave, struct, os, tempfile
 Window.clearcolor = (0,0,0,1)
 PIX="51993359782"
 
-# ===== SOM - SO ACRESCENTADO, NADA MUDADO =====
+# ===== SOM CORRIGIDO - RAPIDO, NAO TRAVA =====
 def make_beep(freq, ms, name):
-    path=f"/tmp/{name}.wav"
     try:
-        if os.path.exists(path): return SoundLoader.load(path)
-        sr=44100; n=int(sr*ms/1000)
-        with wave.open(path,'w') as wf:
+        # No Android /tmp nao existe, usa pasta temporaria certa
+        base = tempfile.gettempdir()
+        path = os.path.join(base, name + ".wav")
+        if os.path.exists(path):
+            return SoundLoader.load(path)
+        sr = 8000  # 8000 em vez de 44100 = 5x mais leve
+        n = int(sr * ms / 1000)
+        # Gera tudo de uma vez, nao um por um
+        data = bytearray()
+        for i in range(n):
+            s = int(12000 * math.sin(2 * math.pi * freq * i / sr))
+            data += struct.pack('<h', s)
+        with wave.open(path,'wb') as wf:
             wf.setnchannels(1); wf.setsampwidth(2); wf.setframerate(sr)
-            for i in range(n):
-                s=int(32000*math.sin(2*math.pi*freq*i/sr)*(1-i/n*0.5))
-                wf.writeframes(struct.pack('<h',s))
+            wf.writeframes(bytes(data))
         return SoundLoader.load(path)
     except:
         return None
-snd_move = make_beep(400,80,"mv")
-snd_rot = make_beep(1200,120,"rt")
-snd_down = make_beep(300,50,"dn")
-snd_eat = make_beep(900,150,"eat")
-snd_over = make_beep(120,500,"over")
-snd_bomb = make_beep(300,80,"bomb")
-snd_exp = make_beep(80,200,"exp")
-snd_coin = make_beep(1000,80,"coin")
+
+# Comeca vazio pra nao travar na abertura
+snd_move = snd_rot = snd_down = snd_eat = snd_over = snd_bomb = snd_exp = snd_coin = None
+music = None
+
+def init_sounds(dt=None):
+    global snd_move, snd_rot, snd_down, snd_eat, snd_over, snd_bomb, snd_exp, snd_coin, music
+    try:
+        snd_move = make_beep(400,80,"mv2")
+        snd_rot = make_beep(1200,120,"rt2")
+        snd_down = make_beep(300,50,"dn2")
+        snd_eat = make_beep(900,150,"eat2")
+        snd_over = make_beep(120,500,"over2")
+        snd_bomb = make_beep(300,80,"bomb2")
+        snd_exp = make_beep(80,200,"exp2")
+        snd_coin = make_beep(1000,80,"coin2")
+        music = SoundLoader.load('nes.mp3')
+        if music:
+            music.loop=True
+            music.play()
+    except:
+        pass
+
 def play(s):
     try:
         if s: s.play()
     except: pass
-try:
-    music = SoundLoader.load('nes.mp3')
-    if music: music.loop=True
-except:
-    music=None
 
 class MenuScreen(Screen):
     def __init__(self,**kw):
@@ -284,5 +301,7 @@ class BScreen(BaseScreen):
 
 class GameApp(App):
     def build(self):
-        sm=ScreenManager(); sm.add_widget(MenuScreen(name='menu')); sm.add_widget(TScreen(name='tetris')); sm.add_widget(CScreen(name='cobra')); sm.add_widget(BScreen(name='bomber')); return sm
+        sm=ScreenManager(); sm.add_widget(MenuScreen(name='menu')); sm.add_widget(TScreen(name='tetris')); sm.add_widget(CScreen(name='cobra')); sm.add_widget(BScreen(name='bomber'))
+        Clock.schedule_once(init_sounds, 0.5)
+        return sm
 GameApp().run()
