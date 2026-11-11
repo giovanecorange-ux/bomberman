@@ -1,14 +1,14 @@
 [app]
-title = Bomberman Corange
-package.name = bombermancorange
-package.domain = org.corange.bomberman
+title = Corange Video Game
+package.name = corangevideogame
+package.domain = org.corange.videogame
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt
+source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt,ogg
 version = 1.0
 requirements = python3,pygame-ce
 p4a.bootstrap = sdl2
 p4a.branch = master
-orientation = landscape
+orientation = portrait
 fullscreen = 0
 android.api = 33
 android.minapi = 21
@@ -16,6 +16,8 @@ android.ndk = 25b
 android.archs = arm64-v8a
 android.allow_backup = True
 android.accept_sdk_license = True
+icon.filename = %(source.dir)s/icon.png
+presplash.filename = %(source.dir)s/icon.png
 
 [buildozer]
 log_level = 2
