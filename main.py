@@ -4,7 +4,6 @@ import os, sys, pygame, math, importlib
 PIX = "51993359782"
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-# ANDROID: tem que iniciar o video antes do som
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
 try:
@@ -48,11 +47,9 @@ screen = criar_tela_menu()
 LARGURA, ALTURA = screen.get_size()
 pygame.display.set_caption(f"CORANGE SISTEMAS - 3 JOGOS - PIX {PIX}")
 
-# CORREÇÃO ANDROID: usa fonte padrão, não Arial
 def texto(txt, tamanho, cor, bold=True):
     try:
         f = pygame.font.Font(None, tamanho)
-        # tira emoji que o Android não desenha e crasha
         txt = txt.replace("🐍","").replace("🧱","").replace("💣","").strip()
         return f.render(txt, True, cor)
     except:
@@ -72,6 +69,9 @@ def rodar(nome_arquivo):
         if nome in sys.modules:
             del sys.modules[nome]
         importlib.import_module(nome)
+    except SystemExit:
+        print("Jogo terminou, voltando pro menu")
+        pass
     except Exception as e:
         print(f"Erro: {e}")
         pygame.time.delay(1000)
