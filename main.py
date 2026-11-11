@@ -37,8 +37,8 @@ class MenuInicial(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app=app_ref
-        # TOCA NES.WAV NO MENU DOS 3 BOTOES
-        self.som_menu = SoundLoader.load('nes.wav')
+        # TOCA NES.MP3 NO MENU DOS 3 BOTOES
+        self.som_menu = SoundLoader.load('nes.mp3')
         if self.som_menu:
             self.som_menu.loop = True
             self.som_menu.play()
@@ -217,7 +217,6 @@ class JogoTetris(BoxLayout):
                                 lbl.text='█'; lbl.color=self.cor; is_peca=True
                     if not is_peca: lbl.text=' '
 
-# ============ BOMBERMAN 6 FASES - KIVY ============
 class JogoBomberman(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', **kwargs)
