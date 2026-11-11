@@ -30,6 +30,11 @@ jobs:
 
       - name: Build APK
         run: |
+          unset ANDROID_NDK
+          unset ANDROID_NDK_HOME
+          unset ANDROID_NDK_ROOT
+          unset ANDROID_HOME
+          unset ANDROID_SDK_ROOT
           buildozer android debug
 
       - name: Upload APK
