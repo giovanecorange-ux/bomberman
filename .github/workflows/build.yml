@@ -18,19 +18,21 @@ jobs:
         with:
           python-version: '3.9.22'
 
-      - name: Install dependencies
+      - name: Install Buildozer
         run: |
-          sudo apt update
-          sudo apt install -y zip unzip
           pip install --upgrade pip
           pip install cython==0.29.36 buildozer
 
-      - name: Accept Android Licenses
+      - name: Accept Licenses - Truque
         run: |
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
-          yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools" || true
+          mkdir -p ~/.android/licenses
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.android/licenses/android-sdk-license
+          echo "24333f8a4f4113a41c683d0e53a7b40b10879d86" >> ~/.android/licenses/android-sdk-license
+          echo "y" > ~/.android/licenses/android-sdk-preview-license
+          mkdir -p ~/.android && touch ~/.android/repositories.cfg
+          # aceita também no sdkmanager do sistema
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build APK
         run: |
@@ -39,5 +41,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: apk
+          name: Bomberman-APK
           path: bin/*.apk
