@@ -7,7 +7,6 @@ source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 1.0
 requirements = python3,kivy==2.3.0
 orientation = portrait
-version.regex = __version__
 
 [buildozer]
 log_level = 2
