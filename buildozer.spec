@@ -5,7 +5,7 @@ package.domain = org.corangebomber
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 1.0
-requirements = python3==3.10.13,kivy==2.3.0
+requirements = python3==3.11.8,kivy==2.3.0
 orientation = portrait
 
 [buildozer]
