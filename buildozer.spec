@@ -3,11 +3,10 @@ title = Bomberman Corange
 package.name = corangebomber
 package.domain = org.corangebomber
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,wav,mp3
+source.include_exts = py,png,wav,mp3
 version = 1.0
 requirements = python3,kivy
 orientation = portrait
-fullscreen = 0
 
 [buildozer]
 log_level = 2
