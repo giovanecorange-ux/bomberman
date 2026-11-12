@@ -20,18 +20,21 @@ jobs:
 
       - name: Install Buildozer
         run: |
-          pip install --upgrade pip
-          pip install cython==0.29.36 buildozer
+          pip install https://github.com/kivy/buildozer/archive/master.zip
+          pip install cython==0.29.36
 
-      - name: Accept Licenses - Truque
+      - name: Accept ALL Licenses
         run: |
-          mkdir -p ~/.android/licenses
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.android/licenses/android-sdk-license
-          echo "24333f8a4f4113a41c683d0e53a7b40b10879d86" >> ~/.android/licenses/android-sdk-license
-          echo "y" > ~/.android/licenses/android-sdk-preview-license
+          echo "Criando licenças em todos os lugares..."
+          for dir in ~/.android/licenses ~/.buildozer/android/platform/android-sdk/licenses $ANDROID_HOME/licenses $ANDROID_SDK_ROOT/licenses; do
+            mkdir -p $dir
+            echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $dir/android-sdk-license
+            echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $dir/android-sdk-license
+            echo "24333f8a4f4113a41c683d0e53a7b40b10879d86" >> $dir/android-sdk-license
+            echo "y" > $dir/android-sdk-preview-license
+            echo "Criado em $dir"
+          done
           mkdir -p ~/.android && touch ~/.android/repositories.cfg
-          # aceita também no sdkmanager do sistema
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Build APK
