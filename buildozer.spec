@@ -3,23 +3,23 @@ title = Corange Video Game
 package.name = corangevideogame
 package.domain = org.corange.videogame
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,mp3,wav,txt,ogg
+source.include_exts = py,png,jpg,txt,ttf
 source.include_patterns = main.py,cobrinha.py,tetris.py,bomberman.py,icon.png,recorde*.txt
-version = 1.4
-requirements = python3,kivy
+version = 1.5
+requirements = python3, pygame==2.5.2
 p4a.bootstrap = sdl2
-p4a.fork = kivy
-p4a.branch = master
-orientation = portrait
-fullscreen = 1
+p4a.branch = develop
+orientation = landscape
+fullscreen = 0
 android.api = 33
 android.minapi = 21
 android.sdk = 33
 android.ndk = 25b
 android.build_tools = 33.0.1
 android.archs = arm64-v8a
-android.accept_sdk_license_agreements = True
+android.accept_sdk_license = True
 android.allow_backup = True
+android.wakelock = True
 icon.filename = %(source.dir)s/icon.png
 
 [buildozer]
