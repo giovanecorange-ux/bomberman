@@ -18,44 +18,17 @@ jobs:
         with:
           python-version: '3.10.13'
 
-      - name: Install System Deps
-        run: sudo apt update && sudo apt install -y zip unzip build-essential libssl-dev libffi-dev libsqlite3-dev
-
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
-          pip install "cython==0.29.36" "buildozer==1.5.0" --ignore-requires-python
+          pip install buildozer==1.5.0 cython==0.29.36
 
       - name: Build APK
         run: |
-          mkdir -p ~/.android/licenses $ANDROID_HOME/licenses
-          printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a4f4113a41c683d0e53a7b40b10879d86\n" > ~/.android/licenses/android-sdk-license
-          cp ~/.android/licenses/android-sdk-license $ANDROID_HOME/licenses/
-          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          
-          buildozer android debug --verbose 2>&1 | tee build.log || true
-          
-          SDK="$HOME/.buildozer/android/platform/android-sdk"
-          mkdir -p $SDK/licenses
-          cp ~/.android/licenses/android-sdk-license $SDK/licenses/ || true
-          REAL_SDKMANAGER=$(find $SDK -name sdkmanager -type f | head -n 1)
-          if [ -f "$REAL_SDKMANAGER" ]; then
-            yes | $REAL_SDKMANAGER --licenses || true
-            $REAL_SDKMANAGER "build-tools;27.0.3" "build-tools;33.0.2" || true
-          fi
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;27.0.3" "build-tools;33.0.2" || true
-          mkdir -p $SDK/build-tools/
-          cp -r $ANDROID_HOME/build-tools/27.0.3 $SDK/build-tools/ 2>/dev/null || true
-          cp -r $ANDROID_HOME/build-tools/33.0.2 $SDK/build-tools/ 2>/dev/null || true
-
-          buildozer android debug --verbose 2>&1 | tee build.log
+          yes | buildozer android debug
 
       - name: Upload APK
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: Bomberman-APK
-          path: |
-            bin/*.apk
-            build.log
-            .buildozer/logs/*
+          path: bin/*.apk
