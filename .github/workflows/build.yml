@@ -21,26 +21,28 @@ jobs:
       - name: Install System Deps
         run: |
           sudo apt update
-          sudo apt install -y python3-pip python3-dev build-essential libssl-dev libffi-dev \
-          libncurses5 libncurses5-dev zlib1g-dev libbz2-dev libsqlite3-dev \
-          libltdl-dev zip unzip autoconf automake libtool
+          sudo apt install -y python3-pip zip unzip build-essential libssl-dev libffi-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer==1.5.0 cython==0.29.36
 
-      - name: Accept Licenses
+      - name: Accept Licenses and Fix sdkmanager path
         run: |
-          mkdir -p ~/.android/licenses ~/.buildozer/android/platform/android-sdk/licenses $ANDROID_HOME/licenses
-          printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a4f4113a41c683d0e53a7b40b10879d86\n" > ~/.android/licenses/android-sdk-license
-          cp ~/.android/licenses/android-sdk-license ~/.buildozer/android/platform/android-sdk/licenses/
+          mkdir -p ~/.android/licenses $ANDROID_HOME/licenses
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.android/licenses/android-sdk-license
+          echo "24333f8a4f4113a41c683d0e53a7b40b10879d86" >> ~/.android/licenses/android-sdk-license
           cp ~/.android/licenses/android-sdk-license $ANDROID_HOME/licenses/
+          # CORREÇÃO DO BUG QUE TÁ NO TEU VIDEO:
+          mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
+          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
+          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager || true
           touch ~/.android/repositories.cfg
 
       - name: Build APK
-        run: |
-          buildozer android debug --verbose
+        run: buildozer android debug --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
