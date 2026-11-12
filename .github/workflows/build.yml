@@ -1,45 +1,21 @@
-name: Build APK
+name: Build Corange APK
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup Java 17
-        uses: actions/setup-java@v4
+      - uses: actions/setup-python@v5
         with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: Setup Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: |
+          python-version: '3.10'
+      - run: |
           sudo apt update
-          sudo apt install -y zip unzip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
-          pip install --upgrade pip
-          pip install --upgrade https://github.com/kivy/buildozer/archive/master.zip
-          pip install --upgrade https://github.com/kivy/python-for-android/archive/master.zip
-          pip install cython==0.29.36
-
-      - name: Build APK
-        run: |
-          sed -i 's/warn_on_root = 1/warn_on_root = 0/' buildozer.spec || true
-          yes | buildozer -v android debug || true
-          SDK=$HOME/.buildozer/android/platform/android-sdk
-          mkdir -p $SDK/licenses
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $SDK/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDK/licenses/android-sdk-license
-          echo "24333f8a63b6825a656882fa2f249289289d7b4" >> $SDK/licenses/android-sdk-license
-          yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
-          yes | buildozer -v android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+          sudo apt install -y zip unzip openjdk-17-jdk python3-pip \
+          libffi-dev libssl-dev libsdl2-dev libsdl2-image-dev \
+          libsdl2-mixer-dev libsdl2-ttf-dev
+          pip install cython==0.29.33 buildozer
+      - run: buildozer android debug
+      - uses: actions/upload-artifact@v4
         with:
-          name: corangevideogame-arm64-v8a-debug
+          name: apk
           path: bin/*.apk
