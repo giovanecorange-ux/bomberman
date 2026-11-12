@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: kivy/buildozer:latest
-      options: --user user
+      options: --user 1001
     steps:
       - uses: actions/checkout@v4
       - name: Fix git permissions
