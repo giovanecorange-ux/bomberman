@@ -23,8 +23,8 @@ class MenuApresentacao(BoxLayout):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app=app_ref
         self.musica=None
-        if os.path.exists('musica.mp3'):
-            self.musica=SoundLoader.load('musica.mp3')
+        if os.path.exists('nes.mp3'):
+            self.musica=SoundLoader.load('nes.mp3')
             if self.musica:
                 self.musica.loop=True
                 self.musica.play()
