@@ -6,10 +6,7 @@ BASE = os.path.dirname(os.path.abspath(__file__))
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 pygame.init()
-try:
-    pygame.mixer.init(frequency=44100, size=-16, channels=2)
-except:
-    pass
+# SEM MIXER - SEM MÚSICA, SEM BEEP - NÃO TRAVA NO ANDROID
 
 try:
     if os.path.exists(os.path.join(BASE, "icon.png")):
@@ -17,18 +14,6 @@ try:
         pygame.display.set_icon(icone)
 except:
     pass
-
-def beep(f=800, ms=80, vol=0.5):
-    try:
-        sr=44100; n=int(sr*ms/1000); buf=bytearray()
-        for i in range(n):
-            s=int(vol*32767*math.sin(2*math.pi*f*i/sr)*(1-i/n*0.5))
-            buf+=s.to_bytes(2,'little',signed=True)*2
-        return pygame.mixer.Sound(buffer=bytes(buf))
-    except:
-        return None
-
-snd_click = beep(900, 100, 0.6)
 
 def ler_recorde(arq):
     try:
@@ -40,29 +25,23 @@ def ler_recorde(arq):
         pass
     return 0
 
+# CORREÇÃO ANDROID: NÃO USA FULLSCREEN (0,0)
 def criar_tela_menu():
-    return pygame.display.set_mode((0,0), pygame.FULLSCREEN)
+    try:
+        return pygame.display.set_mode((800, 600), pygame.RESIZABLE)
+    except:
+        return pygame.display.set_mode((800, 600))
 
 screen = criar_tela_menu()
 LARGURA, ALTURA = screen.get_size()
 pygame.display.set_caption(f"CORANGE SISTEMAS - 3 JOGOS - PIX {PIX}")
 
 def texto(txt, tamanho, cor, bold=True):
-    try:
-        f = pygame.font.Font(None, tamanho)
-        txt = txt.replace("🐍","").replace("🧱","").replace("💣","").strip()
-        return f.render(txt, True, cor)
-    except:
-        f = pygame.font.Font(None, 30)
-        return f.render("ERRO FONTE", True, cor)
+    txt = txt.replace("🐍","").replace("🧱","").replace("💣","").strip()
+    f = pygame.font.Font(None, tamanho)
+    return f.render(txt, True, cor)
 
 def rodar(nome_arquivo):
-    if snd_click:
-        try:
-            snd_click.play()
-            pygame.time.delay(120)
-        except:
-            pass
     nome = nome_arquivo.replace(".py", "")
     print(f"Abrindo {nome}...")
     try:
@@ -70,16 +49,12 @@ def rodar(nome_arquivo):
             del sys.modules[nome]
         importlib.import_module(nome)
     except SystemExit:
-        print("Jogo terminou, voltando pro menu")
         pass
     except Exception as e:
         print(f"Erro: {e}")
-        pygame.time.delay(1000)
+        pygame.time.delay(800)
+    # Volta pro menu sem recriar mixer
     global screen, LARGURA, ALTURA
-    try:
-        pygame.mixer.init(frequency=44100, size=-16, channels=2)
-    except:
-        pass
     screen = criar_tela_menu()
     LARGURA, ALTURA = screen.get_size()
 
@@ -113,7 +88,7 @@ while True:
         screen.blit(lbl, (rect.centerx - lbl.get_width()//2, rect.centery - lbl.get_height()//2))
         botoes.append((rect, arq))
 
-    t = texto("Toque para jogar - Som beep interno", int(ALTURA*0.02), (150,150,150), bold=False)
+    t = texto("Toque para jogar", int(ALTURA*0.02), (150,150,150), bold=False)
     screen.blit(t, (LARGURA//2 - t.get_width()//2, ALTURA*0.82))
     t = texto(f"Corange Sistemas - PIX {PIX}", int(ALTURA*0.018), (0,255,136), bold=False)
     screen.blit(t, (LARGURA//2 - t.get_width()//2, ALTURA*0.86))
@@ -122,6 +97,7 @@ while True:
 
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT:
+            pygame.quit()
             sys.exit()
         if ev.type == pygame.MOUSEBUTTONDOWN:
             pos = ev.pos
