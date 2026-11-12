@@ -1,3 +1,4 @@
+# main.py - CORANGE 3 JOGOS - GRAFICO COMPLETO - BOMBERMAN 6 FASES + VOCE VENCEU E PARA
 import random, math, struct, wave, os
 from kivy.app import App
 from kivy.config import Config
@@ -20,29 +21,19 @@ def cria_som(nome, freq, dur, freq2=0):
             fr = freq if freq2==0 or i < n//2 else freq2
             val=int(32767*vol*math.sin(2*math.pi*fr*i/sr))
             f.writeframes(struct.pack('<h',val))
-cria_som('anda.wav',800,0.05)
-cria_som('come.wav',1200,0.2)
-cria_som('bate.wav',150,0.4)
-cria_som('tet_giro.wav',600,0.12)
-cria_som('tet_lado.wav',400,0.08)
-cria_som('tet_baixo.wav',250,0.08)
-cria_som('tet_ponto.wav',900,0.15,1500)
-cria_som('tet_fim.wav',120,0.6)
-cria_som('bomb.wav',300,0.15)
-cria_som('expl.wav',150,0.4)
-cria_som('moeda.wav',1000,0.12)
+
+cria_som('anda.wav',800,0.05); cria_som('come.wav',1200,0.2); cria_som('bate.wav',150,0.4)
+cria_som('tet_giro.wav',600,0.12); cria_som('tet_lado.wav',400,0.08); cria_som('tet_baixo.wav',250,0.08)
+cria_som('tet_ponto.wav',900,0.15,1500); cria_som('tet_fim.wav',120,0.6)
+cria_som('bomb.wav',300,0.15); cria_som('expl.wav',150,0.4); cria_som('moeda.wav',1000,0.12)
 
 class MenuInicial(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app=app_ref
         self.add_widget(Label(text="CORANGE SISTEMAS", font_size='32sp', color=(0,1,0.4,1), bold=True, size_hint_y=0.28))
-        b1=Button(text="JOGAR COBRINHA", font_size='18sp', background_color=(0,0.8,0.3,1), bold=True, size_hint_y=0.11)
-        b1.bind(on_press=self.app.iniciar_cobrinha); self.add_widget(b1)
-        b2=Button(text="JOGAR TETRIS", font_size='18sp', background_color=(0,0.4,1,1), bold=True, size_hint_y=0.11)
-        b2.bind(on_press=self.app.iniciar_tetris); self.add_widget(b2)
-        b3=Button(text="JOGAR BOMBERMAN", font_size='18sp', background_color=(1,0.6,0,1), bold=True, size_hint_y=0.11)
-        b3.bind(on_press=self.app.iniciar_bomberman); self.add_widget(b3)
+        for txt,func,cor in [("JOGAR COBRINHA",self.app.iniciar_cobrinha,(0,0.8,0.3,1)),("JOGAR TETRIS",self.app.iniciar_tetris,(0,0.4,1,1)),("JOGAR BOMBERMAN",self.app.iniciar_bomberman,(1,0.6,0,1))]:
+            b=Button(text=txt, font_size='18sp', background_color=cor, bold=True, size_hint_y=0.11); b.bind(on_press=func); self.add_widget(b)
         store=JsonStore('recordes.json')
         rc=store.get('cobra')['val'] if store.exists('cobra') else 0
         rt=store.get('tetris')['val'] if store.exists('tetris') else 0
@@ -82,8 +73,6 @@ class JogoCobrinha(BoxLayout):
         self.clear_widgets()
         self.add_widget(Label(text="GAME OVER", font_size='50sp', color=(1,0,0,1), bold=True))
         self.add_widget(Label(text=f"Score: {self.score}", font_size='30sp'))
-        store=JsonStore('recordes.json'); rec=store.get('cobra')['val'] if store.exists('cobra') else 0
-        self.add_widget(Label(text=f"Recorde: {rec}", font_size='20sp', color=(0,1,0.4,1)))
         b1=Button(text="REINICIAR", font_size='26sp', background_color=(0,0.8,0.3,1), bold=True, size_hint_y=0.25)
         b1.bind(on_press=lambda x:self.app.iniciar_cobrinha(None)); self.add_widget(b1)
         b2=Button(text="MENU", font_size='20sp', background_color=(0.3,0.3,0.3,1), size_hint_y=0.15)
@@ -134,9 +123,7 @@ class JogoTetris(BoxLayout):
         self.PECAS=[[[1,1,1,1]],[[1,1],[1,1]],[[1,1,1],[0,1,0]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]],[[1,1,1],[1,0,0]],[[1,1,1],[0,0,1]]]
         self.CORES=[(0,1,1,1),(1,1,0,1),(0.7,0,1,1),(0,1,0,1),(1,0,0,1),(0,0.4,1,1),(1,0.6,0,1)]
         self.nova_peca(); self.evento=Clock.schedule_interval(self.atualizar,0.5)
-    def nova_peca(self):
-        self.peca=random.choice(self.PECAS); self.cor=random.choice(self.CORES)
-        self.px=self.COLS//2-len(self.peca[0])//2; self.py=0
+    def nova_peca(self): self.peca=random.choice(self.PECAS); self.cor=random.choice(self.CORES); self.px=self.COLS//2-len(self.peca[0])//2; self.py=0
     def colide(self,px,py,forma):
         for y,row in enumerate(forma):
             for x,v in enumerate(row):
@@ -145,18 +132,15 @@ class JogoTetris(BoxLayout):
                     if nx<0 or nx>=self.COLS or ny>=self.LINHAS or (ny>=0 and self.board[ny][nx]!=0): return True
         return False
     def mover(self,dx):
-        if not self.colide(self.px+dx,self.py,self.peca):
-            self.px+=dx
-            if self.s_lado: self.s_lado.play()
+        if not self.colide(self.px+dx,self.py,self.peca): self.px+=dx; 
+        if self.s_lado: self.s_lado.play()
     def descer(self):
-        if not self.colide(self.px,self.py+1,self.peca):
-            self.py+=1
-            if self.s_baixo: self.s_baixo.play()
+        if not self.colide(self.px,self.py+1,self.peca): self.py+=1; 
+        if self.s_baixo: self.s_baixo.play()
     def girar(self):
         rot=[list(reversed(c)) for c in zip(*self.peca)]
-        if not self.colide(self.px,self.py,rot):
-            self.peca=rot
-            if self.s_giro: self.s_giro.play()
+        if not self.colide(self.px,self.py,rot): self.peca=rot; 
+        if self.s_giro: self.s_giro.play()
     def altura_atual(self):
         for y in range(self.LINHAS):
             if any(self.board[y]): return self.LINHAS-y
@@ -183,16 +167,13 @@ class JogoTetris(BoxLayout):
                 else: novas.append(l[:])
             while len(novas)<self.LINHAS: novas.insert(0,[0]*self.COLS)
             self.board=novas
-            if limp>0:
-                self.score+=limp*100
-                if self.s_ponto: self.s_ponto.play()
+            if limp>0: self.score+=limp*100; 
+            if self.s_ponto: self.s_ponto.play()
             self.nova_peca()
             if self.colide(self.px,self.py,self.peca) or self.altura_atual()>=self.LIMITE:
                 try: Clock.unschedule(self.evento)
                 except: pass
-                if self.s_fim: self.s_fim.play()
-                self.app.gravar_recorde('tetris',self.score)
-                self.mostrar_game_over(); return
+                if self.s_fim: self.s_fim.play(); self.app.gravar_recorde('tetris',self.score); self.mostrar_game_over(); return
         self.hud.text=f"Score: {self.score} Alt: {self.altura_atual()}/{self.LIMITE}"
         for r in range(self.LINHAS):
             for c in range(self.COLS):
@@ -202,10 +183,10 @@ class JogoTetris(BoxLayout):
                     is_peca=False
                     for dy,row in enumerate(self.peca):
                         for dx,v in enumerate(row):
-                            if v and self.py+dy==r and self.px+dx==c:
-                                lbl.text='█'; lbl.color=self.cor; is_peca=True
+                            if v and self.py+dy==r and self.px+dx==c: lbl.text='█'; lbl.color=self.cor; is_peca=True
                     if not is_peca: lbl.text=' '
 
+# ============ BOMBERMAN COM GRAFICO RESTAURADO ============
 class JogoBomberman(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', **kwargs)
@@ -218,7 +199,7 @@ class JogoBomberman(BoxLayout):
         self.blocos={}
         for r in range(self.GH):
             for c in range(self.GW):
-                lbl=Label(text=' ', font_size='20sp', bold=True); self.tabuleiro.add_widget(lbl); self.blocos[(r,c)]=lbl
+                lbl=Label(text=' ', font_size='22sp', bold=True); self.tabuleiro.add_widget(lbl); self.blocos[(r,c)]=lbl
         self.add_widget(self.tabuleiro)
         ctrls=BoxLayout(orientation='horizontal', size_hint_y=0.28, padding=8, spacing=8)
         btn_l=Button(text="<", font_size='42sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(-1,0))
@@ -231,6 +212,7 @@ class JogoBomberman(BoxLayout):
         ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba); self.add_widget(ctrls)
         self.add_widget(Label(text="Corange Sistemas - PIX 51993359782", font_size='12sp', color=(0,1,0.4,1), size_hint_y=0.05))
         self.reset(manter_pontos=False); self.evento=Clock.schedule_interval(self.atualizar,0.18)
+
     def reset(self, manter_pontos=False):
         self.grid=[]; self.player=[1,1]; self.bombas=[]; self.fogos=[]; self.moedas=[]; self.game_over=False
         if not manter_pontos: self.vidas=3; self.pontos=0
@@ -248,7 +230,9 @@ class JogoBomberman(BoxLayout):
         self.inimigos=[]
         for i in range(min(qtd,len(posicoes))): self.inimigos.append([posicoes[i][0],posicoes[i][1],i%3])
         self.atualizar_hud()
+
     def atualizar_hud(self): self.hud.text=f"VIDAS: {self.vidas} | FASE: {self.fase}/6 | PONTOS: {self.pontos}"
+
     def mover(self,dx,dy):
         if self.game_over or self.zerou: return
         if len(self.inimigos)==0: self.avancar_fase(); return
@@ -261,6 +245,7 @@ class JogoBomberman(BoxLayout):
                         self.pontos+=100; self.moedas.remove(m)
                         if self.s_moeda: self.s_moeda.play()
                         self.atualizar_hud()
+
     def colocar_bomba(self):
         if self.game_over or self.zerou: return
         if len(self.inimigos)==0: self.avancar_fase(); return
@@ -268,27 +253,29 @@ class JogoBomberman(BoxLayout):
         if len(self.bombas)<2 and not any(b[0]==x and b[1]==y for b in self.bombas):
             self.bombas.append([x,y,6])
             if self.s_bomb: self.s_bomb.play()
+
     def avancar_fase(self):
         if self.zerou: return
         if self.fase<self.fase_max:
             self.fase+=1; self.reset(manter_pontos=True)
         else:
-            # FASE 6 TERMINOU - VENCEU E PARA
             self.zerou=True; self.game_over=True
             self.app.gravar_recorde('bomber',self.pontos)
             self.mostrar_zerou()
+
     def mostrar_zerou(self):
         try: Clock.unschedule(self.evento)
         except: pass
         self.clear_widgets()
         self.add_widget(Label(text="VOCE VENCEU!", font_size='48sp', color=(0,1,0.4,1), bold=True))
         self.add_widget(Label(text=f"Pontos: {self.pontos}", font_size='30sp'))
-        self.add_widget(Label(text="Voce zerou as 6 fases!", font_size='20sp'))
+        self.add_widget(Label(text="VOCE ZEROU AS 6 FASES!", font_size='20sp', color=(1,1,0,1), bold=True))
         self.add_widget(Label(text="Corange Sistemas - PIX 51993359782", font_size='14sp', color=(0,1,0.4,1)))
         b1=Button(text="JOGAR NOVAMENTE", font_size='22sp', background_color=(1,0.6,0,1), bold=True, size_hint_y=0.25)
         b1.bind(on_press=lambda x:self.app.iniciar_bomberman(None)); self.add_widget(b1)
         b2=Button(text="MENU", font_size='20sp', background_color=(0.3,0.3,0.3,1), size_hint_y=0.15)
         b2.bind(on_press=lambda x:self.app.voltar_menu()); self.add_widget(b2)
+
     def mostrar_game_over(self):
         try: Clock.unschedule(self.evento)
         except: pass
@@ -299,11 +286,13 @@ class JogoBomberman(BoxLayout):
         b1.bind(on_press=lambda x:self.app.iniciar_bomberman(None)); self.add_widget(b1)
         b2=Button(text="MENU", font_size='20sp', background_color=(0.3,0.3,0.3,1), size_hint_y=0.15)
         b2.bind(on_press=lambda x:self.app.voltar_menu()); self.add_widget(b2)
+
     def perder_vida(self):
         self.vidas-=1; self.atualizar_hud()
         if self.vidas<=0:
             self.game_over=True; self.app.gravar_recorde('bomber',self.pontos); self.mostrar_game_over()
         else: self.player=[1,1]; self.invencivel=5; self.bombas.clear(); self.fogos.clear()
+
     def explodir(self,b):
         x,y,_=b
         if self.s_expl: self.s_expl.play()
@@ -323,6 +312,7 @@ class JogoBomberman(BoxLayout):
             if fx==self.player[0] and fy==self.player[1] and self.invencivel==0: self.perder_vida()
             for en in self.inimigos[:]:
                 if en[0]==fx and en[1]==fy: self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
+
     def atualizar(self,dt):
         if self.game_over: return
         if self.invencivel>0: self.invencivel-=1
@@ -339,22 +329,52 @@ class JogoBomberman(BoxLayout):
                     nx,ny=en[0]+dx,en[1]+dy
                     if 0<=nx<self.GW and 0<=ny<self.GH and self.grid[ny][nx]==0: en[0],en[1]=nx,ny; break
             if en[0]==self.player[0] and en[1]==self.player[1] and self.invencivel==0: self.perder_vida(); break
+
+        # ===== GRAFICO RESTAURADO POR FASE =====
         for r in range(self.GH):
             for c in range(self.GW):
-                lbl=self.blocos[(r,c)]; lbl.text=' '; lbl.color=(1,1,1,1); t=self.grid[r][c]
-                if t==1: lbl.text='█'; lbl.color=(0.6,0.6,0.6,1)
-                elif t==2: lbl.text='▓'; lbl.color=(0.8,0.8,0.5,1)
+                lbl=self.blocos[(r,c)]
+                t=self.grid[r][c]
+                # CHAO COLORIDO POR FASE IGUAL PC
+                if self.fase==1: cor_chao=(0.24,0.76,0.2,1)
+                elif self.fase==2: cor_chao=(0.85,0.76,0.84,1)
+                elif self.fase==3: cor_chao=(0.18,0.77,0.69,1)
+                elif self.fase==4: cor_chao=(0.24,0.76,0.2,1)
+                elif self.fase==5: cor_chao=(0.1,0.54,0.91,1)
+                else: cor_chao=(0.23,0.77,0.63,1)
+                
+                if t==1: # PAREDE FIXA
+                    if self.fase==1: lbl.text='█'; lbl.color=(0.63,0.63,0.63,1)
+                    elif self.fase==2: lbl.text='█'; lbl.color=(0.42,0.18,0.35,1)
+                    elif self.fase==3: lbl.text='◉'; lbl.color=(0.61,0.30,0.80,1)
+                    elif self.fase==4: lbl.text='▓'; lbl.color=(0.54,0.61,0.69,1)
+                    elif self.fase==5: lbl.text='⬣'; lbl.color=(0.31,0.31,0.35,1)
+                    else: lbl.text='█'; lbl.color=(0.63,0.85,0.75,1)
+                elif t==2: # BLOCO DESTRUTIVEL
+                    if self.fase==3: lbl.text='☺'; lbl.color=(1,0.9,0.3,1)
+                    elif self.fase==5: lbl.text='■'; lbl.color=(0.31,0.31,0.38,1)
+                    else: lbl.text='▓'; lbl.color=(0.8,0.8,0.5,1)
+                else: # CHAO
+                    lbl.text='·'; lbl.color=cor_chao
+
         for mx,my in self.moedas: self.blocos[(my,mx)].text='$'; self.blocos[(my,mx)].color=(1,0.8,0,1)
-        for fx,fy,_ in self.fogos: self.blocos[(fy,fx)].text='*'; self.blocos[(fy,fx)].color=(1,0.3,0,1)
-        for bx,by,_ in self.bombas: self.blocos[(by,bx)].text='●'; self.blocos[(by,bx)].color=(0.4,0,1,1)
-        for en in self.inimigos: self.blocos[(en[1],en[0])].text='☠'; self.blocos[(en[1],en[0])].color=(1,0,0.5,1)
+        for fx,fy,_ in self.fogos: self.blocos[(fy,fx)].text='*'; self.blocos[(fy,fx)].color=(1,0.2,0,1)
+        for bx,by,_ in self.bombas: self.blocos[(by,bx)].text='●'; self.blocos[(by,bx)].color=(0.42,0.23,0.82,1)
+        # INIMIGOS COLORIDOS
+        for en in self.inimigos:
+            if en[2]==0: self.blocos[(en[1],en[0])].text='♥'; self.blocos[(en[1],en[0])].color=(1,0.48,0.75,1)
+            elif en[2]==1: self.blocos[(en[1],en[0])].text='♦'; self.blocos[(en[1],en[0])].color=(0.3,0.65,1,1)
+            else: self.blocos[(en[1],en[0])].text='☠'; self.blocos[(en[1],en[0])].color=(1,0.23,0.23,1)
+
         px,py=self.player
-        if not (self.invencivel>0 and self.invencivel%2==0): self.blocos[(py,px)].text='☺'; self.blocos[(py,px)].color=(0,0.5,1,1)
-        if len(self.inimigos)==0 and not self.game_over: self.hud.text=f"FASE {self.fase} COMPLETA! Aperte BOMBA p/ proxima"
+        if not (self.invencivel>0 and self.invencivel%2==0):
+            self.blocos[(py,px)].text='☺'; self.blocos[(py,px)].color=(0.16,0.49,1,1)
+
+        if len(self.inimigos)==0 and not self.game_over:
+            self.hud.text=f"FASE {self.fase} COMPLETA! Aperte BOMBA p/ proxima"
 
 class MainApp(App):
-    def build(self):
-        self.title="CORANGE SISTEMAS"; self.root=BoxLayout(orientation='vertical'); self.voltar_menu(); return self.root
+    def build(self): self.title="CORANGE SISTEMAS"; self.root=BoxLayout(orientation='vertical'); self.voltar_menu(); return self.root
     def voltar_menu(self): self.root.clear_widgets(); self.root.add_widget(MenuInicial(self))
     def iniciar_cobrinha(self,instance): self.root.clear_widgets(); self.root.add_widget(JogoCobrinha(self))
     def iniciar_tetris(self,instance): self.root.clear_widgets(); self.root.add_widget(JogoTetris(self))
