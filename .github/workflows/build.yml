@@ -2,20 +2,16 @@ name: Build Corange APK
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
+    container:
+      image: kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Build APK
+        run: |
+          buildozer android debug
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
         with:
-          python-version: '3.10'
-      - run: |
-          sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip \
-          libffi-dev libssl-dev libsdl2-dev libsdl2-image-dev \
-          libsdl2-mixer-dev libsdl2-ttf-dev
-          pip install cython==0.29.33 buildozer
-      - run: buildozer android debug
-      - uses: actions/upload-artifact@v4
-        with:
-          name: apk
+          name: Corange-APK
           path: bin/*.apk
