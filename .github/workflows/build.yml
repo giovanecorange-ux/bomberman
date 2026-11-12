@@ -26,27 +26,23 @@ jobs:
           pip install --upgrade https://github.com/kivy/python-for-android/archive/master.zip
           pip install cython==0.29.36
 
-      - name: Setup Android SDK Manual
-        run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          export ANDROID_SDK_ROOT=$HOME/android-sdk
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
-          mkdir -p $ANDROID_HOME/cmdline-tools
-          cd $ANDROID_HOME/cmdline-tools
-          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
-          unzip -q commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-          mkdir -p $ANDROID_HOME/licenses
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $ANDROID_HOME/licenses/android-sdk-license
-          echo "24333f8a63b6825a656882fa2f249289289d7b4" >> $ANDROID_HOME/licenses/android-sdk-license
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.1" "ndk;25.1.8937393"
-
       - name: Build APK
-        run: buildozer -v android debug
+        run: |
+          rm -rf ~/.buildozer
+          # 1. deixa o buildozer baixar o SDK dele (vai falhar na licença mas cria a pasta)
+          buildozer -v android debug || true
+          
+          # 2. aceita a licença na pasta que o buildozer criou
+          SDK=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $SDK/licenses
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $SDK/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> $SDK/licenses/android-sdk-license
+          echo "24333f8a63b6825a656882fa2f249289289d7b4" >> $SDK/licenses/android-sdk-license
+          echo "y" | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | $SDK/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          
+          # 3. agora roda de novo e vai
+          buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
