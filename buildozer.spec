@@ -5,8 +5,8 @@ package.domain = org.corange.videogame
 source.dir = .
 source.include_exts = py,png,jpg,txt,ttf
 source.include_patterns = main.py,cobrinha.py,tetris.py,bomberman.py,icon.png
-version = 1.6
-requirements = python3, pygame==2.5.2
+version = 1.7
+requirements = python3, sdl2, pygame==2.6.1
 p4a.bootstrap = sdl2
 orientation = landscape
 fullscreen = 0
@@ -19,7 +19,7 @@ android.archs = arm64-v8a
 android.accept_sdk_license = True
 android.allow_backup = True
 android.wakelock = True
-android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE
+android.permissions = INTERNET
 icon.filename = %(source.dir)s/icon.png
 
 [buildozer]
