@@ -5,7 +5,6 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: kivy/buildozer:latest
-      options: --user root
     steps:
       - uses: actions/checkout@v4
       - name: Fix git permissions
@@ -13,7 +12,7 @@ jobs:
       - name: Build APK
         run: |
           rm -rf ~/.buildozer bin
-          buildozer -v android debug
+          buildozer --allow-root -v android debug
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
