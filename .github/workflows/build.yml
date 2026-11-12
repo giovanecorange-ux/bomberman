@@ -21,9 +21,16 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk
+          sudo apt install -y zip unzip
           pip install --upgrade pip
           pip install cython==0.29.36 buildozer
+
+      - name: Accept Android Licenses
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          yes | sdkmanager --licenses || true
+          yes | sdkmanager "build-tools;33.0.2" "platforms;android-33" "platform-tools" || true
 
       - name: Build APK
         run: |
