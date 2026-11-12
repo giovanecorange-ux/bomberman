@@ -3,6 +3,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+      ANDROID_HOME: /usr/local/lib/android/sdk
     steps:
       - uses: actions/checkout@v4
 
@@ -17,24 +20,20 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y zip unzip openjdk-17-jdk python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
+          sudo apt install -y zip unzip python3-pip autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade pip
           pip install --upgrade https://github.com/kivy/buildozer/archive/master.zip
           pip install --upgrade https://github.com/kivy/python-for-android/archive/master.zip
           pip install cython==0.29.36
-
-      - name: Aceitar licencas do Android
-        run: |
-          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          echo "24333f8a63b6825a656882fa2f249289289d7b4" >> ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license
-          mkdir -p $ANDROID_HOME/licenses || true
-          cp ~/.buildozer/android/platform/android-sdk/licenses/android-sdk-license $ANDROID_HOME/licenses/ || true
-          echo "Licencas criadas!"
+          yes | sdkmanager --licenses
+          sdkmanager "build-tools;33.0.1" "platforms;android-33" "platform-tools" "ndk;25.1.8937393"
+          rm -rf ~/.buildozer
 
       - name: Build APK
         run: buildozer -v android debug
