@@ -19,30 +19,41 @@ jobs:
           python-version: '3.10.13'
 
       - name: Install System Deps
-        run: |
-          sudo apt update
-          sudo apt install -y python3-pip zip unzip build-essential libssl-dev libffi-dev
+        run: sudo apt update && sudo apt install -y zip unzip build-essential libssl-dev libffi-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer==1.5.0 cython==0.29.36
 
-      - name: Accept Licenses and Fix sdkmanager path
+      - name: Build APK
         run: |
+          # 1. Cria licença no SDK do sistema
           mkdir -p ~/.android/licenses $ANDROID_HOME/licenses
-          echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > ~/.android/licenses/android-sdk-license
-          echo "d56f5187479451eabf01fb78af6dfcb131a6481e" >> ~/.android/licenses/android-sdk-license
-          echo "24333f8a4f4113a41c683d0e53a7b40b10879d86" >> ~/.android/licenses/android-sdk-license
+          printf "8933bad161af4178b1185d1a37fbf41ea5269c55\nd56f5187479451eabf01fb78af6dfcb131a6481e\n24333f8a4f4113a41c683d0e53a7b40b10879d86\n" > ~/.android/licenses/android-sdk-license
           cp ~/.android/licenses/android-sdk-license $ANDROID_HOME/licenses/
-          # CORREÇÃO DO BUG QUE TÁ NO TEU VIDEO:
+          
+          # 2. Aceita tudo no sdkmanager do sistema e instala o build-tools 27 que está faltando no teu vídeo
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "build-tools;27.0.3" "build-tools;33.0.2" || true
+
+          # 3. Agora cria a licença DENTRO do SDK do Buildozer (essa é a parte que tava faltando)
+          mkdir -p ~/.buildozer/android/platform/android-sdk/licenses
+          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin
+          cp ~/.android/licenses/android-sdk-license ~/.buildozer/android/platform/android-sdk/licenses/ || true
+          
+          # 4. Cria o atalho que corrige o bug do sdkmanager not found
           mkdir -p ~/.buildozer/android/platform/android-sdk/tools/bin
-          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager
-          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager ~/.buildozer/android/platform/android-sdk/tools/bin/avdmanager || true
+          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/tools/bin/sdkmanager || true
+          ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager || true
+          
+          # 5. Aceita licença dentro do SDK do Buildozer também
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          yes | ~/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager "build-tools;27.0.3" || true
           touch ~/.android/repositories.cfg
 
-      - name: Build APK
-        run: buildozer android debug --verbose
+          # 6. Finalmente roda o build
+          buildozer android debug --verbose
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
