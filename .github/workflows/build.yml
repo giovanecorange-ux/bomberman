@@ -7,6 +7,10 @@ jobs:
       image: kivy/buildozer:latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fix cython
+        run: |
+          pip install --upgrade pip
+          pip install "Cython==0.29.33"
       - name: Build APK
         run: |
           echo "y" | buildozer android debug
