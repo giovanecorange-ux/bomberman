@@ -5,15 +5,26 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.clock import Clock
 import random, os
-from kivy.core.audio import SoundLoader
 
 class MenuApresentacao(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app = app_ref
         self.musica = None
-        # Musica só se existir, com try pra não travar
+        Clock.schedule_once(self.tocar_musica, 1.0)
+
+        self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
+        self.add_widget(Label(text="Corange Sistemas", font_size='18sp', color=(1,1,1,1), bold=True, size_hint_y=0.08))
+        self.add_widget(Label(text="P  B  H  E  X", font_size='28sp', color=(1,1,1,1), bold=True, size_hint_y=0.12))
+        self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.08))
+        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.18)
+        b.bind(on_press=self.iniciar)
+        self.add_widget(b)
+        self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.08))
+
+    def tocar_musica(self, dt):
         try:
+            from kivy.core.audio import SoundLoader
             if os.path.exists('nes.mp3'):
                 self.musica = SoundLoader.load('nes.mp3')
                 if self.musica:
@@ -22,16 +33,6 @@ class MenuApresentacao(BoxLayout):
         except:
             pass
 
-        self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
-        self.add_widget(Label(text="Corange Sistemas", font_size='18sp', color=(1,1,1,1), bold=True, size_hint_y=0.08))
-        # SEM EMOJI QUE DA QUADRADINHO - USA LETRA BONITINHA
-        self.add_widget(Label(text="P  B  H  E  X", font_size='28sp', color=(1,1,1,1), bold=True, size_hint_y=0.12))
-        self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.08))
-        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.18)
-        b.bind(on_press=self.iniciar)
-        self.add_widget(b)
-        self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.08))
-
     def iniciar(self, *a):
         try:
             if self.musica: self.musica.stop()
@@ -39,6 +40,7 @@ class MenuApresentacao(BoxLayout):
             pass
         self.app.iniciar_jogo()
 
+# DAQUI PRA BAIXO É TEU CÓDIGO ORIGINAL DO JogoBomberman, NÃO MEXI
 class JogoBomberman(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', **kwargs)
@@ -51,10 +53,8 @@ class JogoBomberman(BoxLayout):
         self.invencivel = 0
         self.game_over = False
         self.recorde = app_ref.recorde
-
         self.hud = Label(text="VIDAS: 3 | FASE: 1 | RECORDE: 0 | PONTOS: 0", font_size='13sp', size_hint_y=0.08, bold=True)
         self.add_widget(self.hud)
-
         self.tabuleiro = GridLayout(cols=self.GW, rows=self.GH, size_hint_y=0.62, spacing=1)
         self.blocos = {}
         for r in range(self.GH):
@@ -63,7 +63,6 @@ class JogoBomberman(BoxLayout):
                 self.tabuleiro.add_widget(lbl)
                 self.blocos[(r, c)] = lbl
         self.add_widget(self.tabuleiro)
-
         ctrls = BoxLayout(orientation='horizontal', size_hint_y=0.28, padding=8, spacing=8)
         btn_l = Button(text="<", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(-1,0))
         btn_r = Button(text=">", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(1,0))
@@ -74,19 +73,15 @@ class JogoBomberman(BoxLayout):
         btn_bomba = Button(text="BOMBA", font_size='14sp', bold=True, background_color=(1,0.6,0,1), on_press=lambda x:self.colocar_bomba())
         ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba)
         self.add_widget(ctrls)
-
         btn_menu = Button(text="MENU", font_size='14sp', bold=True, background_color=(0.6,0.2,0.2,1), size_hint_y=0.07, on_press=lambda x:self.app.voltar_menu())
         self.add_widget(btn_menu)
-
         self.reset(manter_pontos=False)
         self.evento = Clock.schedule_interval(self.atualizar, 0.18)
-
     def atualizar_hud(self):
         self.hud.text = f"VIDAS: {self.vidas} | FASE: {self.fase} | RECORDE: {self.recorde} | PONTOS: {self.pontos}"
         if self.pontos > self.recorde:
             self.recorde = self.pontos
             self.app.recorde = self.pontos
-
     def reset(self, manter_pontos=False):
         self.grid = []; self.player = [1,1]; self.bombas = []; self.fogos = []; self.moedas = []; self.game_over = False
         if not manter_pontos: self.vidas = 3; self.pontos = 0
@@ -103,7 +98,6 @@ class JogoBomberman(BoxLayout):
         posicoes = [[self.GW-2,1],[self.GW-2,self.GH-2],[1,self.GH-2],[self.GW-2,self.GH//2],[1,self.GH//2],[self.GW//2,self.GH-2],[self.GW-2,3],[1,3]]
         self.inimigos = []
         for i in range(min(qtd,len(posicoes))): self.inimigos.append([posicoes[i][0],posicoes[i][1],i%3])
-
     def mover(self,dx,dy):
         if self.game_over: return
         if len(self.inimigos)==0: self.avancar_fase(); return
@@ -124,23 +118,19 @@ class JogoBomberman(BoxLayout):
                 else: self.pontos+=100
                 self.moedas.remove(m)
                 self.atualizar_hud()
-
     def colocar_bomba(self):
         if self.game_over: return
         if len(self.inimigos)==0: self.avancar_fase(); return
         x,y = self.player
         if len(self.bombas)<2 and not any(b[0]==x and b[1]==y for b in self.bombas):
             self.bombas.append([x,y,6])
-
     def avancar_fase(self):
         if self.fase<self.fase_max: self.fase+=1; self.reset(manter_pontos=True)
         else: self.fase=1; self.reset(manter_pontos=True)
-
     def perder_vida(self):
         self.vidas-=1; self.atualizar_hud()
         if self.vidas<=0: self.game_over=True; self.bombas.clear(); self.fogos.clear()
         else: self.player=[1,1]; self.invencivel=5; self.bombas.clear(); self.fogos.clear()
-
     def explodir(self,b):
         x,y,_=b
         pos=[[x,y]]
@@ -163,7 +153,6 @@ class JogoBomberman(BoxLayout):
             for en in self.inimigos[:]:
                 if en[0]==fx and en[1]==fy: self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
         if pegou: self.perder_vida()
-
     def atualizar(self,dt):
         if self.game_over: self.desenhar(); return
         if self.invencivel>0: self.invencivel-=1
@@ -192,7 +181,6 @@ class JogoBomberman(BoxLayout):
             if en not in self.inimigos: continue
             if en[0]==self.player[0] and en[1]==self.player[1] and self.invencivel==0: self.perder_vida(); break
         self.desenhar()
-
     def desenhar(self):
         for r in range(self.GH):
             for c in range(self.GW):
