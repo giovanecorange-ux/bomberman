@@ -3,9 +3,11 @@ title = Bomberman Corange
 package.name = corangebomber
 package.domain = org.corangebomber
 source.dir = .
-source.include_exts = py,png,jpg,kv,mp3,wav,ttf
+source.include_exts = py,png,jpg,kv,mp3,wav,ttf,json
+source.include_patterns = icon.png,nes.mp3
 version = 1.0
 requirements = python3,kivy==2.3.0,pillow
+icon.filename = %(source.dir)s/icon.png
 p4a.bootstrap = sdl2
 p4a.branch = v2024.01.21
 orientation = portrait
