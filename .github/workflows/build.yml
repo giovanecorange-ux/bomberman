@@ -10,14 +10,37 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Install dependencies
         run: |
           sudo apt update
           sudo apt install -y python3-pip zip unzip openjdk-17-jdk autoconf automake libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev
           pip install --upgrade buildozer cython
+
+      - name: Fix SDK Licenses + Install Build-Tools 37
+        run: |
+          export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools $ANDROID_SDK_ROOT/tools $ANDROID_SDK_ROOT/licenses
+          cd /tmp
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          unzip -q -o cmdtools.zip -d cmdtools_tmp
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
+          cp -r cmdtools_tmp/cmdline-tools/* $ANDROID_SDK_ROOT/cmdline-tools/latest/
+          # FIX DO ERRO ANTERIOR: copia pro lugar velho que o Buildozer procura
+          cp -r $ANDROID_SDK_ROOT/cmdline-tools/latest/* $ANDROID_SDK_ROOT/tools/
+          # Licenças
+          echo "8933bad161af4178b1185d1a37fbf41ea5269c" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo "d56f5187479451eabf01fb78af6dfcb131a648" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          echo "24333f8a63b6825a656882fa2f2492895e9f4c74d3d8e1a5a3b5e1c3d2a1b2c" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
+          # Aceita tudo e já instala o 37 que o p4a quer
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;37.0.0"
+          ls $ANDROID_SDK_ROOT/build-tools/
+
       - name: Build
         run: |
           buildozer android debug --verbose
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
