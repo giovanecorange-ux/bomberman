@@ -34,7 +34,6 @@ jobs:
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;37.0.0"
           ls $ANDROID_SDK_ROOT/build-tools/
 
-      # CORRECAO GIOVANE - LIMPA O CACHE E CONFERE OS ARQUIVOS
       - name: Clean old build + Check files
         run: |
           rm -rf .buildozer bin
