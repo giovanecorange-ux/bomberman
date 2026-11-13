@@ -4,10 +4,12 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.image import Image
 from kivy.clock import Clock
 from kivy.storage.jsonstore import JsonStore
 from kivy.core.audio import SoundLoader
 
+# SOM DO JOGO EM CODIGO
 def cria_som(nome, freq, dur):
     if os.path.exists(nome): return
     sr=44100; n=int(sr*dur)
@@ -23,12 +25,16 @@ class MenuApresentacao(BoxLayout):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app=app_ref
         self.musica=None
+        # MUSICA DA PRIMEIRA TELA = nes.mp3
         if os.path.exists('nes.mp3'):
             self.musica=SoundLoader.load('nes.mp3')
             if self.musica:
                 self.musica.loop=True
                 self.musica.play()
-        self.add_widget(Label(text="Bomberman Corange", font_size='36sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
+        if os.path.exists('icon.png'):
+            self.add_widget(Image(source='icon.png', size_hint_y=0.45))
+        else:
+            self.add_widget(Label(text="Bomberman Corange", font_size='36sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
         self.add_widget(Label(text="Corange Sistemas", font_size='18sp', color=(1,1,1,1), bold=True, size_hint_y=0.08))
         self.add_widget(Label(text="☺  ●  ♥  ♦  ☠", font_size='42sp', size_hint_y=0.18))
         store=JsonStore('recordes.json')
@@ -64,7 +70,9 @@ class JogoBomberman(BoxLayout):
         btn_d=Button(text="v", font_size='42sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(0,1))
         v_box.add_widget(btn_u); v_box.add_widget(btn_d)
         btn_bomba=Button(text="BOMBA", font_size='16sp', bold=True, background_color=(1,0.6,0,1), on_press=lambda x:self.colocar_bomba())
+        btn_menu=Button(text="MENU", font_size='14sp', bold=True, background_color=(0.6,0.2,0.2,1), on_press=lambda x:self.app.voltar_menu())
         ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba); self.add_widget(ctrls)
+        self.add_widget(btn_menu)
         self.reset(manter_pontos=False); self.evento=Clock.schedule_interval(self.atualizar,0.18)
     def atualizar_hud(self):
         coracoes="❤️"*self.vidas+"🖤"*(3-self.vidas)
@@ -90,16 +98,30 @@ class JogoBomberman(BoxLayout):
         if self.game_over: return
         if len(self.inimigos)==0: self.avancar_fase(); return
         x,y=self.player; nx,ny=x+dx,y+dy
-        if 0<=nx<self.GW and 0<=ny<self.GH and self.grid[ny][nx]==0:
-            if not any(e[0]==nx and e[1]==ny for e in self.inimigos):
-                self.player=[nx,ny]
-                for m in self.moedas[:]:
-                    if m[0]==nx and m[1]==ny: self.pontos+=100; self.moedas.remove(m); self.s_moeda.play() if self.s_moeda else None; self.atualizar_hud()
+        if not (0<=nx<self.GW and 0<=ny<self.GH): return
+        if self.grid[ny][nx]!=0: return
+        if any(b[0]==nx and b[1]==ny for b in self.bombas): return
+        if any(f[0]==nx and f[1]==ny for f in self.fogos):
+            if self.invencivel==0: self.perder_vida()
+            return
+        if any(e[0]==nx and e[1]==ny for e in self.inimigos): return
+        self.player=[nx,ny]
+        for m in self.moedas[:]:
+            if m[0]==nx and m[1]==ny:
+                if m[2]==1:
+                    if self.vidas<3: self.vidas+=1
+                    else: self.pontos+=200
+                else: self.pontos+=100
+                self.moedas.remove(m)
+                if self.s_moeda: self.s_moeda.play()
+                self.atualizar_hud()
     def colocar_bomba(self):
         if self.game_over: return
         if len(self.inimigos)==0: self.avancar_fase(); return
         x,y=self.player
-        if len(self.bombas)<2 and not any(b[0]==x and b[1]==y for b in self.bombas): self.bombas.append([x,y,6]); self.s_bomb.play() if self.s_bomb else None
+        if len(self.bombas)<2 and not any(b[0]==x and b[1]==y for b in self.bombas):
+            self.bombas.append([x,y,6])
+            if self.s_bomb: self.s_bomb.play()
     def avancar_fase(self):
         if self.fase<self.fase_max: self.fase+=1; self.reset(manter_pontos=True)
         else: self.fase=1; self.reset(manter_pontos=True)
@@ -139,12 +161,26 @@ class JogoBomberman(BoxLayout):
         for f in self.fogos[:]:
             f[2]-=1
             if f[2]<=0: self.fogos.remove(f)
-        for en in self.inimigos:
+        for en in self.inimigos[:]:
+            if any(f[0]==en[0] and f[1]==en[1] for f in self.fogos):
+                self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
+        if any(f[0]==self.player[0] and f[1]==self.player[1] for f in self.fogos) and self.invencivel==0:
+            self.perder_vida(); self.desenhar(); return
+        for en in self.inimigos[:]:
             if random.random()<0.5:
                 dirs=[(1,0),(-1,0),(0,1),(0,-1)]; random.shuffle(dirs)
                 for dx,dy in dirs:
                     nx,ny=en[0]+dx,en[1]+dy
-                    if 0<=nx<self.GW and 0<=ny<self.GH and self.grid[ny][nx]==0: en[0],en[1]=nx,ny; break
+                    if not (0<=nx<self.GW and 0<=ny<self.GH): continue
+                    if self.grid[ny][nx]!=0: continue
+                    if any(b[0]==nx and b[1]==ny for b in self.bombas): continue
+                    if any(f[0]==nx and f[1]==ny for f in self.fogos):
+                        if en in self.inimigos:
+                            self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
+                        break
+                    if nx==self.player[0] and ny==self.player[1]: continue
+                    en[0],en[1]=nx,ny; break
+            if en not in self.inimigos: continue
             if en[0]==self.player[0] and en[1]==self.player[1] and self.invencivel==0: self.perder_vida(); break
         self.desenhar()
     def desenhar(self):
@@ -169,7 +205,9 @@ class JogoBomberman(BoxLayout):
                     elif self.fase==5: lbl.text='■'; lbl.color=(0.31,0.31,0.38,1)
                     else: lbl.text='▓'; lbl.color=(0.8,0.8,0.5,1)
                 else: lbl.text='·'; lbl.color=cor_chao
-        for mx,my,tipo in self.moedas: self.blocos[(my,mx)].text='$'; self.blocos[(my,mx)].color=(1,0.8,0,1)
+        for mx,my,tipo in self.moedas:
+            self.blocos[(my,mx)].text='♥' if tipo==1 else '$'
+            self.blocos[(my,mx)].color=(0.2,1,0.3,1) if tipo==1 else (1,0.8,0,1)
         for fx,fy,_ in self.fogos: self.blocos[(fy,fx)].text='*'; self.blocos[(fy,fx)].color=(1,0.4,0,1)
         for bx,by,t in self.bombas: self.blocos[(by,bx)].text='●'; self.blocos[(by,bx)].color=(0.42,0.23,0.82,1)
         for en in self.inimigos:
@@ -184,6 +222,7 @@ class JogoBomberman(BoxLayout):
             else: self.hud.text=f"FASE {self.fase} COMPLETA! Aperte BOMBA p/ proxima"
 
 class MainApp(App):
+    icon = 'icon.png'
     def build(self):
         self.title="Bomberman Corange"
         self.root=BoxLayout()
