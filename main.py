@@ -4,22 +4,19 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.clock import Clock
-import random, os
+import random, os, traceback
 
 class MenuApresentacao(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', padding=12, spacing=8, **kwargs)
         self.app = app_ref
         self.musica = None
-        Clock.schedule_once(self.tocar_musica, 1.0)
+        # NAO CARREGA NADA PESADO AQUI - SO MOSTRA A TELA
         self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.18))
         self.add_widget(Label(text="Corange Sistemas", font_size='16sp', bold=True, size_hint_y=0.06))
         legenda = GridLayout(cols=5, size_hint_y=0.28, spacing=6)
-        legenda.add_widget(Button(background_color=(0.2,0.5,1,1), background_normal='', text=''))
-        legenda.add_widget(Button(background_color=(0,0,0,1), background_normal='', text=''))
-        legenda.add_widget(Button(background_color=(0.2,1,0.3,1), background_normal='', text=''))
-        legenda.add_widget(Button(background_color=(1,0.2,0.2,1), background_normal='', text=''))
-        legenda.add_widget(Button(background_color=(0.6,0.35,0.1,1), background_normal='', text=''))
+        for cor in [(0.2,0.5,1,1),(0,0,0,1),(0.2,1,0.3,1),(1,0.2,0.2,1),(0.6,0.35,0.1,1)]:
+            legenda.add_widget(Button(background_color=cor, background_normal='', text=''))
         self.add_widget(legenda)
         self.add_widget(Label(text="AZUL=VOCE  PRETO=BOMBA  VERDE=VIDA  VERMELHO=INIMIGO  MARROM=TIJOLO", font_size='10sp', bold=True, size_hint_y=0.06))
         self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.07))
@@ -27,6 +24,8 @@ class MenuApresentacao(BoxLayout):
         b.bind(on_press=self.iniciar)
         self.add_widget(b)
         self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.06))
+        # MUSICA SO DEPOIS QUE A TELA JA APARECEU
+        Clock.schedule_once(self.tocar_musica, 1.5)
     def tocar_musica(self, dt):
         try:
             from kivy.core.audio import SoundLoader
@@ -35,8 +34,8 @@ class MenuApresentacao(BoxLayout):
                 if self.musica:
                     self.musica.loop = True
                     self.musica.play()
-        except:
-            pass
+        except Exception as e:
+            print("musica erro", e)
     def iniciar(self, *a):
         try:
             if self.musica: self.musica.stop()
@@ -81,10 +80,8 @@ class JogoBomberman(BoxLayout):
         self.reset(manter_pontos=False)
         self.evento = Clock.schedule_interval(self.atualizar, 0.18)
     def parar_e_voltar(self):
-        try:
-            self.evento.cancel()
-        except:
-            pass
+        try: self.evento.cancel()
+        except: pass
         self.app.voltar_menu()
     def atualizar_hud(self):
         self.hud.text = f"VIDAS: {self.vidas} | FASE: {self.fase} | RECORDE: {self.recorde} | PONTOS: {self.pontos}"
@@ -163,33 +160,37 @@ class JogoBomberman(BoxLayout):
                 if en[0]==fx and en[1]==fy: self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
         if pegou: self.perder_vida()
     def atualizar(self,dt):
-        if self.game_over: self.desenhar(); return
-        if self.invencivel>0: self.invencivel-=1
-        for b in self.bombas[:]:
-            b[2]-=1
-            if b[2]<=0: self.explodir(b); self.bombas.remove(b)
-        for f in self.fogos[:]:
-            f[2]-=1
-            if f[2]<=0: self.fogos.remove(f)
-        for en in self.inimigos[:]:
-            if any(f[0]==en[0] and f[1]==en[1] for f in self.fogos):
-                self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
-        if any(f[0]==self.player[0] and f[1]==self.player[1] for f in self.fogos) and self.invencivel==0:
-            self.perder_vida(); self.desenhar(); return
-        for en in self.inimigos[:]:
-            if random.random()<0.5:
-                dirs=[(1,0),(-1,0),(0,1),(0,-1)]; random.shuffle(dirs)
-                for dx,dy in dirs:
-                    nx,ny=en[0]+dx,en[1]+dy
-                    if not (0<=nx<self.GW and 0<=ny<self.GH): continue
-                    if self.grid[ny][nx]!=0: continue
-                    if any(b[0]==nx and b[1]==ny for b in self.bombas): continue
-                    if any(f[0]==nx and f[1]==ny for f in self.fogos): continue
-                    if nx==self.player[0] and ny==self.player[1]: continue
-                    en[0],en[1]=nx,ny; break
-            if en not in self.inimigos: continue
-            if en[0]==self.player[0] and en[1]==self.player[1] and self.invencivel==0: self.perder_vida(); break
-        self.desenhar()
+        try:
+            if self.game_over: self.desenhar(); return
+            if self.invencivel>0: self.invencivel-=1
+            for b in self.bombas[:]:
+                b[2]-=1
+                if b[2]<=0: self.explodir(b); self.bombas.remove(b)
+            for f in self.fogos[:]:
+                f[2]-=1
+                if f[2]<=0: self.fogos.remove(f)
+            for en in self.inimigos[:]:
+                if any(f[0]==en[0] and f[1]==en[1] for f in self.fogos):
+                    self.inimigos.remove(en); self.pontos+=50; self.atualizar_hud()
+            if any(f[0]==self.player[0] and f[1]==self.player[1] for f in self.fogos) and self.invencivel==0:
+                self.perder_vida(); self.desenhar(); return
+            for en in self.inimigos[:]:
+                if random.random()<0.5:
+                    dirs=[(1,0),(-1,0),(0,1),(0,-1)]; random.shuffle(dirs)
+                    for dx,dy in dirs:
+                        nx,ny=en[0]+dx,en[1]+dy
+                        if not (0<=nx<self.GW and 0<=ny<self.GH): continue
+                        if self.grid[ny][nx]!=0: continue
+                        if any(b[0]==nx and b[1]==ny for b in self.bombas): continue
+                        if any(f[0]==nx and f[1]==ny for f in self.fogos): continue
+                        if nx==self.player[0] and ny==self.player[1]: continue
+                        en[0],en[1]=nx,ny; break
+                if en not in self.inimigos: continue
+                if en[0]==self.player[0] and en[1]==self.player[1] and self.invencivel==0: self.perder_vida(); break
+            self.desenhar()
+        except Exception as e:
+            print("atualizar erro", e)
+            traceback.print_exc()
     def desenhar(self):
         for r in range(self.GH):
             for c in range(self.GW):
@@ -209,8 +210,7 @@ class JogoBomberman(BoxLayout):
         px,py=self.player
         if not (self.invencivel>0 and self.invencivel%2==0):
             self.blocos[(py,px)].background_color = (0.2,0.5,1,1)
-        if self.game_over:
-            self.hud.text="GAME OVER! Volte ao menu"
+        if self.game_over: self.hud.text="GAME OVER! Volte ao menu"
         elif len(self.inimigos)==0:
             if self.fase==self.fase_max: self.hud.text="ZEROU! Aperte BOMBA"
             else: self.hud.text=f"FASE {self.fase} OK! Aperte BOMBA"
@@ -218,10 +218,22 @@ class JogoBomberman(BoxLayout):
 class MainApp(App):
     recorde = 0
     def build(self):
+        # MOSTRA A TELA NA HORA - NAO ESPERA NADA
         self.title="Bomberman Corange"
         self.root=BoxLayout()
-        self.voltar_menu()
+        self.root.add_widget(Label(text="Carregando...\nCorange Sistemas", font_size='24sp', bold=True))
+        # SO DEPOIS QUE O LOAD SUMIU, CARREGA O MENU
+        Clock.schedule_once(self.carregar_menu, 0.5)
         return self.root
+    def carregar_menu(self, dt):
+        try:
+            self.root.clear_widgets()
+            self.root.add_widget(MenuApresentacao(self))
+        except Exception as e:
+            print("menu erro", e)
+            traceback.print_exc()
+            self.root.clear_widgets()
+            self.root.add_widget(Label(text="Erro no menu\n"+str(e), font_size='16sp'))
     def voltar_menu(self):
         for child in self.root.children[:]:
             if hasattr(child, 'evento'):
