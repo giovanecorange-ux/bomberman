@@ -4,13 +4,12 @@ package.name = corangebomber
 package.domain = org.corangebomber
 source.dir = .
 source.include_exts = py,png,jpg,kv,mp3,wav,ttf,json
-source.include_patterns = assets/*,images/*,sounds/*,*.png,*.jpg,*.mp3,*.wav,*.kv,*.json,*.ttf,icon.png,nes.mp3
-version = 1.1
+version = 1.2
 requirements = python3,kivy==2.3.0,pillow
 icon.filename = %(source.dir)s/icon.png
 p4a.bootstrap = sdl2
-p4a.branch = v2024.01.21
 orientation = portrait
+p4a.branch = v2024.01.21
 
 [buildozer]
 log_level = 2
