@@ -1,24 +1,26 @@
 [app]
 title = Bomberman Corange
-package.name = corangebomber
-package.domain = org.corangebomber
+package.name = bombermancorange
+package.domain = org.corange.bomberman
 source.dir = .
-source.include_exts = py,png,jpg,kv,mp3,wav,ttf,json
-version = 1.2
-requirements = python3,kivy==2.3.0,pillow
-icon.filename = %(source.dir)s/icon.png
-p4a.bootstrap = sdl2
+source.include_exts = py,png,mp3,txt,wav
+version = 1.0
+requirements = python3,kivy
 orientation = portrait
-p4a.branch = v2024.01.21
-
-[buildozer]
-log_level = 2
-
-[app:android]
-android.permissions = INTERNET
+fullscreen = 0
 android.api = 33
 android.minapi = 21
 android.ndk = 25b
-android.sdk_build_tools_version = 33.0.2
-android.accept_sdk_license_agreement = True
-android.archs = arm64-v8a,armeabi-v7a
+android.archs = arm64-v8a, armeabi-v7a
+android.accept_sdk_license = True
+icon.filename = %(source.dir)s/icon.png
+presplash.filename = %(source.dir)s/icon.png
+android.presplash_color = #101020
+android.permissions = INTERNET
+android.logcat_filters = *:S python:D
+p4a.branch = master
+p4a.bootstrap = sdl2
+
+[buildozer]
+log_level = 2
+warn_on_root = 1
