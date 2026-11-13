@@ -26,16 +26,27 @@ jobs:
           unzip -q -o cmdtools.zip -d cmdtools_tmp
           mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
           cp -r cmdtools_tmp/cmdline-tools/* $ANDROID_SDK_ROOT/cmdline-tools/latest/
-          # FIX DO ERRO ANTERIOR: copia pro lugar velho que o Buildozer procura
           cp -r $ANDROID_SDK_ROOT/cmdline-tools/latest/* $ANDROID_SDK_ROOT/tools/
-          # Licenças
           echo "8933bad161af4178b1185d1a37fbf41ea5269c" > $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "d56f5187479451eabf01fb78af6dfcb131a648" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
           echo "24333f8a63b6825a656882fa2f2492895e9f4c74d3d8e1a5a3b5e1c3d2a1b2c" >> $ANDROID_SDK_ROOT/licenses/android-sdk-license
-          # Aceita tudo e já instala o 37 que o p4a quer
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2" "build-tools;37.0.0"
           ls $ANDROID_SDK_ROOT/build-tools/
+
+      # CORRECAO GIOVANE - LIMPA O CACHE E CONFERE OS ARQUIVOS
+      - name: Clean old build + Check files
+        run: |
+          rm -rf .buildozer bin
+          echo "=== ARQUIVOS NA PASTA ==="
+          ls -lh
+          echo "=== ICONE ==="
+          ls -lh icon.png || echo "FALTA icon.png!"
+          echo "=== MUSICA PRIMEIRA TELA ==="
+          ls -lh nes.mp3 || echo "FALTA nes.mp3 - vai ficar sem musica!"
+          echo "=== MAIN.PY ==="
+          ls -lh main.py
+          file icon.png
 
       - name: Build
         run: |
