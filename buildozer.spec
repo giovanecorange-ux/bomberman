@@ -4,8 +4,8 @@ package.name = corangebomber
 package.domain = org.corangebomber
 source.dir = .
 source.include_exts = py,png,jpg,kv,mp3,wav,ttf,json
-source.include_patterns = icon.png,nes.mp3
-version = 1.0
+source.include_patterns = assets/*,images/*,sounds/*,*.png,*.jpg,*.mp3,*.wav,*.kv,*.json,*.ttf,icon.png,nes.mp3
+version = 1.1
 requirements = python3,kivy==2.3.0,pillow
 icon.filename = %(source.dir)s/icon.png
 p4a.bootstrap = sdl2
