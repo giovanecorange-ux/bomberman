@@ -11,21 +11,30 @@ class MenuApresentacao(BoxLayout):
         super().__init__(orientation='vertical', padding=12, spacing=8, **kwargs)
         self.app = app_ref
         self.musica = None
-        # NAO CARREGA NADA PESADO AQUI - SO MOSTRA A TELA
         self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.18))
         self.add_widget(Label(text="Corange Sistemas", font_size='16sp', bold=True, size_hint_y=0.06))
-        legenda = GridLayout(cols=5, size_hint_y=0.28, spacing=6)
-        for cor in [(0.2,0.5,1,1),(0,0,0,1),(0.2,1,0.3,1),(1,0.2,0.2,1),(0.6,0.35,0.1,1)]:
-            legenda.add_widget(Button(background_color=cor, background_normal='', text=''))
+        self.add_widget(Label(text="Contribuições", font_size='12sp', color=(0.6,0.6,0.6,1), size_hint_y=0.04))
+        self.add_widget(Label(text="PIX 51993359782", font_size='15sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.05))
+        desenhos = BoxLayout(orientation='horizontal', size_hint_y=0.30, spacing=8, padding=[20,0,20,0])
+        desenhos.add_widget(Button(text="😀", font_size='38sp', background_color=(0.16,0.49,1,1), background_normal='', color=(1,1,1,1)))
+        desenhos.add_widget(Button(text="💣", font_size='38sp', background_color=(0.41,0.22,0.81,1), background_normal='', color=(1,1,1,1)))
+        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(1,0.48,0.75,1), background_normal='', color=(1,1,1,1)))
+        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(0.30,0.65,1,1), background_normal='', color=(1,1,1,1)))
+        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(1,0.23,0.23,1), background_normal='', color=(1,1,1,1)))
+        self.add_widget(desenhos)
+        legenda = BoxLayout(orientation='horizontal', size_hint_y=0.10, spacing=8, padding=[20,0,20,0])
+        legenda.add_widget(Button(text="", background_color=(0.2,0.5,1,1), background_normal='', size_hint=(None,None), size=(45,45), pos_hint={'center_y':0.5}))
+        legenda.add_widget(Button(text="B", font_size='18sp', bold=True, background_color=(0.25,0.25,0.25,1), background_normal='', color=(1,1,1,1), size_hint=(None,None), size=(45,45), pos_hint={'center_y':0.5}))
+        legenda.add_widget(Button(text="$", font_size='18sp', bold=True, background_color=(0.2,1,0.3,1), background_normal='', color=(0,0,0,1), size_hint=(None,None), size=(45,45), pos_hint={'center_y':0.5}))
+        legenda.add_widget(Button(text="👾", font_size='18sp', background_color=(1,0.2,0.2,1), background_normal='', size_hint=(None,None), size=(45,45), pos_hint={'center_y':0.5}))
+        legenda.add_widget(Button(text="", background_color=(0.6,0.35,0.1,1), background_normal='', size_hint=(None,None), size=(45,45), pos_hint={'center_y':0.5}))
         self.add_widget(legenda)
-        self.add_widget(Label(text="AZUL=VOCE  PRETO=BOMBA  VERDE=VIDA  VERMELHO=INIMIGO  MARROM=TIJOLO", font_size='10sp', bold=True, size_hint_y=0.06))
+        self.add_widget(Label(text="AZUL=VOCE  PRETO=BOMBA  VERDE=VIDA  VERMELHO=INIMIGO  MARROM=TIJOLO", font_size='9sp', bold=True, size_hint_y=0.05))
         self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.07))
-        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.20)
+        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), background_normal='', bold=True, size_hint_y=0.20, color=(0,0,0,1))
         b.bind(on_press=self.iniciar)
         self.add_widget(b)
-        self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.06))
-        # MUSICA SO DEPOIS QUE A TELA JA APARECEU
-        Clock.schedule_once(self.tocar_musica, 1.5)
+        Clock.schedule_once(self.tocar_musica, 0.5)
     def tocar_musica(self, dt):
         try:
             from kivy.core.audio import SoundLoader
@@ -34,13 +43,11 @@ class MenuApresentacao(BoxLayout):
                 if self.musica:
                     self.musica.loop = True
                     self.musica.play()
-        except Exception as e:
-            print("musica erro", e)
+        except: pass
     def iniciar(self, *a):
         try:
             if self.musica: self.musica.stop()
-        except:
-            pass
+        except: pass
         self.app.iniciar_jogo()
 
 class JogoBomberman(BoxLayout):
@@ -48,37 +55,38 @@ class JogoBomberman(BoxLayout):
         super().__init__(orientation='vertical', **kwargs)
         self.app = app_ref
         self.GW, self.GH = 13, 11
-        self.fase = 1
-        self.fase_max = 6
-        self.vidas = 3
-        self.pontos = 0
-        self.invencivel = 0
-        self.game_over = False
+        self.fase = 1; self.fase_max = 6
+        self.vidas = 3; self.pontos = 0
+        self.invencivel = 0; self.game_over = False
         self.recorde = app_ref.recorde
         self.hud = Label(text="VIDAS: 3 | FASE: 1 | RECORDE: 0 | PONTOS: 0", font_size='13sp', size_hint_y=0.08, bold=True)
         self.add_widget(self.hud)
-        self.tabuleiro = GridLayout(cols=self.GW, rows=self.GH, size_hint_y=0.65, spacing=1)
+        self.tabuleiro = GridLayout(cols=self.GW, size_hint_y=0.65, spacing=1)
         self.blocos = {}
         for r in range(self.GH):
             for c in range(self.GW):
-                btn = Button(background_normal='', background_color=(0.15,0.55,0.15,1), text='')
+                btn = Button(background_normal='', background_color=(0.15,0.55,0.15,1), text='', font_size='16sp', bold=True, color=(1,1,1,1))
                 self.tabuleiro.add_widget(btn)
                 self.blocos[(r, c)] = btn
         self.add_widget(self.tabuleiro)
         ctrls = BoxLayout(orientation='horizontal', size_hint_y=0.25, padding=6, spacing=6)
-        btn_l = Button(text="<", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(-1,0))
-        btn_r = Button(text=">", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(1,0))
+        btn_l = Button(text="<", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), background_normal='', on_press=lambda x:self.mover(-1,0))
+        btn_r = Button(text=">", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), background_normal='', on_press=lambda x:self.mover(1,0))
         v_box = BoxLayout(orientation='vertical', spacing=6)
-        btn_u = Button(text="^", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(0,-1))
-        btn_d = Button(text="v", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(0,1))
+        btn_u = Button(text="^", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), background_normal='', on_press=lambda x:self.mover(0,-1))
+        btn_d = Button(text="v", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), background_normal='', on_press=lambda x:self.mover(0,1))
         v_box.add_widget(btn_u); v_box.add_widget(btn_d)
-        btn_bomba = Button(text="BOMBA", font_size='14sp', bold=True, background_color=(1,0.6,0,1), on_press=lambda x:self.colocar_bomba())
-        ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba)
+        btn_bomba = Button(text="BOMBA", font_size='14sp', bold=True, background_color=(1,0.6,0,1), background_normal='', on_press=lambda x:self.colocar_bomba())
+        btn_r2 = Button(text="R", font_size='20sp', bold=True, background_color=(0.6,0.2,0.2,1), background_normal='', on_press=lambda x:self.reiniciar())
+        ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba); ctrls.add_widget(btn_r2)
         self.add_widget(ctrls)
-        btn_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.6,0.2,0.2,1), size_hint_y=0.06, on_press=lambda x:self.parar_e_voltar())
+        btn_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.6,0.2,0.2,1), background_normal='', size_hint_y=0.06, on_press=lambda x:self.parar_e_voltar())
         self.add_widget(btn_menu)
         self.reset(manter_pontos=False)
         self.evento = Clock.schedule_interval(self.atualizar, 0.18)
+    def reiniciar(self):
+        if self.game_over: self.fase=1; self.reset(manter_pontos=False)
+        elif len(self.inimigos)==0: self.avancar_fase()
     def parar_e_voltar(self):
         try: self.evento.cancel()
         except: pass
@@ -192,37 +200,47 @@ class JogoBomberman(BoxLayout):
             print("atualizar erro", e)
             traceback.print_exc()
     def desenhar(self):
+        if self.fase==1: chao=(0.24,0.76,0.19,1); fixo=(0.62,0.62,0.62,1); dest=(0.6,0.6,0.6,1)
+        elif self.fase==2: chao=(0.85,0.76,0.83,1); fixo=(0.41,0.17,0.35,1); dest=(0.91,0.87,0.84,1)
+        elif self.fase==3: chao=(0.18,0.76,0.69,1); fixo=(0.29,0.29,0.41,1); dest=(0.91,0.76,0.29,1)
+        elif self.fase==4: chao=(0.24,0.76,0.19,1); fixo=(0.53,0.60,0.69,1); dest=(0.78,0.60,0.35,1)
+        elif self.fase==5: chao=(0.10,0.54,0.91,1); fixo=(0.47,0.47,0.53,1); dest=(0.31,0.31,0.37,1)
+        else: chao=(0.22,0.76,0.62,1); fixo=(0.62,0.84,0.75,1); dest=(0.94,0.84,0.69,1)
         for r in range(self.GH):
             for c in range(self.GW):
                 btn=self.blocos[(r,c)]; t=self.grid[r][c]
-                if t==1: btn.background_color = (0.35,0.35,0.35,1)
-                elif t==2: btn.background_color = (0.6,0.35,0.1,1)
-                else: btn.background_color = (0.15,0.55,0.15,1)
+                btn.text=''
+                if t==1: btn.background_color = fixo
+                elif t==2: btn.background_color = dest; btn.text='▦'; btn.color=(0,0,0,1)
+                else: btn.background_color = chao
         for mx,my,tipo in self.moedas:
-            if tipo==1: self.blocos[(my,mx)].background_color = (0.2,1,0.3,1)
-            else: self.blocos[(my,mx)].background_color = (1,0.8,0,1)
+            b=self.blocos[(my,mx)]
+            if tipo==1: b.background_color=(0.82,0.70,0.54,1); b.text='$'; b.color=(0,0.4,0,1)
+            else: b.background_color=(1,0.8,0,1); b.text='$'; b.color=(0.7,0.52,0,1)
         for fx,fy,_ in self.fogos:
-            self.blocos[(fy,fx)].background_color = (1,0.2,0,1)
+            b=self.blocos[(fy,fx)]; b.background_color=(1,0.4,0,1); b.text='🔥'; b.color=(1,1,1,1)
         for bx,by,t in self.bombas:
-            self.blocos[(by,bx)].background_color = (0,0,0,1)
+            b=self.blocos[(by,bx)]; b.background_color=(0.41,0.22,0.81,1); b.text='💣'; b.color=(1,1,1,1)
         for en in self.inimigos:
-            self.blocos[(en[1],en[0])].background_color = (1,0.2,0.2,1)
+            b=self.blocos[(en[1],en[0])]
+            if en[2]==0: b.background_color=(1,0.48,0.75,1)
+            elif en[2]==1: b.background_color=(0.30,0.65,1,1)
+            else: b.background_color=(1,0.23,0.23,1)
+            b.text='👾'; b.color=(1,1,1,1)
         px,py=self.player
         if not (self.invencivel>0 and self.invencivel%2==0):
-            self.blocos[(py,px)].background_color = (0.2,0.5,1,1)
-        if self.game_over: self.hud.text="GAME OVER! Volte ao menu"
+            b=self.blocos[(py,px)]; b.background_color=(0.16,0.49,1,1); b.text='😀'; b.color=(1,1,1,1)
+        if self.game_over: self.hud.text="GAME OVER! Aperte R"
         elif len(self.inimigos)==0:
-            if self.fase==self.fase_max: self.hud.text="ZEROU! Aperte BOMBA"
-            else: self.hud.text=f"FASE {self.fase} OK! Aperte BOMBA"
+            if self.fase==self.fase_max: self.hud.text="ZEROU! Aperte BOMBA ou R"
+            else: self.hud.text=f"FASE {self.fase} OK! Aperte BOMBA ou R"
 
 class MainApp(App):
     recorde = 0
     def build(self):
-        # MOSTRA A TELA NA HORA - NAO ESPERA NADA
         self.title="Bomberman Corange"
         self.root=BoxLayout()
         self.root.add_widget(Label(text="Carregando...\nCorange Sistemas", font_size='24sp', bold=True))
-        # SO DEPOIS QUE O LOAD SUMIU, CARREGA O MENU
         Clock.schedule_once(self.carregar_menu, 0.5)
         return self.root
     def carregar_menu(self, dt):
@@ -230,8 +248,6 @@ class MainApp(App):
             self.root.clear_widgets()
             self.root.add_widget(MenuApresentacao(self))
         except Exception as e:
-            print("menu erro", e)
-            traceback.print_exc()
             self.root.clear_widgets()
             self.root.add_widget(Label(text="Erro no menu\n"+str(e), font_size='16sp'))
     def voltar_menu(self):
@@ -242,7 +258,10 @@ class MainApp(App):
         self.root.clear_widgets()
         self.root.add_widget(MenuApresentacao(self))
     def iniciar_jogo(self):
-        self.voltar_menu()
+        for child in self.root.children[:]:
+            if hasattr(child, 'evento'):
+                try: child.evento.cancel()
+                except: pass
         self.root.clear_widgets()
         self.root.add_widget(JogoBomberman(self))
 
