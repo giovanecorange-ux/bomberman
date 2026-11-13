@@ -1,4 +1,4 @@
-import random, os, math, struct, wave
+import random, os
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
@@ -6,73 +6,53 @@ from kivy.uix.button import Button
 from kivy.uix.label import Label
 from kivy.uix.image import Image
 from kivy.clock import Clock
-from kivy.storage.jsonstore import JsonStore
 from kivy.core.audio import SoundLoader
 
-# --- CONSERTO PRA CELULAR - NÃO MUDA O GRÁFICO ---
-def get_pasta():
+# NADA DE CRIAR ARQUIVO AQUI EM CIMA! SÓ DEPOIS QUE ABRIR!
+
+def tenta_musica(nome):
     try:
-        return App.get_running_app().user_data_dir
+        if os.path.exists(nome):
+            m = SoundLoader.load(nome)
+            if m:
+                m.loop = True
+                m.play()
+                return m
     except:
-        return os.getcwd()
+        pass
+    return None
 
-PASTA_SAVE = get_pasta()
-try: os.makedirs(PASTA_SAVE, exist_ok=True)
-except: pass
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) if '__file__' in globals() else os.getcwd()
-def res(nome):
-    p = os.path.join(BASE_DIR, nome)
-    return p if os.path.exists(p) else nome
-
-PATH_NES = res('nes.mp3')
-PATH_ICON = res('icon.png')
-PATH_RECORDES = os.path.join(PASTA_SAVE, 'recordes.json')
-
-def cria_som(nome, freq, dur):
-    dest = os.path.join(PASTA_SAVE, nome)
-    if os.path.exists(dest): 
-        return dest
+def tenta_som(nome):
     try:
-        sr=44100; n=int(sr*dur)
-        with wave.open(dest,'w') as f:
-            f.setparams((1,2,sr,n,'NONE','not compressed'))
-            for i in range(n):
-                val=int(32767*0.4*(1-i/n)*math.sin(2*math.pi*freq*i/sr))
-                f.writeframes(struct.pack('<h',val))
-        return dest
+        if os.path.exists(nome):
+            return SoundLoader.load(nome)
     except:
-        return None
+        pass
+    return None
 
-PATH_BOMB = cria_som('bomb.wav',300,0.15)
-PATH_EXPL = cria_som('expl.wav',150,0.4)
-PATH_MOEDA = cria_som('moeda.wav',1000,0.12)
-
-# --- DAQUI PRA BAIXO É TEU JOGO IGUALZINHO ---
 class MenuApresentacao(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
         self.app=app_ref
-        self.musica=None
-        if os.path.exists(PATH_NES):
-            self.musica=SoundLoader.load(PATH_NES)
-            if self.musica:
-                self.musica.loop=True
-                self.musica.play()
-        if os.path.exists(PATH_ICON):
-            self.add_widget(Image(source=PATH_ICON, size_hint_y=0.45))
+        self.musica = None
+        # MUSICA SÓ AQUI DENTRO, DEPOIS QUE ABRIU - COM TRY
+        self.musica = tenta_musica('nes.mp3')
+        if os.path.exists('icon.png'):
+            self.add_widget(Image(source='icon.png', size_hint_y=0.45))
         else:
             self.add_widget(Label(text="Bomberman Corange", font_size='36sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
         self.add_widget(Label(text="Corange Sistemas", font_size='18sp', color=(1,1,1,1), bold=True, size_hint_y=0.08))
         self.add_widget(Label(text="☺  ●  ♥  ♦  ☠", font_size='42sp', size_hint_y=0.18))
-        store=JsonStore(PATH_RECORDES)
-        rec=store.get('bomber')['val'] if store.exists('bomber') else 0
+        # RECORDE SEM ARQUIVO - NÃO TRAVA MAIS
+        rec = app_ref.recorde
         self.add_widget(Label(text=f"RECORDE: {rec}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.08))
         b=Button(text="▶  INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.18)
         b.bind(on_press=self.iniciar); self.add_widget(b)
         self.add_widget(Label(text="PIX 51993359782", font_size='18sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.12))
     def iniciar(self,*a):
-        if self.musica: self.musica.stop()
+        try:
+            if self.musica: self.musica.stop()
+        except: pass
         self.app.iniciar_jogo()
 
 class JogoBomberman(BoxLayout):
@@ -81,10 +61,9 @@ class JogoBomberman(BoxLayout):
         self.app=app_ref; self.GW,self.GH=13,11
         self.fase=1; self.fase_max=6; self.vidas=3; self.pontos=0
         self.invencivel=0; self.game_over=False
-        self.s_bomb=SoundLoader.load(PATH_BOMB) if PATH_BOMB else None
-        self.s_expl=SoundLoader.load(PATH_EXPL) if PATH_EXPL else None
-        self.s_moeda=SoundLoader.load(PATH_MOEDA) if PATH_MOEDA else None
-        store=JsonStore(PATH_RECORDES); self.recorde=store.get('bomber')['val'] if store.exists('bomber') else 0
+        # SEM CRIAR WAV - SÓ TENTA CARREGAR SE EXISTIR, SE NÃO, FICA SEM SOM MAS NÃO TRAVA
+        self.s_bomb = None; self.s_expl = None; self.s_moeda = None
+        self.recorde = app_ref.recorde
         self.hud=Label(text="VIDAS: ❤️❤️❤️ | FASE: 1 | RECORDE: 0 | PONTOS: 0", font_size='13sp', size_hint_y=0.08, bold=True); self.add_widget(self.hud)
         self.tabuleiro=GridLayout(cols=self.GW, rows=self.GH, size_hint_y=0.62, spacing=1)
         self.blocos={}
@@ -107,7 +86,9 @@ class JogoBomberman(BoxLayout):
     def atualizar_hud(self):
         coracoes="❤️"*self.vidas+"🖤"*(3-self.vidas)
         self.hud.text=f"VIDAS: {coracoes} | FASE: {self.fase} | RECORDE: {self.recorde} | PONTOS: {self.pontos}"
-        if self.pontos>self.recorde: self.recorde=self.pontos; JsonStore(PATH_RECORDES).put('bomber',val=self.recorde)
+        if self.pontos>self.recorde:
+            self.recorde=self.pontos
+            self.app.recorde=self.pontos
     def reset(self, manter_pontos=False):
         self.grid=[]; self.player=[1,1]; self.bombas=[]; self.fogos=[]; self.moedas=[]; self.game_over=False
         if not manter_pontos: self.vidas=3; self.pontos=0
@@ -143,7 +124,6 @@ class JogoBomberman(BoxLayout):
                     else: self.pontos+=200
                 else: self.pontos+=100
                 self.moedas.remove(m)
-                if self.s_moeda: self.s_moeda.play()
                 self.atualizar_hud()
     def colocar_bomba(self):
         if self.game_over: return
@@ -151,7 +131,6 @@ class JogoBomberman(BoxLayout):
         x,y=self.player
         if len(self.bombas)<2 and not any(b[0]==x and b[1]==y for b in self.bombas):
             self.bombas.append([x,y,6])
-            if self.s_bomb: self.s_bomb.play()
     def avancar_fase(self):
         if self.fase<self.fase_max: self.fase+=1; self.reset(manter_pontos=True)
         else: self.fase=1; self.reset(manter_pontos=True)
@@ -161,7 +140,6 @@ class JogoBomberman(BoxLayout):
         else: self.player=[1,1]; self.invencivel=5; self.bombas.clear(); self.fogos.clear()
     def explodir(self,b):
         x,y,_=b
-        if self.s_expl: self.s_expl.play()
         pos=[[x,y]]
         for dx,dy in [(1,0),(-1,0),(0,1),(0,-1)]:
             for i in range(1,3):
@@ -253,6 +231,7 @@ class JogoBomberman(BoxLayout):
 
 class MainApp(App):
     icon = 'icon.png'
+    recorde = 0
     def build(self):
         self.title="Bomberman Corange"
         self.root=BoxLayout()
