@@ -3,25 +3,98 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.widget import Widget
 from kivy.clock import Clock
+from kivy.graphics import Color, Rectangle, Ellipse, Line
 import random, os
+
+class Celula(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.tipo = 0
+    def desenha(self, tipo):
+        self.tipo = tipo
+        self.canvas.clear()
+        with self.canvas:
+            # CHAO VERDE
+            if tipo == 0:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+            # PAREDE CINZA - #
+            elif tipo == 1:
+                Color(0.35,0.35,0.35,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(0.5,0.5,0.5,1)
+                Line(rectangle=(self.x+2,self.y+2,self.width-4,self.height-4), width=1)
+            # TIJOLO MARROM - X
+            elif tipo == 2:
+                Color(0.6,0.35,0.1,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(0.8,0.5,0.2,1)
+                Rectangle(pos=(self.x+2, self.y+self.height/2-1), size=(self.width-4,2))
+            # BOMBERMAN AZUL - P
+            elif tipo == 10:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(0.2,0.5,1,1)
+                Ellipse(pos=(self.x+2, self.y+2), size=(self.width-4, self.height-4))
+                Color(1,1,1,1)
+                Ellipse(pos=(self.x+6, self.y+self.height/2), size=(4,4))
+                Ellipse(pos=(self.x+self.width-12, self.y+self.height/2), size=(4,4))
+            # BOMBA PRETA COM PAVIO - B
+            elif tipo == 11:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(0,0,0,1)
+                Ellipse(pos=(self.x+4, self.y+2), size=(self.width-8, self.height-10))
+                Color(1,0.8,0,1)
+                Rectangle(pos=(self.x+self.width/2-1, self.y+self.height-6), size=(2,6))
+            # FOGO VERMELHO - *
+            elif tipo == 12:
+                Color(1,0.2,0,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(1,0.8,0,1)
+                Ellipse(pos=(self.x+6, self.y+6), size=(self.width-12, self.height-12))
+            # INIMIGO VERMELHO - E
+            elif tipo == 13:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(1,0.15,0.15,1)
+                Ellipse(pos=(self.x+2, self.y+2), size=(self.width-4, self.height-4))
+                Color(0,0,0,1)
+                Ellipse(pos=(self.x+7, self.y+10), size=(3,3))
+                Ellipse(pos=(self.x+self.width-12, self.y+10), size=(3,3))
+            # VIDA VERDE - H
+            elif tipo == 14:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(0.2,1,0.3,1)
+                Ellipse(pos=(self.x+4, self.y+4), size=(self.width-8, self.height-8))
+                Color(1,1,1,1)
+                Rectangle(pos=(self.x+self.width/2-2, self.y+6), size=(4, self.height-12))
+                Rectangle(pos=(self.x+6, self.y+self.height/2-2), size=(self.width-12,4))
+            # MOEDA AMARELA - $
+            elif tipo == 15:
+                Color(0.15,0.55,0.15,1)
+                Rectangle(pos=self.pos, size=self.size)
+                Color(1,0.8,0,1)
+                Ellipse(pos=(self.x+5, self.y+5), size=(self.width-10, self.height-10))
 
 class MenuApresentacao(BoxLayout):
     def __init__(self, app_ref, **kwargs):
-        super().__init__(orientation='vertical', padding=20, spacing=12, **kwargs)
+        super().__init__(orientation='vertical', padding=12, spacing=8, **kwargs)
         self.app = app_ref
         self.musica = None
         Clock.schedule_once(self.tocar_musica, 1.0)
-
-        self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.25))
-        self.add_widget(Label(text="Corange Sistemas", font_size='18sp', color=(1,1,1,1), bold=True, size_hint_y=0.08))
-        self.add_widget(Label(text="P  B  H  E  X", font_size='28sp', color=(1,1,1,1), bold=True, size_hint_y=0.12))
-        self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.08))
-        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.18)
+        self.add_widget(Label(text="Bomberman Corange", font_size='32sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.18))
+        self.add_widget(Label(text="Corange Sistemas", font_size='16sp', bold=True, size_hint_y=0.06))
+        # AQUI O DESENHO NA ABERTURA - 3 INIMIGOS DESENHADOS
+        self.add_widget(Label(text="P = VOCE  B = BOMBA  H = VIDA  E E E = 3 INIMIGOS  X = TIJOLO", font_size='11sp', bold=True, size_hint_y=0.08))
+        self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='18sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.07))
+        b = Button(text="INICIAR JOGO", font_size='26sp', background_color=(1,0.8,0,1), bold=True, size_hint_y=0.20)
         b.bind(on_press=self.iniciar)
         self.add_widget(b)
-        self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.08))
-
+        self.add_widget(Label(text="PIX 51993359782", font_size='16sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.06))
     def tocar_musica(self, dt):
         try:
             from kivy.core.audio import SoundLoader
@@ -32,7 +105,6 @@ class MenuApresentacao(BoxLayout):
                     self.musica.play()
         except:
             pass
-
     def iniciar(self, *a):
         try:
             if self.musica: self.musica.stop()
@@ -40,7 +112,6 @@ class MenuApresentacao(BoxLayout):
             pass
         self.app.iniciar_jogo()
 
-# DAQUI PRA BAIXO É TEU CÓDIGO ORIGINAL DO JogoBomberman, NÃO MEXI
 class JogoBomberman(BoxLayout):
     def __init__(self, app_ref, **kwargs):
         super().__init__(orientation='vertical', **kwargs)
@@ -55,28 +126,35 @@ class JogoBomberman(BoxLayout):
         self.recorde = app_ref.recorde
         self.hud = Label(text="VIDAS: 3 | FASE: 1 | RECORDE: 0 | PONTOS: 0", font_size='13sp', size_hint_y=0.08, bold=True)
         self.add_widget(self.hud)
-        self.tabuleiro = GridLayout(cols=self.GW, rows=self.GH, size_hint_y=0.62, spacing=1)
+        self.tabuleiro = GridLayout(cols=self.GW, rows=self.GH, size_hint_y=0.65, spacing=1)
         self.blocos = {}
         for r in range(self.GH):
             for c in range(self.GW):
-                lbl = Label(text=' ', font_size='22sp', bold=True)
-                self.tabuleiro.add_widget(lbl)
-                self.blocos[(r, c)] = lbl
+                cel = Celula()
+                self.tabuleiro.add_widget(cel)
+                self.blocos[(r, c)] = cel
         self.add_widget(self.tabuleiro)
-        ctrls = BoxLayout(orientation='horizontal', size_hint_y=0.28, padding=8, spacing=8)
+        ctrls = BoxLayout(orientation='horizontal', size_hint_y=0.25, padding=6, spacing=6)
         btn_l = Button(text="<", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(-1,0))
         btn_r = Button(text=">", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(1,0))
-        v_box = BoxLayout(orientation='vertical', spacing=8)
+        v_box = BoxLayout(orientation='vertical', spacing=6)
         btn_u = Button(text="^", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(0,-1))
         btn_d = Button(text="v", font_size='36sp', bold=True, background_color=(0.25,0.25,0.25,1), on_press=lambda x:self.mover(0,1))
         v_box.add_widget(btn_u); v_box.add_widget(btn_d)
         btn_bomba = Button(text="BOMBA", font_size='14sp', bold=True, background_color=(1,0.6,0,1), on_press=lambda x:self.colocar_bomba())
         ctrls.add_widget(btn_l); ctrls.add_widget(v_box); ctrls.add_widget(btn_r); ctrls.add_widget(btn_bomba)
         self.add_widget(ctrls)
-        btn_menu = Button(text="MENU", font_size='14sp', bold=True, background_color=(0.6,0.2,0.2,1), size_hint_y=0.07, on_press=lambda x:self.app.voltar_menu())
+        btn_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.6,0.2,0.2,1), size_hint_y=0.06, on_press=lambda x:self.parar_e_voltar())
         self.add_widget(btn_menu)
         self.reset(manter_pontos=False)
         self.evento = Clock.schedule_interval(self.atualizar, 0.18)
+
+    def parar_e_voltar(self):
+        try:
+            self.evento.cancel()
+        except:
+            pass
+        self.app.voltar_menu()
     def atualizar_hud(self):
         self.hud.text = f"VIDAS: {self.vidas} | FASE: {self.fase} | RECORDE: {self.recorde} | PONTOS: {self.pontos}"
         if self.pontos > self.recorde:
@@ -184,31 +262,21 @@ class JogoBomberman(BoxLayout):
     def desenhar(self):
         for r in range(self.GH):
             for c in range(self.GW):
-                lbl=self.blocos[(r,c)]; t=self.grid[r][c]
-                if self.fase==1: cor_chao=(0.24,0.76,0.2,1)
-                elif self.fase==2: cor_chao=(0.85,0.76,0.84,1)
-                elif self.fase==3: cor_chao=(0.18,0.77,0.69,1)
-                elif self.fase==4: cor_chao=(0.24,0.76,0.2,1)
-                elif self.fase==5: cor_chao=(0.1,0.54,0.91,1)
-                else: cor_chao=(0.23,0.77,0.63,1)
-                if t==1:
-                    lbl.text='#'; lbl.color=(0.6,0.6,0.6,1)
-                elif t==2:
-                    lbl.text='X'; lbl.color=(0.8,0.8,0.5,1)
-                else:
-                    lbl.text='.'; lbl.color=cor_chao
+                cel=self.blocos[(r,c)]; t=self.grid[r][c]
+                if t==1: cel.desenha(1)
+                elif t==2: cel.desenha(2)
+                else: cel.desenha(0)
         for mx,my,tipo in self.moedas:
-            self.blocos[(my,mx)].text='H' if tipo==1 else '$'
-            self.blocos[(my,mx)].color=(0.2,1,0.3,1) if tipo==1 else (1,0.8,0,1)
+            self.blocos[(my,mx)].desenha(14 if tipo==1 else 15)
         for fx,fy,_ in self.fogos:
-            self.blocos[(fy,fx)].text='*'; self.blocos[(fy,fx)].color=(1,0.4,0,1)
+            self.blocos[(fy,fx)].desenha(12)
         for bx,by,t in self.bombas:
-            self.blocos[(by,bx)].text='B'; self.blocos[(by,bx)].color=(1,0.6,0,1)
+            self.blocos[(by,bx)].desenha(11)
         for en in self.inimigos:
-            self.blocos[(en[1],en[0])].text='E'; self.blocos[(en[1],en[0])].color=(1,0.3,0.3,1)
+            self.blocos[(en[1],en[0])].desenha(13)
         px,py=self.player
         if not (self.invencivel>0 and self.invencivel%2==0):
-            self.blocos[(py,px)].text='P'; self.blocos[(py,px)].color=(0.2,0.6,1,1)
+            self.blocos[(py,px)].desenha(10)
         if self.game_over:
             self.hud.text="GAME OVER! Volte ao menu"
         elif len(self.inimigos)==0:
@@ -225,9 +293,16 @@ class MainApp(App):
         self.voltar_menu()
         return self.root
     def voltar_menu(self):
+        for child in self.root.children[:]:
+            if hasattr(child, 'evento'):
+                try:
+                    child.evento.cancel()
+                except:
+                    pass
         self.root.clear_widgets()
         self.root.add_widget(MenuApresentacao(self))
     def iniciar_jogo(self):
+        self.voltar_menu()
         self.root.clear_widgets()
         self.root.add_widget(JogoBomberman(self))
 
