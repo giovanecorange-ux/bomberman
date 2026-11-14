@@ -5,7 +5,7 @@ package.domain = org.corange.bomberman
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas
 version = 0.1
-requirements = python3,kivy==2.3.1
+requirements = python3,kivy==2.3.0
 orientation = portrait
 android.api = 33
 android.minapi = 21
