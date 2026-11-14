@@ -12,7 +12,6 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.widget import Widget
 
-
 class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -29,11 +28,9 @@ class Bloco(Widget):
         w, h = self.size
         if w <= 1 or h <= 1:
             return
-
         chao = (0.20, 0.68, 0.22, 1)
         fixo = (0.45, 0.48, 0.52, 1)
         dest = (0.76, 0.42, 0.20, 1)
-
         with self.canvas:
             if tipo == 'fixo':
                 Color(*fixo)
@@ -49,8 +46,6 @@ class Bloco(Widget):
                 Color(0.45, 0.22, 0.08, 1)
                 Line(points=[x, y + h * 0.5, x + w, y + h * 0.5], width=1)
                 Line(points=[x + w * 0.5, y + h * 0.5, x + w * 0.5, y + h], width=1)
-                Line(points=[x + w * 0.25, y, x + w * 0.25, y + h * 0.5], width=1)
-                Line(points=[x + w * 0.75, y, x + w * 0.75, y + h * 0.5], width=1)
                 return
             elif tipo == 'fogo':
                 Color(1, 0.35, 0, 1)
@@ -58,10 +53,8 @@ class Bloco(Widget):
                 Color(1, 0.95, 0.2, 1)
                 Triangle(points=[x + w * 0.5, y + h * 0.92, x + w * 0.12, y + h * 0.08, x + w * 0.88, y + h * 0.08])
                 return
-
             Color(*chao)
             Rectangle(pos=(x, y), size=(w, h))
-
             if tipo == 'player':
                 Color(0.15, 0.45, 0.95, 1)
                 Ellipse(pos=(x + w * 0.22, y + h * 0.08), size=(w * 0.56, h * 0.45))
@@ -74,7 +67,6 @@ class Bloco(Widget):
                 Color(0, 0, 0, 1)
                 Ellipse(pos=(x + w * 0.34, y + h * 0.52), size=(w * 0.09, h * 0.14))
                 Ellipse(pos=(x + w * 0.57, y + h * 0.52), size=(w * 0.09, h * 0.14))
-
             elif tipo == 'bomba':
                 Color(0.08, 0.08, 0.10, 1)
                 Ellipse(pos=(x + w * 0.18, y + h * 0.08), size=(w * 0.64, h * 0.64))
@@ -84,7 +76,6 @@ class Bloco(Widget):
                 Line(points=[x + w * 0.5, y + h * 0.70, x + w * 0.76, y + h * 0.92], width=2)
                 Color(1, 0.2, 0, 1)
                 Ellipse(pos=(x + w * 0.68, y + h * 0.84), size=(w * 0.18, h * 0.18))
-
             elif tipo == 'inimigo':
                 Color(0.95, 0.22, 0.35, 1)
                 Ellipse(pos=(x + w * 0.14, y + h * 0.12), size=(w * 0.72, h * 0.76))
@@ -96,28 +87,23 @@ class Bloco(Widget):
                 Ellipse(pos=(x + w * 0.61, y + h * 0.52), size=(w * 0.09, h * 0.12))
                 Line(points=[x + w * 0.28, y + h * 0.28, x + w * 0.72, y + h * 0.28], width=1.5)
 
-
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(pos=self._desenhar, size=self._desenhar)
-
     def _desenhar(self, *args):
         self.canvas.clear()
         x, y = self.pos
         w, h = self.size
         if w <= 10 or h <= 10:
             return
-
         lado = min(w / 4.5, h * 0.75)
         espaco = (w - (lado * 4)) / 5.0
         cy = y + (h - lado) / 2.0
-
         with self.canvas:
             Color(0.12, 0.14, 0.20, 1)
             Rectangle(pos=(x, y), size=(w, h))
-
-            # 1. Bomberman
+            # Bomberman
             bx = x + espaco
             Color(0.15, 0.45, 0.95, 1)
             Ellipse(pos=(bx + lado * 0.2, cy + lado * 0.05), size=(lado * 0.6, lado * 0.45))
@@ -130,8 +116,7 @@ class DesenhoCapa(Widget):
             Color(0, 0, 0, 1)
             Ellipse(pos=(bx + lado * 0.32, cy + lado * 0.52), size=(lado * 0.10, lado * 0.16))
             Ellipse(pos=(bx + lado * 0.58, cy + lado * 0.52), size=(lado * 0.10, lado * 0.16))
-
-            # 2. Bomba
+            # Bomba
             bmx = bx + lado + espaco
             Color(0.05, 0.05, 0.07, 1)
             Ellipse(pos=(bmx + lado * 0.12, cy + lado * 0.08), size=(lado * 0.76, lado * 0.76))
@@ -141,8 +126,7 @@ class DesenhoCapa(Widget):
             Line(points=[bmx + lado * 0.5, cy + lado * 0.82, bmx + lado * 0.80, cy + lado * 1.02], width=2.5)
             Color(1, 0.25, 0, 1)
             Ellipse(pos=(bmx + lado * 0.72, cy + lado * 0.94), size=(lado * 0.18, lado * 0.18))
-
-            # 3. Inimigo Rosa
+            # Inimigo Rosa
             i1x = bmx + lado + espaco
             Color(1, 0.35, 0.55, 1)
             Ellipse(pos=(i1x + lado * 0.10, cy + lado * 0.10), size=(lado * 0.80, lado * 0.80))
@@ -153,8 +137,7 @@ class DesenhoCapa(Widget):
             Ellipse(pos=(i1x + lado * 0.30, cy + lado * 0.54), size=(lado * 0.09, lado * 0.14))
             Ellipse(pos=(i1x + lado * 0.62, cy + lado * 0.54), size=(lado * 0.09, lado * 0.14))
             Line(points=[i1x + lado * 0.28, cy + lado * 0.28, i1x + lado * 0.72, cy + lado * 0.28], width=2)
-
-            # 4. Inimigo Azul
+            # Inimigo Azul
             i2x = i1x + lado + espaco
             Color(0.25, 0.65, 1, 1)
             Rectangle(pos=(i2x + lado * 0.12, cy + lado * 0.12), size=(lado * 0.76, lado * 0.76))
@@ -166,58 +149,24 @@ class DesenhoCapa(Widget):
             Ellipse(pos=(i2x + lado * 0.62, cy + lado * 0.54), size=(lado * 0.09, lado * 0.12))
             Line(points=[i2x + lado * 0.25, cy + lado * 0.30, i2x + lado * 0.75, cy + lado * 0.30], width=2)
 
-
 class TelaInicial(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.musica = None
-
         layout = BoxLayout(orientation='vertical', padding=16, spacing=10)
-
-        layout.add_widget(Label(
-            text="CORANGE SOFTWARE",
-            font_size='18sp',
-            color=(0.4, 0.85, 1, 1),
-            bold=True,
-            size_hint_y=0.08
-        ))
-
-        layout.add_widget(Label(
-            text="BOMBERMAN",
-            font_size='34sp',
-            color=(1, 0.85, 0.1, 1),
-            bold=True,
-            size_hint_y=0.14
-        ))
-
+        layout.add_widget(Label(text="CORANGE SOFTWARE", font_size='18sp', color=(0.4, 0.85, 1, 1), bold=True, size_hint_y=0.08))
+        layout.add_widget(Label(text="BOMBERMAN", font_size='34sp', color=(1, 0.85, 0.1, 1), bold=True, size_hint_y=0.14))
         layout.add_widget(DesenhoCapa(size_hint_y=0.38))
-
-        btn_iniciar = Button(
-            text="INICIAR JOGO",
-            font_size='24sp',
-            bold=True,
-            background_color=(0.15, 0.75, 0.25, 1),
-            size_hint_y=0.18
-        )
-        btn_iniciar.bind(on_release=self.ir_para_jogo)
-        layout.add_widget(btn_iniciar)
-
-        layout.add_widget(Label(
-            text="PIX: 51993359782",
-            font_size='16sp',
-            color=(0.3, 1, 0.45, 1),
-            bold=True,
-            size_hint_y=0.10
-        ))
-
+        btn = Button(text="INICIAR JOGO", font_size='24sp', bold=True, background_color=(0.15, 0.75, 0.25, 1), size_hint_y=0.18)
+        btn.bind(on_release=self.ir_para_jogo)
+        layout.add_widget(btn)
+        layout.add_widget(Label(text="PIX: 51993359782", font_size='16sp', color=(0.3, 1, 0.45, 1), bold=True, size_hint_y=0.10))
         self.add_widget(layout)
 
     def on_enter(self):
         self.tocar_musica()
-
     def on_leave(self):
         self.parar_musica()
-
     def tocar_musica(self):
         try:
             if self.musica is None:
@@ -229,19 +178,16 @@ class TelaInicial(Screen):
                 self.musica.play()
         except Exception:
             pass
-
     def parar_musica(self):
         try:
             if self.musica:
                 self.musica.stop()
         except Exception:
             pass
-
     def ir_para_jogo(self, *args):
         self.parar_musica()
         self.manager.get_screen('jogo').iniciar_fase(1)
         self.manager.current = 'jogo'
-
 
 class TelaJogo(Screen):
     LINHAS = 11
@@ -252,3 +198,254 @@ class TelaJogo(Screen):
         self.fase = 1
         self.player = [1, 1]
         self.inimigos = []
+        self.bombas = []  # [linha, coluna, tempo]
+        self.fogos = []   # [linha, coluna]
+        self.mapa = []
+        self.blocos = []
+        self.game_over = False
+        self._event_inimigo = None
+
+        root = BoxLayout(orientation='vertical', spacing=4, padding=4)
+        self.lbl_info = Label(text="FASE 1", font_size='18sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
+        root.add_widget(self.lbl_info)
+
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.72)
+        root.add_widget(self.grid)
+
+        controles = BoxLayout(orientation='horizontal', spacing=6, size_hint_y=0.20)
+        # D-pad
+        dpad = GridLayout(cols=3, rows=3, spacing=4)
+        dpad.add_widget(Widget())
+        b_cima = Button(text="↑", font_size='28sp', background_color=(0.2, 0.2, 0.25, 1))
+        b_cima.bind(on_release=lambda x: self.mover(-1, 0))
+        dpad.add_widget(b_cima)
+        dpad.add_widget(Widget())
+        b_esq = Button(text="←", font_size='28sp', background_color=(0.2, 0.2, 0.25, 1))
+        b_esq.bind(on_release=lambda x: self.mover(0, -1))
+        dpad.add_widget(b_esq)
+        dpad.add_widget(Widget())
+        b_dir = Button(text="→", font_size='28sp', background_color=(0.2, 0.2, 0.25, 1))
+        b_dir.bind(on_release=lambda x: self.mover(0, 1))
+        dpad.add_widget(b_dir)
+        dpad.add_widget(Widget())
+        b_baixo = Button(text="↓", font_size='28sp', background_color=(0.2, 0.2, 0.25, 1))
+        b_baixo.bind(on_release=lambda x: self.mover(1, 0))
+        dpad.add_widget(b_baixo)
+        dpad.add_widget(Widget())
+        controles.add_widget(dpad)
+
+        acoes = BoxLayout(orientation='vertical', spacing=4)
+        b_bomba = Button(text="💣 BOMBA", font_size='20sp', bold=True, background_color=(0.9, 0.2, 0.2, 1))
+        b_bomba.bind(on_release=lambda x: self.colocar_bomba())
+        acoes.add_widget(b_bomba)
+        b_voltar = Button(text="VOLTAR", font_size='16sp', background_color=(0.3, 0.3, 0.35, 1))
+        b_voltar.bind(on_release=lambda x: self.voltar_menu())
+        acoes.add_widget(b_voltar)
+        controles.add_widget(acoes)
+        root.add_widget(controles)
+        self.add_widget(root)
+
+        Window.bind(on_key_down=self.teclado)
+
+    def teclado(self, window, key, *args):
+        if self.manager and self.manager.current != 'jogo':
+            return False
+        # setas: 273 cima, 274 baixo, 275 direita, 276 esquerda, 32 espaço
+        if key == 273:
+            self.mover(-1, 0)
+        elif key == 274:
+            self.mover(1, 0)
+        elif key == 275:
+            self.mover(0, 1)
+        elif key == 276:
+            self.mover(0, -1)
+        elif key == 32:
+            self.colocar_bomba()
+        return True
+
+    def iniciar_fase(self, fase):
+        self.fase = fase
+        self.game_over = False
+        self.player = [1, 1]
+        self.bombas = []
+        self.fogos = []
+        self.inimigos = []
+        # Mapa base
+        self.mapa = []
+        for l in range(self.LINHAS):
+            linha = []
+            for c in range(self.COLUNAS):
+                if l == 0 or l == self.LINHAS-1 or c == 0 or c == self.COLUNAS-1:
+                    linha.append('fixo')
+                elif l % 2 == 0 and c % 2 == 0:
+                    linha.append('fixo')
+                elif random.random() < 0.45 and not (l < 3 and c < 3):
+                    linha.append('dest')
+                else:
+                    linha.append('chao')
+            self.mapa.append(linha)
+        self.mapa[1][1] = 'chao'
+        self.mapa[1][2] = 'chao'
+        self.mapa[2][1] = 'chao'
+        # Inimigos longe do player
+        pos_livres = [(l, c) for l in range(1, self.LINHAS-1) for c in range(1, self.COLUNAS-1)
+                      if self.mapa[l][c] == 'chao' and not (l < 3 and c < 3)]
+        random.shuffle(pos_livres)
+        qtd = min(3 + fase, 6)
+        for l, c in pos_livres[:qtd]:
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)])])
+        # Cria blocos visuais
+        self.grid.clear_widgets()
+        self.blocos = []
+        for l in range(self.LINHAS):
+            linha_blocos = []
+            for c in range(self.COLUNAS):
+                b = Bloco()
+                self.grid.add_widget(b)
+                linha_blocos.append(b)
+            self.blocos.append(linha_blocos)
+        self.lbl_info.text = f"FASE {fase} - Destrua os inimigos!"
+        self.desenhar_mapa()
+        if self._event_inimigo:
+            self._event_inimigo.cancel()
+        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.6)
+
+    def desenhar_mapa(self):
+        # Limpa fogo antigo visualmente pelo mapa
+        for l in range(self.LINHAS):
+            for c in range(self.COLUNAS):
+                tipo = self.mapa[l][c]
+                # bomba por cima
+                for bl, bc, _ in self.bombas:
+                    if bl == l and bc == c:
+                        tipo = 'bomba'
+                for fl, fc in self.fogos:
+                    if fl == l and fc == c:
+                        tipo = 'fogo'
+                if [l, c] == self.player:
+                    tipo = 'player'
+                for e in self.inimigos:
+                    if e[0] == l and e[1] == c:
+                        tipo = 'inimigo'
+                self.blocos[l][c].desenhar(tipo)
+
+    def pode_andar(self, l, c):
+        if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS:
+            return False
+        if self.mapa[l][c] in ('fixo', 'dest'):
+            return False
+        for bl, bc, _ in self.bombas:
+            if bl == l and bc == c:
+                return False
+        return True
+
+    def mover(self, dl, dc):
+        if self.game_over:
+            return
+        nl, nc = self.player[0] + dl, self.player[1] + dc
+        if not self.pode_andar(nl, nc):
+            return
+        self.player = [nl, nc]
+        # Morreu no fogo?
+        if [nl, nc] in self.fogos:
+            self.perdeu()
+            return
+        # Encontrou inimigo?
+        for e in self.inimigos:
+            if e[0] == nl and e[1] == nc:
+                self.perdeu()
+                return
+        self.desenhar_mapa()
+
+    def colocar_bomba(self):
+        if self.game_over:
+            return
+        l, c = self.player
+        for bl, bc, _ in self.bombas:
+            if bl == l and bc == c:
+                return
+        self.bombas.append([l, c, 1.5])
+        self.desenhar_mapa()
+        Clock.schedule_once(lambda dt: self.explodir(l, c), 1.5)
+
+    def explodir(self, l, c):
+        # Remove bomba
+        self.bombas = [b for b in self.bombas if not (b[0] == l and b[1] == c)]
+        # Fogo em cruz, alcance 2
+        novos_fogos = [(l, c)]
+        for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+            for i in [1, 2]:
+                nl, nc = l + dl*i, c + dc*i
+                if nl < 0 or nl >= self.LINHAS or nc < 0 or nc >= self.COLUNAS:
+                    break
+                if self.mapa[nl][nc] == 'fixo':
+                    break
+                novos_fogos.append((nl, nc))
+                if self.mapa[nl][nc] == 'dest':
+                    self.mapa[nl][nc] = 'chao'
+                    break
+        self.fogos.extend(novos_fogos)
+        # Mata inimigos e player
+        self.inimigos = [e for e in self.inimigos if (e[0], e[1]) not in novos_fogos]
+        self.desenhar_mapa()
+        if tuple(self.player) in novos_fogos:
+            Clock.schedule_once(lambda dt: self.perdeu(), 0.3)
+        elif len(self.inimigos) == 0:
+            Clock.schedule_once(lambda dt: self.venceu_fase(), 0.6)
+        Clock.schedule_once(lambda dt: self.limpar_fogo(novos_fogos), 0.7)
+
+    def limpar_fogo(self, lista):
+        for f in lista:
+            if f in self.fogos:
+                self.fogos.remove(f)
+        if not self.game_over:
+            self.desenhar_mapa()
+
+    def atualizar_inimigos(self):
+        if self.game_over or self.manager.current != 'jogo':
+            return
+        for e in self.inimigos:
+            dl, dc = e[2]
+            nl, nc = e[0] + dl, e[1] + dc
+            if not self.pode_andar(nl, nc) or [nl, nc] in self.fogos:
+                # Troca direção
+                e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
+            else:
+                e[0], e[1] = nl, nc
+            if [e[0], e[1]] == self.player:
+                self.perdeu()
+                return
+        self.desenhar_mapa()
+
+    def perdeu(self):
+        if self.game_over:
+            return
+        self.game_over = True
+        if self._event_inimigo:
+            self._event_inimigo.cancel()
+        self.lbl_info.text = "💥 VOCÊ PERDEU! Aperte VOLTAR e tente de novo"
+        self.desenhar_mapa()
+
+    def venceu_fase(self):
+        if self.game_over:
+            return
+        self.game_over = True
+        if self._event_inimigo:
+            self._event_inimigo.cancel()
+        self.lbl_info.text = f"🎉 FASE {self.fase} COMPLETA! Indo pra próxima..."
+        Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1), 1.5)
+
+    def voltar_menu(self):
+        if self._event_inimigo:
+            self._event_inimigo.cancel()
+        self.manager.current = 'inicio'
+
+class BombermanApp(App):
+    def build(self):
+        sm = ScreenManager()
+        sm.add_widget(TelaInicial(name='inicio'))
+        sm.add_widget(TelaJogo(name='jogo'))
+        return sm
+
+if __name__ == '__main__':
+    BombermanApp().run()
