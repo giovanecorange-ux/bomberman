@@ -4,22 +4,16 @@ on:
     branches: [ main ]
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install deps
-        run: |
-          pip install buildozer cython==0.29.36
-          sudo apt-get update
-          sudo apt-get install -y openjdk-17-jdk unzip zip
-      - name: Build
-        run: buildozer android debug
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - run: pip install buildozer cython==0.29.36
+      - run: sudo apt-get update && sudo apt-get install -y openjdk-17-jdk zip unzip
+      - run: buildozer android debug
+      - uses: actions/upload-artifact@v4
         with:
-          name: bomberman-apk
+          name: apk
           path: bin/*.apk
