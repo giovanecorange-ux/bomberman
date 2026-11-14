@@ -3,8 +3,158 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.button import Button
 from kivy.uix.label import Label
+from kivy.uix.widget import Widget
+from kivy.graphics import Color, Ellipse, Rectangle, Line, Triangle
 from kivy.clock import Clock
 import random, traceback, os, json
+
+# ---------- DESENHO ----------
+class Bloco(Widget):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.tipo = 'chao'
+        self.chao = (0.24,0.76,0.19,1)
+        self.fixo = (0.62,0.62,0.62,1)
+        self.dest = (0.6,0.6,0.6,1)
+        self.bind(pos=self._redesenhar, size=self._redesenhar)
+    def _redesenhar(self, *a):
+        self.desenhar(self.tipo, self.chao, self.fixo, self.dest)
+    def desenhar(self, tipo, chao=(0.24,0.76,0.19,1), fixo=(0.62,0.62,0.62,1), dest=(0.6,0.6,0.6,1)):
+        self.tipo = tipo
+        self.chao = chao
+        self.fixo = fixo
+        self.dest = dest
+        self.canvas.clear()
+        x, y = self.pos
+        w, h = self.size
+        if w <= 1 or h <= 1:
+            return
+        with self.canvas:
+            if tipo == 'player':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(1, 1, 0.4, 1)
+                Ellipse(pos=(x+w*0.15, y+h*0.15), size=(w*0.7, h*0.7))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.30, y+h*0.55), size=(w*0.12, h*0.12))
+                Ellipse(pos=(x+w*0.58, y+h*0.55), size=(w*0.12, h*0.12))
+                Color(0,0,0,1)
+                Line(points=[x+w*0.35, y+h*0.35, x+w*0.65, y+h*0.35], width=1)
+            elif tipo == 'bomba':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.2, y+h*0.08), size=(w*0.6, h*0.6))
+                Color(1,1,1,1)
+                Ellipse(pos=(x+w*0.30, y+h*0.45), size=(w*0.12, h*0.12))
+                Color(1, 0.8, 0, 1)
+                Line(points=[x+w*0.5, y+h*0.68, x+w*0.75, y+h*0.92], width=2)
+                Color(1, 0.3, 0, 1)
+                Ellipse(pos=(x+w*0.68, y+h*0.85), size=(w*0.15, h*0.15))
+            elif tipo == 'inimigo0':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(1, 0.48, 0.75, 1)
+                Rectangle(pos=(x+w*0.1, y+h*0.1), size=(w*0.8, h*0.8))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.28, y+h*0.50), size=(w*0.15, h*0.15))
+                Ellipse(pos=(x+w*0.57, y+h*0.50), size=(w*0.15, h*0.15))
+                Line(points=[x+w*0.30, y+h*0.30, x+w*0.70, y+h*0.30], width=1)
+            elif tipo == 'inimigo1':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0.30, 0.65, 1, 1)
+                Rectangle(pos=(x+w*0.1, y+h*0.1), size=(w*0.8, h*0.8))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.28, y+h*0.50), size=(w*0.15, h*0.15))
+                Ellipse(pos=(x+w*0.57, y+h*0.50), size=(w*0.15, h*0.15))
+                Line(points=[x+w*0.30, y+h*0.30, x+w*0.70, y+h*0.30], width=1)
+            elif tipo == 'inimigo2':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(1, 0.23, 0.23, 1)
+                Rectangle(pos=(x+w*0.1, y+h*0.1), size=(w*0.8, h*0.8))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.28, y+h*0.50), size=(w*0.15, h*0.15))
+                Ellipse(pos=(x+w*0.57, y+h*0.50), size=(w*0.15, h*0.15))
+                Line(points=[x+w*0.30, y+h*0.30, x+w*0.70, y+h*0.30], width=1)
+            elif tipo == 'fogo':
+                Color(1, 0.4, 0, 1)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(1, 1, 0, 1)
+                Triangle(points=[x+w*0.5, y+h*0.92, x+w*0.15, y+h*0.08, x+w*0.85, y+h*0.08])
+                Color(1, 0.4, 0, 1)
+                Triangle(points=[x+w*0.5, y+h*0.65, x+w*0.30, y+h*0.08, x+w*0.70, y+h*0.08])
+            elif tipo == 'moeda':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(1, 0.8, 0, 1)
+                Ellipse(pos=(x+w*0.25, y+h*0.20), size=(w*0.5, h*0.6))
+                Color(0.7, 0.52, 0, 1)
+                Line(points=[x+w*0.5, y+h*0.25, x+w*0.5, y+h*0.75], width=1)
+            elif tipo == 'moeda_vida':
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0.82, 0.70, 0.54, 1)
+                Ellipse(pos=(x+w*0.25, y+h*0.20), size=(w*0.5, h*0.6))
+                Color(0, 0.4, 0, 1)
+                Line(points=[x+w*0.5, y+h*0.25, x+w*0.5, y+h*0.75], width=1)
+            elif tipo == 'fixo':
+                Color(*fixo)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0,0,0,1)
+                Line(points=[x, y+h*0.5, x+w, y+h*0.5], width=1)
+                Line(points=[x+w*0.5, y, x+w*0.5, y+h*0.5], width=1)
+                Line(points=[x+w*0.25, y+h*0.5, x+w*0.25, y+h], width=1)
+                Line(points=[x+w*0.75, y+h*0.5, x+w*0.75, y+h], width=1)
+            elif tipo == 'dest':
+                Color(*dest)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0,0,0,1)
+                Line(points=[x, y+h*0.5, x+w, y+h*0.5], width=1)
+                Line(points=[x+w*0.5, y, x+w*0.5, y+h], width=1)
+                Line(points=[x+w*0.25, y+h*0.5, x+w*0.25, y+h], width=1)
+            else: # chao
+                Color(*chao)
+                Rectangle(pos=(x,y), size=(w,h))
+                Color(0.15, 0.55, 0.15, 1)
+                Ellipse(pos=(x+w*0.20, y+h*0.20), size=(w*0.15, h*0.15))
+                Ellipse(pos=(x+w*0.65, y+h*0.60), size=(w*0.15, h*0.15))
+
+class DesenhoMenu(Widget):
+    def __init__(self, tipo='player', cor=(0.16,0.49,1,1), **kwargs):
+        super().__init__(**kwargs)
+        self.tipo = tipo
+        self.cor = cor
+        self.bind(pos=self._des, size=self._des)
+    def _des(self, *a):
+        self.canvas.clear()
+        x, y = self.pos
+        w, h = self.size
+        if w <= 1 or h <= 1:
+            return
+        with self.canvas:
+            Color(*self.cor)
+            Rectangle(pos=(x,y), size=(w,h))
+            if self.tipo == 'player':
+                Color(1, 1, 0.4, 1)
+                Ellipse(pos=(x+w*0.15, y+h*0.15), size=(w*0.7, h*0.7))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.30, y+h*0.55), size=(w*0.12, h*0.12))
+                Ellipse(pos=(x+w*0.58, y+h*0.55), size=(w*0.12, h*0.12))
+                Line(points=[x+w*0.35, y+h*0.35, x+w*0.65, y+h*0.35], width=1)
+            elif self.tipo == 'bomba':
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.2, y+h*0.08), size=(w*0.6, h*0.6))
+                Color(1, 0.8, 0, 1)
+                Line(points=[x+w*0.5, y+h*0.68, x+w*0.75, y+h*0.92], width=2)
+            else: # inimigo
+                Color(1,1,1,1)
+                Rectangle(pos=(x+w*0.1, y+h*0.1), size=(w*0.8, h*0.8))
+                Color(0,0,0,1)
+                Ellipse(pos=(x+w*0.28, y+h*0.50), size=(w*0.15, h*0.15))
+                Ellipse(pos=(x+w*0.57, y+h*0.50), size=(w*0.15, h*0.15))
+                Line(points=[x+w*0.30, y+h*0.30, x+w*0.70, y+h*0.30], width=1)
 
 class MenuApresentacao(BoxLayout):
     def __init__(self, app_ref, **kwargs):
@@ -14,11 +164,11 @@ class MenuApresentacao(BoxLayout):
         self.add_widget(Label(text="Corange Sistemas", font_size='16sp', bold=True, size_hint_y=0.06))
         self.add_widget(Label(text="PIX 51993359782", font_size='15sp', color=(0.3,1,0.4,1), bold=True, size_hint_y=0.08))
         desenhos = BoxLayout(orientation='horizontal', size_hint_y=0.28, spacing=8, padding=[20,0,20,0])
-        desenhos.add_widget(Button(text="😀", font_size='38sp', background_color=(0.16,0.49,1,1), background_normal=''))
-        desenhos.add_widget(Button(text="💣", font_size='38sp', background_color=(0.41,0.22,0.81,1), background_normal=''))
-        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(1,0.48,0.75,1), background_normal=''))
-        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(0.30,0.65,1,1), background_normal=''))
-        desenhos.add_widget(Button(text="👾", font_size='34sp', background_color=(1,0.23,0.23,1), background_normal=''))
+        desenhos.add_widget(DesenhoMenu(tipo='player', cor=(0.16,0.49,1,1)))
+        desenhos.add_widget(DesenhoMenu(tipo='bomba', cor=(0.41,0.22,0.81,1)))
+        desenhos.add_widget(DesenhoMenu(tipo='inimigo', cor=(1,0.48,0.75,1)))
+        desenhos.add_widget(DesenhoMenu(tipo='inimigo', cor=(0.30,0.65,1,1)))
+        desenhos.add_widget(DesenhoMenu(tipo='inimigo', cor=(1,0.23,0.23,1)))
         self.add_widget(desenhos)
         self.add_widget(Label(text=f"RECORDE: {app_ref.recorde}", font_size='20sp', color=(1,0.8,0,1), bold=True, size_hint_y=0.09))
         self.add_widget(Label(text="Seu maior score fica salvo aqui!", font_size='12sp', color=(0.8,0.8,0.8,1), size_hint_y=0.05))
@@ -43,7 +193,7 @@ class JogoBomberman(BoxLayout):
         self.blocos = {}
         for r in range(self.GH):
             for c in range(self.GW):
-                btn = Button(background_normal='', background_color=(0.15,0.55,0.15,1), text='', font_size='16sp', bold=True)
+                btn = Bloco()
                 self.tabuleiro.add_widget(btn)
                 self.blocos[(r, c)] = btn
         self.add_widget(self.tabuleiro)
@@ -183,27 +333,26 @@ class JogoBomberman(BoxLayout):
         else: chao=(0.22,0.76,0.62,1); fixo=(0.62,0.84,0.75,1); dest=(0.94,0.84,0.69,1)
         for r in range(self.GH):
             for c in range(self.GW):
-                btn=self.blocos[(r,c)]; t=self.grid[r][c]; btn.text=''
-                if t==1: btn.background_color = fixo
-                elif t==2: btn.background_color = dest; btn.text='▦'; btn.color=(0,0,0,1)
-                else: btn.background_color = chao
+                btn=self.blocos[(r,c)]; t=self.grid[r][c]
+                if t==1: btn.desenhar('fixo', chao, fixo, dest)
+                elif t==2: btn.desenhar('dest', chao, fixo, dest)
+                else: btn.desenhar('chao', chao, fixo, dest)
         for mx,my,tipo in self.moedas:
             b=self.blocos[(my,mx)]
-            if tipo==1: b.background_color=(0.82,0.70,0.54,1); b.text='$'; b.color=(0,0.4,0,1)
-            else: b.background_color=(1,0.8,0,1); b.text='$'; b.color=(0.7,0.52,0,1)
+            if tipo==1: b.desenhar('moeda_vida', chao, fixo, dest)
+            else: b.desenhar('moeda', chao, fixo, dest)
         for fx,fy,_ in self.fogos:
-            b=self.blocos[(fy,fx)]; b.background_color=(1,0.4,0,1); b.text='🔥'
+            b=self.blocos[(fy,fx)]; b.desenhar('fogo', chao, fixo, dest)
         for bx,by,_ in self.bombas:
-            b=self.blocos[(by,bx)]; b.background_color=(0.41,0.22,0.81,1); b.text='💣'
+            b=self.blocos[(by,bx)]; b.desenhar('bomba', chao, fixo, dest)
         for en in self.inimigos:
             b=self.blocos[(en[1],en[0])]
-            if en[2]==0: b.background_color=(1,0.48,0.75,1)
-            elif en[2]==1: b.background_color=(0.30,0.65,1,1)
-            else: b.background_color=(1,0.23,0.23,1)
-            b.text='👾'
+            if en[2]==0: b.desenhar('inimigo0', chao, fixo, dest)
+            elif en[2]==1: b.desenhar('inimigo1', chao, fixo, dest)
+            else: b.desenhar('inimigo2', chao, fixo, dest)
         px,py=self.player
         if not (self.invencivel>0 and self.invencivel%2==0):
-            b=self.blocos[(py,px)]; b.background_color=(0.16,0.49,1,1); b.text='😀'
+            b=self.blocos[(py,px)]; b.desenhar('player', chao, fixo, dest)
         if self.game_over: self.hud.text=f"GAME OVER! RECORDE: {self.recorde} | Aperte R"
         elif len(self.inimigos)==0:
             if self.fase==self.fase_max: self.hud.text=f"ZEROU! RECORDE: {self.recorde} | Aperte R"
