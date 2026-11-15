@@ -212,17 +212,18 @@ class TelaInicial(Screen):
 class TelaJogo(Screen):
     LINHAS = 11; COLUNAS = 11
     CORES_FASE = [
-        (0.20, 0.68, 0.22, 1), # 1 verde mato
-        (0.85, 0.75, 0.25, 1), # 2 deserto amarelo
-        (0.45, 0.78, 0.95, 1), # 3 gelo azul
-        (0.35, 0.35, 0.38, 1), # 4 caverna cinza
-        (0.75, 0.30, 0.20, 1), # 5 vulcao
-        (0.55, 0.25, 0.85, 1), # 6 roxo final
+        (0.20, 0.68, 0.22, 1),
+        (0.85, 0.75, 0.25, 1),
+        (0.45, 0.78, 0.95, 1),
+        (0.35, 0.35, 0.38, 1),
+        (0.75, 0.30, 0.20, 1),
+        (0.55, 0.25, 0.85, 1),
     ]
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fase = 1; self.pontos = 0; self.vidas = 3
         self.player = [1, 1]; self.inimigos = []; self.bombas = []; self.fogos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None; self.itens = {}
+        self._event_andar = None; self._dir_andar = (0, 0)
         root = BoxLayout(orientation='vertical', spacing=4, padding=4)
         self.lbl_info = Label(text="VIDAS: 3 - FASE 1/6", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
         root.add_widget(self.lbl_info)
@@ -232,19 +233,23 @@ class TelaJogo(Screen):
         dpad = GridLayout(cols=3, rows=3, spacing=6)
         dpad.add_widget(Widget())
         b_cima = Button(text="CIMA", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_cima.bind(on_release=lambda x: self.mover(-1, 0))
+        b_cima.bind(on_press=lambda x: self.iniciar_andar(-1, 0))
+        b_cima.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_cima)
         dpad.add_widget(Widget())
         b_esq = Button(text="ESQ", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_esq.bind(on_release=lambda x: self.mover(0, -1))
+        b_esq.bind(on_press=lambda x: self.iniciar_andar(0, -1))
+        b_esq.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_esq)
         dpad.add_widget(Widget())
         b_dir = Button(text="DIR", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_dir.bind(on_release=lambda x: self.mover(0, 1))
+        b_dir.bind(on_press=lambda x: self.iniciar_andar(0, 1))
+        b_dir.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_dir)
         dpad.add_widget(Widget())
         b_baixo = Button(text="BAIXO", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_baixo.bind(on_release=lambda x: self.mover(1, 0))
+        b_baixo.bind(on_press=lambda x: self.iniciar_andar(1, 0))
+        b_baixo.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_baixo)
         dpad.add_widget(Widget())
         controles.add_widget(dpad)
@@ -267,20 +272,36 @@ class TelaJogo(Screen):
         elif key == 276: self.mover(0, -1)
         elif key == 32: self.colocar_bomba()
         return True
+    def iniciar_andar(self, dl, dc):
+        self._dir_andar = (dl, dc)
+        self.mover(dl, dc)
+        if self._event_andar: self._event_andar.cancel()
+        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.25)
+    def parar_andar(self, *args):
+        if self._event_andar:
+            self._event_andar.cancel()
+            self._event_andar = None
     def iniciar_fase(self, fase):
         self.fase = fase; self.game_over = False
         if fase == 1: self.vidas = 3; self.pontos = 0
         self.player = [1, 1]; self.bombas = []; self.fogos = []; self.inimigos = []; self.mapa = []; self.itens = {}
+        zona_segura = [(1,1), (1,2), (1,3), (2,1), (2,2), (3,1)]
         for l in range(self.LINHAS):
             linha = []
             for c in range(self.COLUNAS):
                 if l == 0 or l == self.LINHAS-1 or c == 0 or c == self.COLUNAS-1: linha.append('fixo')
                 elif l % 2 == 0 and c % 2 == 0: linha.append('fixo')
-                elif random.random() < 0.45 and not (l < 3 and c < 3): linha.append('dest')
+                elif (l, c) in zona_segura: linha.append('chao')
+                elif random.random() < 0.45: linha.append('dest')
                 else: linha.append('chao')
             self.mapa.append(linha)
-        self.mapa[1][1] = 'chao'; self.mapa[1][2] = 'chao'; self.mapa[2][1] = 'chao'
-        pos_livres = [(l, c) for l in range(1, self.LINHAS-1) for c in range(1, self.COLUNAS-1) if self.mapa[l][c] == 'chao' and not (l < 3 and c < 3)]
+        pos_livres = []
+        for l in range(1, self.LINHAS-1):
+            for c in range(1, self.COLUNAS-1):
+                if self.mapa[l][c] != 'chao': continue
+                if abs(l - 1) + abs(c - 1) < 5: continue
+                if (l, c) in zona_segura: continue
+                pos_livres.append((l, c))
         random.shuffle(pos_livres)
         qtd = min(3 + fase, 6)
         for l, c in pos_livres[:qtd]: self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)])])
@@ -407,6 +428,7 @@ class TelaJogo(Screen):
             Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1), 1.5)
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
+        if self._event_andar: self._event_andar.cancel()
         self.manager.current = 'inicio'
 
 class BombermanApp(App):
