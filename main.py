@@ -94,6 +94,16 @@ class Bloco(Widget):
                 Color(1, 0.95, 0.2, 1)
                 Triangle(points=[x + w * 0.5, y + h * 0.92, x + w * 0.12, y + h * 0.08, x + w * 0.88, y + h * 0.08])
                 return
+            elif tipo == 'moeda':
+                Color(*chao); Rectangle(pos=(x, y), size=(w, h))
+                Color(1, 0.85, 0, 1); Ellipse(pos=(x + w * 0.30, y + h * 0.20), size=(w * 0.40, h * 0.60))
+                Color(1, 1, 0.4, 1); Ellipse(pos=(x + w * 0.40, y + h * 0.30), size=(w * 0.20, h * 0.40))
+                return
+            elif tipo == 'dinheiro':
+                Color(*chao); Rectangle(pos=(x, y), size=(w, h))
+                Color(0.15, 0.75, 0.30, 1); Rectangle(pos=(x + w * 0.10, y + h * 0.30), size=(w * 0.80, h * 0.40))
+                Color(1, 1, 1, 1); Ellipse(pos=(x + w * 0.42, y + h * 0.42), size=(w * 0.16, h * 0.16))
+                return
             Color(*chao); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'player':
                 Color(0.15, 0.45, 0.95, 1); Ellipse(pos=(x + w * 0.22, y + h * 0.08), size=(w * 0.56, h * 0.45))
@@ -107,10 +117,22 @@ class Bloco(Widget):
                 Color(1, 0.8, 0, 1); Line(points=[x + w * 0.5, y + h * 0.70, x + w * 0.76, y + h * 0.92], width=2)
                 Color(1, 0.2, 0, 1); Ellipse(pos=(x + w * 0.68, y + h * 0.84), size=(w * 0.18, h * 0.18))
             elif tipo == 'inimigo':
-                Color(0.95, 0.22, 0.35, 1); Ellipse(pos=(x + w * 0.14, y + h * 0.12), size=(w * 0.72, h * 0.76))
-                Color(1, 1, 1, 1); Ellipse(pos=(x + w * 0.25, y + h * 0.48), size=(w * 0.20, h * 0.22)); Ellipse(pos=(x + w * 0.55, y + h * 0.48), size=(w * 0.20, h * 0.22))
-                Color(0, 0, 0, 1); Ellipse(pos=(x + w * 0.31, y + h * 0.52), size=(w * 0.09, h * 0.12)); Ellipse(pos=(x + w * 0.61, y + h * 0.52), size=(w * 0.09, h * 0.12))
-                Line(points=[x + w * 0.28, y + h * 0.28, x + w * 0.72, y + h * 0.28], width=1.5)
+                cx, cy = x + w * 0.5, y + h * 0.5
+                Color(0.35, 0.85, 0.25, 1)
+                for ang in [0, 45, 90, 135, 180, 225, 270, 315]:
+                    rad = math.radians(ang)
+                    x1 = cx + math.cos(rad) * w * 0.30
+                    y1 = cy + math.sin(rad) * h * 0.30
+                    x2 = cx + math.cos(rad) * w * 0.52
+                    y2 = cy + math.sin(rad) * h * 0.52
+                    Line(points=[x1, y1, x2, y2], width=2.2)
+                    Ellipse(pos=(x2 - w * 0.06, y2 - h * 0.06), size=(w * 0.12, h * 0.12))
+                Color(0.20, 0.70, 0.15, 1); Ellipse(pos=(x + w * 0.16, y + h * 0.16), size=(w * 0.68, h * 0.68))
+                Color(0.55, 0.95, 0.35, 1); Ellipse(pos=(x + w * 0.24, y + h * 0.24), size=(w * 0.52, h * 0.52))
+                Color(0.10, 0.45, 0.05, 1); Ellipse(pos=(x + w * 0.28, y + h * 0.30), size=(w * 0.12, h * 0.12)); Ellipse(pos=(x + w * 0.58, y + h * 0.58), size=(w * 0.12, h * 0.12))
+                Color(1, 1, 1, 1); Ellipse(pos=(x + w * 0.30, y + h * 0.52), size=(w * 0.18, h * 0.20)); Ellipse(pos=(x + w * 0.52, y + h * 0.52), size=(w * 0.18, h * 0.20))
+                Color(1, 0.1, 0.1, 1); Ellipse(pos=(x + w * 0.36, y + h * 0.56), size=(w * 0.09, h * 0.12)); Ellipse(pos=(x + w * 0.58, y + h * 0.56), size=(w * 0.09, h * 0.12))
+                Color(0, 0, 0, 1); Line(points=[x + w * 0.35, y + h * 0.32, x + w * 0.65, y + h * 0.32], width=1.5)
 
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
@@ -200,7 +222,7 @@ class TelaJogo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fase = 1; self.pontos = 0; self.vidas = 3
-        self.player = [1, 1]; self.inimigos = []; self.bombas = []; self.fogos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
+        self.player = [1, 1]; self.inimigos = []; self.bombas = []; self.fogos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None; self.itens = {}
         root = BoxLayout(orientation='vertical', spacing=4, padding=4)
         self.lbl_info = Label(text="VIDAS: 3 - FASE 1/6", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
         root.add_widget(self.lbl_info)
@@ -248,7 +270,7 @@ class TelaJogo(Screen):
     def iniciar_fase(self, fase):
         self.fase = fase; self.game_over = False
         if fase == 1: self.vidas = 3; self.pontos = 0
-        self.player = [1, 1]; self.bombas = []; self.fogos = []; self.inimigos = []; self.mapa = []
+        self.player = [1, 1]; self.bombas = []; self.fogos = []; self.inimigos = []; self.mapa = []; self.itens = {}
         for l in range(self.LINHAS):
             linha = []
             for c in range(self.COLUNAS):
@@ -283,6 +305,7 @@ class TelaJogo(Screen):
                     if bl == l and bc == c: tipo = 'bomba'
                 for fl, fc in self.fogos:
                     if fl == l and fc == c: tipo = 'fogo'
+                if (l, c) in self.itens: tipo = self.itens[(l, c)]
                 if [l, c] == self.player: tipo = 'player'
                 for e in self.inimigos:
                     if e[0] == l and e[1] == c: tipo = 'inimigo'
@@ -298,6 +321,11 @@ class TelaJogo(Screen):
         nl, nc = self.player[0] + dl, self.player[1] + dc
         if not self.pode_andar(nl, nc): return
         self.player = [nl, nc]
+        if (nl, nc) in self.itens:
+            self.itens.pop((nl, nc))
+            self.pontos += 50
+            tocar_bip('bip_venceu.wav')
+            self.atualizar_info()
         if [nl, nc] in self.fogos: self.perdeu(); return
         for e in self.inimigos:
             if e[0] == nl and e[1] == nc: self.perdeu(); return
@@ -320,7 +348,12 @@ class TelaJogo(Screen):
                 if nl < 0 or nl >= self.LINHAS or nc < 0 or nc >= self.COLUNAS: break
                 if self.mapa[nl][nc] == 'fixo': break
                 novos_fogos.append((nl, nc))
-                if self.mapa[nl][nc] == 'dest': self.mapa[nl][nc] = 'chao'; break
+                if self.mapa[nl][nc] == 'dest':
+                    self.mapa[nl][nc] = 'chao'
+                    sorte = random.random()
+                    if sorte < 0.25: self.itens[(nl, nc)] = 'moeda'
+                    elif sorte < 0.35: self.itens[(nl, nc)] = 'dinheiro'
+                    break
         self.fogos.extend(novos_fogos)
         antes = len(self.inimigos)
         self.inimigos = [e for e in self.inimigos if (e[0], e[1]) not in novos_fogos]
