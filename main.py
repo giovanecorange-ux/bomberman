@@ -59,6 +59,19 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
+# === SO AQUI MUDOU: SKINS DAS TUAS 6 FOTOS + 2 BONUS ===
+# chao, fixo, dest (tijolo quebrável), linha do tijolo
+FASES_SKINS = [
+    {"chao": (1.0, 0.71, 0.76, 1), "fixo": (0.60, 0.60, 0.60, 1), "dest": (1.0, 0.41, 0.71, 1), "detalhe": (0.70, 0.10, 0.40, 1)},  # 1 Rosa - foto 1
+    {"chao": (0.68, 0.85, 0.90, 1), "fixo": (1.0, 1.0, 1.0, 1), "dest": (0.90, 0.90, 0.95, 1), "detalhe": (0.60, 0.60, 0.70, 1)},  # 2 Gelo - foto 2 pedra branca
+    {"chao": (0.20, 0.68, 0.22, 1), "fixo": (0.96, 0.96, 0.86, 1), "dest": (0.96, 0.96, 0.86, 1), "detalhe": (0.70, 0.70, 0.60, 1)},  # 3 Grama / tijolo branco - foto 3
+    {"chao": (0.82, 0.71, 0.55, 1), "fixo": (1.0, 0.84, 0.0, 1), "dest": (1.0, 0.84, 0.0, 1), "detalhe": (0.70, 0.50, 0.0, 1)},  # 4 Deserto amarelo - foto 4
+    {"chao": (1.0, 0.75, 0.80, 1), "fixo": (0.85, 0.70, 0.50, 1), "dest": (0.85, 0.65, 0.45, 1), "detalhe": (0.55, 0.35, 0.15, 1)},  # 5 Doce xadrez - foto 5
+    {"chao": (0.0, 0.75, 1.0, 1), "fixo": (0.66, 0.66, 0.66, 1), "dest": (0.66, 0.66, 0.66, 1), "detalhe": (1.0, 0.0, 0.0, 1)},  # 6 Agua Azul / cinza com miolo vermelho - foto 6
+    {"chao": (0.25, 0.25, 0.25, 1), "fixo": (0.10, 0.10, 0.10, 1), "dest": (0.10, 0.10, 0.10, 1), "detalhe": (1.0, 0.35, 0.0, 1)},  # 7 Vulcao - bonus
+    {"chao": (1.0, 0.84, 0.0, 1), "fixo": (0.40, 0.40, 0.40, 1), "dest": (1.0, 0.84, 0.0, 1), "detalhe": (0.60, 0.45, 0.0, 1)},  # 8 Castelo - bonus
+]
+
 class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -66,15 +79,22 @@ class Bloco(Widget):
         self.cor_atual = (0.20, 0.68, 0.22, 1)
         self.bind(pos=self._redesenhar, size=self._redesenhar)
     def _redesenhar(self, *args): self.desenhar(self.tipo, self.cor_atual)
-    def desenhar(self, tipo, cor_fase=None):
+    def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='verde'):
         self.tipo = tipo
         if cor_fase: self.cor_atual = cor_fase
         self.canvas.clear()
         x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
         chao = self.cor_atual
-        fixo = (0.45, 0.48, 0.52, 1)
-        dest = (0.76, 0.42, 0.20, 1)
+        # Usa a skin da fase se vier, senão usa o padrão antigo
+        if skin:
+            fixo = skin["fixo"]
+            dest = skin["dest"]
+            dest_linha = skin["detalhe"]
+        else:
+            fixo = (0.45, 0.48, 0.52, 1)
+            dest = (0.76, 0.42, 0.20, 1)
+            dest_linha = (0.45, 0.22, 0.08, 1)
         with self.canvas:
             if tipo == 'fixo':
                 Color(*fixo); Rectangle(pos=(x, y), size=(w, h))
@@ -85,9 +105,15 @@ class Bloco(Widget):
                 return
             elif tipo == 'dest':
                 Color(*dest); Rectangle(pos=(x, y), size=(w, h))
-                Color(0.45, 0.22, 0.08, 1)
+                Color(*dest_linha)
                 Line(points=[x, y + h * 0.5, x + w, y + h * 0.5], width=1)
                 Line(points=[x + w * 0.5, y + h * 0.5, x + w * 0.5, y + h], width=1)
+                # detalhe extra das fotos 5 e 6: xadrez / miolo vermelho
+                if skin and skin == FASES_SKINS[4]:
+                    Line(points=[x, y + h * 0.25, x + w, y + h * 0.25], width=1)
+                    Line(points=[x, y + h * 0.75, x + w, y + h * 0.75], width=1)
+                if skin and skin == FASES_SKINS[5]:
+                    Color(1, 0, 0, 1); Ellipse(pos=(x + w * 0.38, y + h * 0.38), size=(w * 0.24, h * 0.24))
                 return
             elif tipo == 'fogo':
                 Color(1, 0.35, 0, 1); Rectangle(pos=(x, y), size=(w, h))
@@ -117,6 +143,22 @@ class Bloco(Widget):
                 Color(1, 0.8, 0, 1); Line(points=[x + w * 0.5, y + h * 0.70, x + w * 0.76, y + h * 0.92], width=2)
                 Color(1, 0.2, 0, 1); Ellipse(pos=(x + w * 0.68, y + h * 0.84), size=(w * 0.18, h * 0.18))
             elif tipo == 'inimigo':
+                # === 3 INIMIGOS: verde / vermelho / azul quadradinho ===
+                if inimigo_tipo == 'vermelho':
+                    # Vermelho que persegue - redondo vermelho
+                    Color(1, 0.15, 0.15, 1); Ellipse(pos=(x + w * 0.10, y + h * 0.10), size=(w * 0.80, h * 0.80))
+                    Color(1, 1, 1, 1); Ellipse(pos=(x + w * 0.24, y + h * 0.50), size=(w * 0.20, h * 0.24)); Ellipse(pos=(x + w * 0.56, y + h * 0.50), size=(w * 0.20, h * 0.24))
+                    Color(0, 0, 0, 1); Ellipse(pos=(x + w * 0.30, y + h * 0.54), size=(w * 0.09, h * 0.14)); Ellipse(pos=(x + w * 0.62, y + h * 0.54), size=(w * 0.09, h * 0.14))
+                    Line(points=[x + w * 0.28, y + h * 0.28, x + w * 0.72, y + h * 0.28], width=2)
+                    return
+                elif inimigo_tipo == 'azul':
+                    # Azul quadradinho esperto - igual da abertura
+                    Color(0.25, 0.65, 1, 1); Rectangle(pos=(x + w * 0.12, y + h * 0.12), size=(w * 0.76, h * 0.76))
+                    Color(1, 1, 1, 1); Ellipse(pos=(x + w * 0.24, y + h * 0.50), size=(w * 0.20, h * 0.22)); Ellipse(pos=(x + w * 0.56, y + h * 0.50), size=(w * 0.20, h * 0.22))
+                    Color(0, 0, 0, 1); Ellipse(pos=(x + w * 0.30, y + h * 0.54), size=(w * 0.09, h * 0.12)); Ellipse(pos=(x + w * 0.62, y + h * 0.54), size=(w * 0.09, h * 0.12))
+                    Line(points=[x + w * 0.25, y + h * 0.30, x + w * 0.75, y + h * 0.30], width=2)
+                    return
+                # Verde original - mantém igualzinho como estava
                 cx, cy = x + w * 0.5, y + h * 0.5
                 Color(0.35, 0.85, 0.25, 1)
                 for ang in [0, 45, 90, 135, 180, 225, 270, 315]:
@@ -211,21 +253,15 @@ class TelaInicial(Screen):
 
 class TelaJogo(Screen):
     LINHAS = 11; COLUNAS = 11
-    CORES_FASE = [
-        (0.20, 0.68, 0.22, 1),
-        (0.85, 0.75, 0.25, 1),
-        (0.45, 0.78, 0.95, 1),
-        (0.35, 0.35, 0.38, 1),
-        (0.75, 0.30, 0.20, 1),
-        (0.55, 0.25, 0.85, 1),
-    ]
+    # AGORA 8 FASES - mesmas cores do FASES_SKINS
+    CORES_FASE = [s["chao"] for s in FASES_SKINS]
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.fase = 1; self.pontos = 0; self.vidas = 3
+        self.fase = 1; self.pontos = 0; self.vidas = 4
         self.player = [1, 1]; self.inimigos = []; self.bombas = []; self.fogos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None; self.itens = {}
         self._event_andar = None; self._dir_andar = (0, 0)
         root = BoxLayout(orientation='vertical', spacing=4, padding=4)
-        self.lbl_info = Label(text="VIDAS: 3 - FASE 1/6", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
+        self.lbl_info = Label(text="VIDAS: 4 - FASE 1/8", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
         root.add_widget(self.lbl_info)
         self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.68)
         root.add_widget(self.grid)
@@ -283,7 +319,7 @@ class TelaJogo(Screen):
             self._event_andar = None
     def iniciar_fase(self, fase):
         self.fase = fase; self.game_over = False
-        if fase == 1: self.vidas = 3; self.pontos = 0
+        if fase == 1: self.vidas = 4; self.pontos = 0
         self.player = [1, 1]; self.bombas = []; self.fogos = []; self.inimigos = []; self.mapa = []; self.itens = {}
         zona_segura = [(1,1), (1,2), (1,3), (2,1), (2,2), (3,1)]
         for l in range(self.LINHAS):
@@ -304,7 +340,22 @@ class TelaJogo(Screen):
                 pos_livres.append((l, c))
         random.shuffle(pos_livres)
         qtd = min(3 + fase, 6)
-        for l, c in pos_livres[:qtd]: self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)])])
+        # === TIPOS POR FASE - 3 INIMIGOS ===
+        # Fase 1 só verde, depois vai misturando vermelho e azul
+        tipos_por_fase = [
+            ['verde'],
+            ['verde','azul'],
+            ['verde','vermelho'],
+            ['verde','vermelho','azul'],
+            ['vermelho','azul'],
+            ['vermelho','azul','verde'],
+            ['vermelho','azul'],
+            ['vermelho','azul','verde'],
+        ]
+        tipos = tipos_por_fase[fase-1]
+        for i, (l, c) in enumerate(pos_livres[:qtd]):
+            tipo = tipos[i % len(tipos)]
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipo])
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
             linha_blocos = []
@@ -316,12 +367,14 @@ class TelaJogo(Screen):
         self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.6)
     def atualizar_info(self):
         coracoes = "♥ " * self.vidas
-        self.lbl_info.text = f"{coracoes} FASE {self.fase}/6 - {self.pontos} PTS"
+        self.lbl_info.text = f"{coracoes} FASE {self.fase}/8 - {self.pontos} PTS"
     def desenhar_mapa(self):
         cor_fase = self.CORES_FASE[self.fase - 1]
+        skin = FASES_SKINS[self.fase - 1]
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = self.mapa[l][c]
+                inimigo_tipo = 'verde'
                 for bl, bc, _ in self.bombas:
                     if bl == l and bc == c: tipo = 'bomba'
                 for fl, fc in self.fogos:
@@ -329,8 +382,10 @@ class TelaJogo(Screen):
                 if (l, c) in self.itens: tipo = self.itens[(l, c)]
                 if [l, c] == self.player: tipo = 'player'
                 for e in self.inimigos:
-                    if e[0] == l and e[1] == c: tipo = 'inimigo'
-                self.blocos[l][c].desenhar(tipo, cor_fase)
+                    if e[0] == l and e[1] == c:
+                        tipo = 'inimigo'
+                        inimigo_tipo = e[3] if len(e) > 3 else 'verde'
+                self.blocos[l][c].desenhar(tipo, cor_fase, skin, inimigo_tipo)
     def pode_andar(self, l, c):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] in ('fixo', 'dest'): return False
@@ -395,10 +450,20 @@ class TelaJogo(Screen):
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
         for e in self.inimigos:
+            tipo = e[3] if len(e) > 3 else 'verde'
             dl, dc = e[2]
+            # Vermelho persegue o player
+            if tipo == 'vermelho' and random.random() < 0.7:
+                if self.player[0] > e[0]: dl, dc = 1, 0
+                elif self.player[0] < e[0]: dl, dc = -1, 0
+                elif self.player[1] > e[1]: dl, dc = 0, 1
+                elif self.player[1] < e[1]: dl, dc = 0, -1
+            # Azul esperto troca de direção mais rápido
+            elif tipo == 'azul' and random.random() < 0.4:
+                dl, dc = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
             nl, nc = e[0] + dl, e[1] + dc
             if not self.pode_andar(nl, nc) or [nl, nc] in self.fogos: e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
-            else: e[0], e[1] = nl, nc
+            else: e[0], e[1] = nl, nc; e[2] = (dl, dc)
             if [e[0], e[1]] == self.player: self.perdeu(); return
         self.desenhar_mapa()
     def perdeu(self):
@@ -420,7 +485,7 @@ class TelaJogo(Screen):
         self.pontos += 200
         salvar_recorde(self.fase, self.pontos)
         if self._event_inimigo: self._event_inimigo.cancel()
-        if self.fase >= 6:
+        if self.fase >= 8:
             self.lbl_info.text = f"ZEROU! {self.pontos} PTS!"
             Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
         else:
