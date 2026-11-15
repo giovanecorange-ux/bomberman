@@ -26,37 +26,27 @@ def salvar_recorde(fase, pontos):
             try:
                 with open(ARQ_RECORDE, "r") as f:
                     antigo = json.load(f)
-                    if antigo.get("fase", 1) > fase:
-                        return antigo
-                    if antigo.get("fase") == fase and antigo.get("pontos", 0) >= pontos:
-                        return antigo
-            except:
-                pass
-        with open(ARQ_RECORDE, "w") as f:
-            json.dump(dados, f)
+                    if antigo.get("fase", 1) > fase: return antigo
+                    if antigo.get("fase") == fase and antigo.get("pontos", 0) >= pontos: return antigo
+            except: pass
+        with open(ARQ_RECORDE, "w") as f: json.dump(dados, f)
         return dados
-    except:
-        return {"fase": fase, "pontos": pontos}
+    except: return {"fase": fase, "pontos": pontos}
 
 def carregar_recorde():
     try:
         if os.path.exists(ARQ_RECORDE):
-            with open(ARQ_RECORDE, "r") as f:
-                return json.load(f)
-    except:
-        pass
+            with open(ARQ_RECORDE, "r") as f: return json.load(f)
+    except: pass
     return {"fase": 1, "pontos": 0}
 
-# --- BIPS RETRO ---
 def criar_bip(nome, freq, duracao=0.2, volume=0.5):
     try:
         if os.path.exists(nome): return
         framerate = 44100
         nframes = int(framerate * duracao)
         with wave.open(nome, 'w') as wav:
-            wav.setnchannels(1)
-            wav.setsampwidth(2)
-            wav.setframerate(framerate)
+            wav.setnchannels(1); wav.setsampwidth(2); wav.setframerate(framerate)
             for i in range(nframes):
                 v = volume * (1 - i / nframes)
                 sample = int(v * 32767 * math.sin(2 * math.pi * freq * i / framerate))
@@ -69,24 +59,20 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-criar_bip('bip_boom.wav', 120, 0.3, 0.8)
-criar_bip('bip_bicho.wav', 400, 0.15, 0.5)
-criar_bip('bip_morreu.wav', 180, 0.7, 0.6)
-criar_bip('bip_venceu.wav', 800, 0.25, 0.5)
-
 class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.tipo = 'chao'
+        self.cor_atual = (0.20, 0.68, 0.22, 1)
         self.bind(pos=self._redesenhar, size=self._redesenhar)
-    def _redesenhar(self, *args): self.desenhar(self.tipo)
-    def desenhar(self, tipo):
+    def _redesenhar(self, *args): self.desenhar(self.tipo, self.cor_atual)
+    def desenhar(self, tipo, cor_fase=None):
         self.tipo = tipo
+        if cor_fase: self.cor_atual = cor_fase
         self.canvas.clear()
-        x, y = self.pos
-        w, h = self.size
+        x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
-        chao = (0.20, 0.68, 0.22, 1)
+        chao = self.cor_atual
         fixo = (0.45, 0.48, 0.52, 1)
         dest = (0.76, 0.42, 0.20, 1)
         with self.canvas:
@@ -203,18 +189,23 @@ class TelaInicial(Screen):
 
 class TelaJogo(Screen):
     LINHAS = 11; COLUNAS = 11
+    CORES_FASE = [
+        (0.20, 0.68, 0.22, 1), # 1 verde mato
+        (0.85, 0.75, 0.25, 1), # 2 deserto amarelo
+        (0.45, 0.78, 0.95, 1), # 3 gelo azul
+        (0.35, 0.35, 0.38, 1), # 4 caverna cinza
+        (0.75, 0.30, 0.20, 1), # 5 vulcao
+        (0.55, 0.25, 0.85, 1), # 6 roxo final
+    ]
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.fase = 1
-        self.pontos = 0
-        self.vidas = 3
+        self.fase = 1; self.pontos = 0; self.vidas = 3
         self.player = [1, 1]; self.inimigos = []; self.bombas = []; self.fogos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
         root = BoxLayout(orientation='vertical', spacing=4, padding=4)
         self.lbl_info = Label(text="VIDAS: 3 - FASE 1/6", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
         root.add_widget(self.lbl_info)
         self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.68)
         root.add_widget(self.grid)
-        # --- CONTROLES CORRIGIDOS ---
         controles = BoxLayout(orientation='horizontal', spacing=8, size_hint_y=0.24)
         dpad = GridLayout(cols=3, rows=3, spacing=6)
         dpad.add_widget(Widget())
@@ -255,11 +246,8 @@ class TelaJogo(Screen):
         elif key == 32: self.colocar_bomba()
         return True
     def iniciar_fase(self, fase):
-        self.fase = fase
-        self.game_over = False
-        if fase == 1:
-            self.vidas = 3
-            self.pontos = 0
+        self.fase = fase; self.game_over = False
+        if fase == 1: self.vidas = 3; self.pontos = 0
         self.player = [1, 1]; self.bombas = []; self.fogos = []; self.inimigos = []; self.mapa = []
         for l in range(self.LINHAS):
             linha = []
@@ -280,13 +268,14 @@ class TelaJogo(Screen):
             for c in range(self.COLUNAS):
                 b = Bloco(); self.grid.add_widget(b); linha_blocos.append(b)
             self.blocos.append(linha_blocos)
-        self.atualizar_info()
-        self.desenhar_mapa()
+        self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
         self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.6)
     def atualizar_info(self):
-        self.lbl_info.text = f"VIDAS: {self.vidas} - FASE {self.fase}/6 - {self.pontos} PTS"
+        coracoes = "♥ " * self.vidas
+        self.lbl_info.text = f"{coracoes} FASE {self.fase}/6 - {self.pontos} PTS"
     def desenhar_mapa(self):
+        cor_fase = self.CORES_FASE[self.fase - 1]
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = self.mapa[l][c]
@@ -297,7 +286,7 @@ class TelaJogo(Screen):
                 if [l, c] == self.player: tipo = 'player'
                 for e in self.inimigos:
                     if e[0] == l and e[1] == c: tipo = 'inimigo'
-                self.blocos[l][c].desenhar(tipo)
+                self.blocos[l][c].desenhar(tipo, cor_fase)
     def pode_andar(self, l, c):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] in ('fixo', 'dest'): return False
@@ -338,8 +327,7 @@ class TelaJogo(Screen):
         mortos = antes - len(self.inimigos)
         if mortos > 0:
             tocar_bip('bip_bicho.wav')
-            self.pontos += mortos * 100
-            self.atualizar_info()
+            self.pontos += mortos * 100; self.atualizar_info()
         self.desenhar_mapa()
         if tuple(self.player) in novos_fogos:
             Clock.schedule_once(lambda dt: self.perdeu(), 0.3)
@@ -367,14 +355,11 @@ class TelaJogo(Screen):
         if self.vidas <= 0:
             self.game_over = True
             if self._event_inimigo: self._event_inimigo.cancel()
-            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS - Aperte VOLTAR"
+            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS - VOLTAR"
             self.desenhar_mapa()
         else:
-            self.player = [1, 1]
-            self.bombas = []
-            self.fogos = []
-            self.atualizar_info()
-            self.desenhar_mapa()
+            self.player = [1, 1]; self.bombas = []; self.fogos = []
+            self.atualizar_info(); self.desenhar_mapa()
     def venceu_fase(self):
         if self.game_over: return
         self.game_over = True; tocar_bip('bip_venceu.wav')
@@ -392,6 +377,11 @@ class TelaJogo(Screen):
         self.manager.current = 'inicio'
 
 class BombermanApp(App):
+    def on_start(self):
+        Clock.schedule_once(lambda dt: criar_bip('bip_boom.wav', 120, 0.3, 0.8), 0.5)
+        Clock.schedule_once(lambda dt: criar_bip('bip_bicho.wav', 400, 0.15, 0.5), 0.6)
+        Clock.schedule_once(lambda dt: criar_bip('bip_morreu.wav', 180, 0.7, 0.6), 0.7)
+        Clock.schedule_once(lambda dt: criar_bip('bip_venceu.wav', 800, 0.25, 0.5), 0.8)
     def build(self):
         sm = ScreenManager()
         sm.add_widget(TelaInicial(name='inicio'))
