@@ -49,7 +49,6 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-# 10 MAPAS - 21x17 - MANTIDOS IGUAIS AOS TEUS
 FASES_MAPAS = [
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1],[1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1],[1,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,2,0,1,1,0,0,0,0,0,0,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1],[1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,2,0,0,1,0,1,0,1,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
@@ -110,8 +109,9 @@ class Bloco(Widget):
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
             elif tipo == 'casinha':
-                Color(1,1,1,0.12); Rectangle(pos=(x, y), size=(w, h))
-                Color(*fixo); Line(rectangle=(x, y, w, h), width=1); return
+                # CORRIGIDO - Quadradinho Atari: fundo cinza + borda rosa grossa
+                Color(0.25, 0.25, 0.25, 1); Rectangle(pos=(x, y), size=(w, h))
+                Color(*fixo); Line(rectangle=(x, y, w, h), width=2.5); return
 
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
@@ -177,6 +177,30 @@ class TelaInicial(Screen):
         self.manager.get_screen('jogo').iniciar_fase(1, True)
         self.manager.current = 'jogo'
 
+# === BOTAO COM SETA DESENHADA - NAO USA TEXTO, NAO DA QUADRADINHO ===
+class BotaoSeta(Button):
+    def __init__(self, direcao='cima', **kwargs):
+        super().__init__(**kwargs)
+        self.direcao = direcao
+        self.text = ""
+        self.background_color = (0.15, 0.3, 0.8, 1)
+        self.bind(pos=self.desenhar_seta, size=self.desenhar_seta)
+    def desenhar_seta(self, *args):
+        self.canvas.after.clear()
+        x, y = self.pos; w, h = self.size
+        cx = x + w/2; cy = y + h/2
+        tam = min(w, h) * 0.35
+        with self.canvas.after:
+            Color(1, 1, 1, 1)
+            if self.direcao == 'cima':
+                Triangle(points=[cx, cy+tam, cx-tam, cy-tam, cx+tam, cy-tam])
+            elif self.direcao == 'baixo':
+                Triangle(points=[cx, cy-tam, cx-tam, cy+tam, cx+tam, cy+tam])
+            elif self.direcao == 'esq':
+                Triangle(points=[cx-tam, cy, cx+tam, cy+tam, cx+tam, cy-tam])
+            elif self.direcao == 'dir':
+                Triangle(points=[cx+tam, cy, cx-tam, cy+tam, cx-tam, cy-tam])
+
 class TelaJogo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -187,9 +211,7 @@ class TelaJogo(Screen):
         self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
         self._event_andar = None; self._dir_atual = (0, 0); self._dir_desejada = (0, 0)
         self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None; self.tempo_restante_poder = 0
-        self._touch_start = None
         root = BoxLayout(orientation='vertical', spacing=2, padding=2)
-        # === BARRINHA DE CIMA COM MENU ===
         topo = BoxLayout(orientation='horizontal', size_hint_y=0.08, padding=[4,2,4,2], spacing=4)
         b_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.18)
         b_menu.bind(on_release=lambda x: self.voltar_menu())
@@ -201,36 +223,28 @@ class TelaJogo(Screen):
         root.add_widget(topo)
         self.lbl_recorde_tela = Label(text="", font_size='11sp', color=(0.6,1,0.6,1), bold=True, size_hint_y=0.03)
         root.add_widget(self.lbl_recorde_tela)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.72)
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.70)
         root.add_widget(self.grid)
-
-        # === BOTÕES DE SETA EMBAIXO - CORRIGIDO ===
-        controles = BoxLayout(orientation='vertical', size_hint_y=0.17, spacing=2, padding=4)
-        linha_cima = BoxLayout(orientation='horizontal', spacing=4)
+        controles = BoxLayout(orientation='vertical', size_hint_y=0.19, spacing=4, padding=6)
+        linha_cima = BoxLayout(orientation='horizontal')
         linha_cima.add_widget(Widget())
-        b_cima = Button(text="▲", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_cima = BotaoSeta(direcao='cima', size_hint_x=0.34)
         b_cima.bind(on_press=lambda x: self.set_direcao(-1, 0))
         linha_cima.add_widget(b_cima)
         linha_cima.add_widget(Widget())
         controles.add_widget(linha_cima)
-
-        linha_meio = BoxLayout(orientation='horizontal', spacing=4)
-        b_esq = Button(text="◀", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        linha_meio = BoxLayout(orientation='horizontal', spacing=8)
+        b_esq = BotaoSeta(direcao='esq')
         b_esq.bind(on_press=lambda x: self.set_direcao(0, -1))
-        b_baixo = Button(text="▼", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_baixo = BotaoSeta(direcao='baixo')
         b_baixo.bind(on_press=lambda x: self.set_direcao(1, 0))
-        b_dir = Button(text="▶", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_dir = BotaoSeta(direcao='dir')
         b_dir.bind(on_press=lambda x: self.set_direcao(0, 1))
-        linha_meio.add_widget(b_esq)
-        linha_meio.add_widget(b_baixo)
-        linha_meio.add_widget(b_dir)
+        linha_meio.add_widget(b_esq); linha_meio.add_widget(b_baixo); linha_meio.add_widget(b_dir)
         controles.add_widget(linha_meio)
         root.add_widget(controles)
-
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
-
-    # SWIPE REMOVIDO - AGORA É SÓ BOTÃO
 
     def teclado(self, window, key, *args):
         if self.manager and self.manager.current != 'jogo': return False
@@ -242,7 +256,10 @@ class TelaJogo(Screen):
 
     def set_direcao(self, dl, dc):
         self._dir_desejada = (dl, dc)
-        self.tentar_mover()
+        nl, nc = self.player[0] + dl, self.player[1] + dc
+        if self.pode_andar(nl, nc, fantasma=False):
+            self._dir_atual = (dl, dc)
+            self.mover(dl, dc)
         if not self._event_andar:
             self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.16)
 
@@ -260,9 +277,6 @@ class TelaJogo(Screen):
                 self.mover(self._dir_atual[0], self._dir_atual[1])
                 return
             self._dir_atual = (0,0)
-
-    def iniciar_andar(self, dl, dc): self.set_direcao(dl, dc)
-    def parar_andar(self, *args): pass
 
     def definir_spawn_e_casinha(self):
         cr, cc = self.LINHAS//2, self.COLUNAS//2
@@ -349,8 +363,6 @@ class TelaJogo(Screen):
         if self.mapa[l][c] == 1: return False
         if not fantasma and (l,c) in self.casa_fantasmas:
             return False
-        if not fantasma and (l,c) == getattr(self, 'porta_casinha', (-99,-99)):
-            pass
         return True
 
     def ativar_poder(self):
