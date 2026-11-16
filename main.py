@@ -49,27 +49,17 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-# 10 MAPAS - 6 DA TUA FOTO + 4 NOVOS - 21x17
+# 10 MAPAS - 21x17
 FASES_MAPAS = [
-    # 1 - ROSA - foto topo esquerda
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1],[1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1],[1,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,2,0,1,1,0,0,0,0,0,0,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 2 - AZUL - foto topo meio
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1],[1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,2,0,0,1,0,1,0,1,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 3 - BEGE - foto topo direita
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,1,1,0,1,0,1,1,1,0,0,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,0,0,1,0,1,0,0,0,1,0,0,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,2,0,1,1,0,1,0,0,0,1,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 4 - ROXO - foto baixo esquerda
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,0,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,2,0,0,1,0,0,0,1,0,0,0,1,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 5 - AMARELO QUADRADINHOS - foto baixo meio
     [[1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1],[1,1,1,1,0,1,0,0,0,0,0,1,0,1,1,1,1],[1,1,1,1,0,1,0,1,1,1,0,1,0,1,1,1,1],[1,1,1,1,0,1,1,1,1,1,1,1,0,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,1,1,0,1,1,0,1,1,0,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,2,0,0,0,0,0,0,1,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 6 - ESPIRAL - foto baixo direita
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],[1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,0,0,0,0,1,0,1,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,1,0,1,0,1,0,0,0,1,0,1,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,1,0,1,0,0,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 7 - VERDE - NOVO
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,0,1,0,1,0,0,1,0,0,2,1],[1,0,1,0,1,0,1,1,0,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],[1,0,0,0,1,1,0,1,1,1,0,1,1,0,0,0,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1],[1,0,1,1,1,0,0,0,0,0,0,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,2,0,1,1,0,0,0,0,0,0,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 8 - CIANO - NOVO
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,1,0,0,0,1,0,1,0,0,0,1,0,2,1],[1,0,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1],[1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,1],[1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,2,0,0,1,0,0,0,1,0,0,0,1,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 9 - VERMELHO CLASSICO - NOVO
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1],[1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1],[1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1],[1,2,0,0,1,0,0,0,0,0,0,0,1,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
-    # 10 - BRANCO BOSS FINAL - NOVO - MAIS DIFICIL
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,1,0,1,0,1,0,1,0,1,0,1,0,2,1],[1,0,1,1,0,1,0,1,0,1,0,1,0,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,1],[1,1,1,0,1,0,1,0,0,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,2,0,0,1,0,0,0,1,0,0,0,1,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
 ]
 
@@ -102,12 +92,11 @@ class Bloco(Widget):
             if tipo == 'fixo':
                 Color(*fixo); Rectangle(pos=(x, y), size=(w, h))
                 Color(0,0,0,1); Rectangle(pos=(x+1, y+1), size=(w-2, h-2))
-                Color(*fixo); Line(rectangle=(x+0.5, y+0.5, w-1, h-1), width=1)
-                return
+                Color(*fixo); Line(rectangle=(x+0.5, y+0.5, w-1, h-1), width=1); return
             elif tipo == 'pastilha':
-                Color(1,1,1,1); Ellipse(pos=(x + w*0.35, y + h*0.35), size=(w*0.30, h*0.30)); return
+                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.32)/2, y + (h-m*0.32)/2), size=(m*0.32, m*0.32)); return
             elif tipo == 'poder':
-                Color(1,1,1,1); Ellipse(pos=(x + w*0.15, y + h*0.15), size=(w*0.70, h*0.70)); return
+                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.75)/2, y + (h-m*0.75)/2), size=(m*0.75, m*0.75)); return
             elif tipo == 'player':
                 Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
                 Color(0,0,0,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
@@ -120,6 +109,9 @@ class Bloco(Widget):
                 Color(*c); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
+            elif tipo == 'casinha':
+                Color(1,1,1,0.12); Rectangle(pos=(x, y), size=(w, h))
+                Color(*fixo); Line(rectangle=(x, y, w, h), width=1); return
 
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
@@ -177,12 +169,12 @@ class TelaInicial(Screen):
                 if self.musica: self.musica.loop = True; self.musica.play()
         except: pass
     def parar_musica(self):
-        try: 
+        try:
             if self.musica: self.musica.stop()
         except: pass
     def ir_para_jogo(self, *args):
         self.parar_musica()
-        self.manager.get_screen('jogo').iniciar_fase(1)
+        self.manager.get_screen('jogo').iniciar_fase(1, True)
         self.manager.current = 'jogo'
 
 class TelaJogo(Screen):
@@ -190,34 +182,43 @@ class TelaJogo(Screen):
         super().__init__(**kwargs)
         self.LINHAS = 21; self.COLUNAS = 17
         self.fase = 1; self.pontos = 0; self.vidas = 3
-        self.player = [1, 1]; self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
+        self.player = [18, 8]; self.spawn_player = [18, 8]
+        self.casa_fantasmas = [(9,7),(9,8),(9,9),(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
+        self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
         self._event_andar = None; self._dir_andar = (0, 0); self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None
-        root = BoxLayout(orientation='vertical', spacing=1, padding=1)
-        self.lbl_info = Label(text="VIDAS: 3 - FASE 1/10", font_size='11sp', bold=True, size_hint_y=0.04, color=(1, 1, 1, 1))
-        root.add_widget(self.lbl_info)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.90)
+        root = BoxLayout(orientation='vertical', spacing=2, padding=2)
+        # PLACAR - ESCORE SEMPRE NA TELA
+        topo = BoxLayout(orientation='horizontal', size_hint_y=0.07, padding=[6,2,6,2])
+        self.lbl_info = Label(text="VIDAS: 3", font_size='13sp', bold=True, size_hint_x=0.35)
+        self.lbl_fase = Label(text="FASE 1/10", font_size='13sp', bold=True, size_hint_x=0.30)
+        self.lbl_pontos = Label(text="0 PTS", font_size='15sp', bold=True, color=(1,1,0,1), size_hint_x=0.35)
+        topo.add_widget(self.lbl_info); topo.add_widget(self.lbl_fase); topo.add_widget(self.lbl_pontos)
+        root.add_widget(topo)
+        self.lbl_recorde_tela = Label(text="", font_size='11sp', color=(0.6,1,0.6,1), bold=True, size_hint_y=0.03)
+        root.add_widget(self.lbl_recorde_tela)
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.73)
         root.add_widget(self.grid)
-        controles = BoxLayout(orientation='horizontal', spacing=2, size_hint_y=0.06, padding=[5,0,5,1])
-        controles.add_widget(Widget(size_hint_x=0.32))
-        dpad = GridLayout(cols=3, rows=3, spacing=1, size_hint_x=0.36)
+        # BOTOES GRANDES
+        controles = BoxLayout(orientation='horizontal', spacing=4, size_hint_y=0.17, padding=[4,2,4,2])
+        b_voltar = Button(text="MENU", font_size='13sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.20)
+        b_voltar.bind(on_release=lambda x: self.voltar_menu())
+        controles.add_widget(b_voltar)
+        dpad = GridLayout(cols=3, rows=3, spacing=3, size_hint_x=0.60)
         dpad.add_widget(Widget())
-        b_cima = Button(text="▲", font_size='10sp', bold=True, background_color=(0.20, 0.20, 0.22, 1))
+        b_cima = Button(text="CIMA", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
         b_cima.bind(on_press=lambda x: self.iniciar_andar(-1, 0)); b_cima.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_cima); dpad.add_widget(Widget())
-        b_esq = Button(text="◀", font_size='10sp', bold=True, background_color=(0.20, 0.20, 0.22, 1))
+        b_esq = Button(text="ESQ", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
         b_esq.bind(on_press=lambda x: self.iniciar_andar(0, -1)); b_esq.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_esq); dpad.add_widget(Widget())
-        b_dir = Button(text="▶", font_size='10sp', bold=True, background_color=(0.20, 0.20, 0.22, 1))
+        b_dir = Button(text="DIR", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
         b_dir.bind(on_press=lambda x: self.iniciar_andar(0, 1)); b_dir.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_dir); dpad.add_widget(Widget())
-        b_baixo = Button(text="▼", font_size='10sp', bold=True, background_color=(0.20, 0.20, 0.22, 1))
+        b_baixo = Button(text="BAIXO", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
         b_baixo.bind(on_press=lambda x: self.iniciar_andar(1, 0)); b_baixo.bind(on_release=lambda x: self.parar_andar())
         dpad.add_widget(b_baixo); dpad.add_widget(Widget())
         controles.add_widget(dpad)
-        b_voltar = Button(text="◁", font_size='9sp', bold=True, background_color=(0.22, 0.22, 0.25, 1), size_hint_x=0.08)
-        b_voltar.bind(on_release=lambda x: self.voltar_menu())
-        controles.add_widget(b_voltar)
-        controles.add_widget(Widget(size_hint_x=0.24))
+        controles.add_widget(Widget(size_hint_x=0.20))
         root.add_widget(controles)
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
@@ -231,28 +232,42 @@ class TelaJogo(Screen):
     def iniciar_andar(self, dl, dc):
         self._dir_andar = (dl, dc); self.mover(dl, dc)
         if self._event_andar: self._event_andar.cancel()
-        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.20)
+        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.18)
     def parar_andar(self, *args):
         if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-    def iniciar_fase(self, fase):
+    def definir_spawn_e_casinha(self):
+        cr, cc = self.LINHAS//2, self.COLUNAS//2
+        for dr in [-1,0,1]:
+            for dc in [-1,0,1]:
+                self.mapa[cr+dr][cc+dc] = 0
+        self.mapa[cr-2][cc] = 0
+        self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
+        for r in range(self.LINHAS-1, 0, -1):
+            for dc in [0,-1,1,-2,2]:
+                c2 = cc + dc
+                if 0 <= c2 < self.COLUNAS and self.mapa[r][c2] != 1:
+                    self.spawn_player = [r, c2]
+                    return
+        self.spawn_player = [18, 8]
+    def iniciar_fase(self, fase, reset_mapa=False):
         self.fase = fase; self.game_over = False; self.modo_poder = False
-        if fase == 1: self.vidas = 3; self.pontos = 0
+        if fase == 1 and reset_mapa: self.vidas = 3; self.pontos = 0
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        self.player = [1, 1]; self.inimigos = []; self.mapa = [row[:] for row in FASES_MAPAS[fase-1]]
-        self.pastilhas = set(); self.poderes = set()
-        for l in range(self.LINHAS):
-            for c in range(self.COLUNAS):
-                if self.mapa[l][c] == 0: self.pastilhas.add((l,c))
-                elif self.mapa[l][c] == 2: self.poderes.add((l,c))
-        if (1,1) in self.pastilhas: self.pastilhas.remove((1,1))
-        if (1,1) in self.poderes: self.poderes.remove((1,1))
+        self.mapa = [row[:] for row in FASES_MAPAS[fase-1]]
+        self.definir_spawn_e_casinha()
+        self.player = self.spawn_player[:]
+        if reset_mapa:
+            self.pastilhas = set(); self.poderes = set()
+            for l in range(self.LINHAS):
+                for c in range(self.COLUNAS):
+                    if self.mapa[l][c] == 0 and (l,c) not in self.casa_fantasmas and [l,c] != self.spawn_player:
+                        self.pastilhas.add((l,c))
+                    elif self.mapa[l][c] == 2: self.poderes.add((l,c))
+            if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
+        self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
-        livres = [(l,c) for l in range(8,12) for c in range(6,11) if self.mapa[l][c] != 1]
-        random.shuffle(livres)
-        for i in range(4):
-            if i < len(livres):
-                l,c = livres[i]
-                self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
+        for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
             linha_blocos = []
@@ -261,17 +276,34 @@ class TelaJogo(Screen):
             self.blocos.append(linha_blocos)
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.40)
+        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
+    def reiniciar_apos_morte(self):
+        self.player = self.spawn_player[:]
+        self.inimigos = []
+        tipos = ['vermelho','rosa','ciano','laranja']
+        for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
+        self.modo_poder = False
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        self.atualizar_info(); self.desenhar_mapa()
     def atualizar_info(self):
         nome = FASES_SKINS[self.fase-1]["nome"]
         modo = " PODER!" if self.modo_poder else ""
-        self.lbl_info.text = f"VIDAS: {self.vidas} - FASE {self.fase}/10 {nome}{modo} - {self.pontos} PTS"
+        self.lbl_info.text = f"VIDAS: {self.vidas}{modo}"
+        self.lbl_fase.text = f"FASE {self.fase}/10 {nome}"
+        self.lbl_pontos.text = f"{self.pontos} PTS"
+        rec = carregar_recorde()
+        if rec["pontos"] > 0:
+            self.lbl_recorde_tela.text = f"RECORDE: FASE {rec['fase']}/10 - {rec['pontos']} PTS"
+        else:
+            self.lbl_recorde_tela.text = "NOVO RECORDE? JOGUE!"
     def desenhar_mapa(self):
         skin = FASES_SKINS[self.fase - 1]
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = 'chao'
                 if self.mapa[l][c] == 1: tipo = 'fixo'
+                elif (l,c) in self.casa_fantasmas: tipo = 'casinha'
                 elif (l,c) in self.poderes: tipo = 'poder'
                 elif (l,c) in self.pastilhas: tipo = 'pastilha'
                 if [l, c] == self.player: tipo = 'player'
@@ -287,21 +319,30 @@ class TelaJogo(Screen):
         if not self.pode_andar(nl, nc): return
         self.player = [nl, nc]
         if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
-        if (nl, nc) in self.poderes: self.poderes.remove((nl, nc)); self.pontos += 50; self.modo_poder = True; tocar_bip('bip_venceu.wav'); 
+        if (nl, nc) in self.poderes: self.poderes.remove((nl, nc)); self.pontos += 50; self.modo_poder = True; tocar_bip('bip_venceu.wav')
         if self.tempo_poder: self.tempo_poder.cancel()
         if self.modo_poder: self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
+        cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
-                if self.modo_poder: self.inimigos.remove(e); self.pontos += 200; tocar_bip('bip_bicho.wav')
+                if self.modo_poder:
+                    e[0], e[1] = cr, cc
+                    self.pontos += 200; tocar_bip('bip_bicho.wav')
                 else: self.perdeu(); return
         self.atualizar_info()
         if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
         self.desenhar_mapa()
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
+        cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
             dl, dc = e[2]
-            if e[3] == 'vermelho' and not self.modo_poder and random.random() < 0.7:
+            if self.modo_poder:
+                if e[0] > cr: dl, dc = -1, 0
+                elif e[0] < cr: dl, dc = 1, 0
+                elif e[1] > cc: dl, dc = 0, -1
+                elif e[1] < cc: dl, dc = 0, 1
+            elif e[3] == 'vermelho' and random.random() < 0.65:
                 if self.player[0] > e[0]: dl, dc = 1, 0
                 elif self.player[0] < e[0]: dl, dc = -1, 0
                 elif self.player[1] > e[1]: dl, dc = 0, 1
@@ -310,7 +351,9 @@ class TelaJogo(Screen):
             if not self.pode_andar(nl, nc): e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
             else: e[0], e[1] = nl, nc; e[2] = (dl, dc)
             if [e[0], e[1]] == self.player:
-                if self.modo_poder: self.inimigos.remove(e); self.pontos += 200; tocar_bip('bip_bicho.wav'); self.atualizar_info(); return
+                if self.modo_poder:
+                    e[0], e[1] = cr, cc
+                    self.pontos += 200; tocar_bip('bip_bicho.wav'); self.atualizar_info(); return
                 else: self.perdeu(); return
         self.desenhar_mapa()
     def fim_poder(self): self.modo_poder = False; self.tempo_poder = None; self.atualizar_info(); self.desenhar_mapa()
@@ -321,15 +364,22 @@ class TelaJogo(Screen):
         if self.vidas <= 0:
             self.game_over = True
             if self._event_inimigo: self._event_inimigo.cancel()
-            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS"
-        else: self.player = [1, 1]; self.atualizar_info(); self.desenhar_mapa()
+            self.lbl_pontos.text = f"FIM: {self.pontos} PTS"
+            self.lbl_recorde_tela.text = f"SALVO! RECORDE: {carregar_recorde()['pontos']} PTS"
+            Clock.schedule_once(lambda dt: self.voltar_menu(), 2.0)
+        else: self.reiniciar_apos_morte()
     def venceu_fase(self):
         if self.game_over: return
         self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 200; salvar_recorde(self.fase, self.pontos)
         if self._event_inimigo: self._event_inimigo.cancel()
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        if self.fase >= 10: self.lbl_info.text = f"ZEROU 10 FASES! {self.pontos} PTS!"; Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
-        else: self.lbl_info.text = f"FASE {self.fase} OK! {self.pontos} PTS"; Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1), 1.5)
+        if self.fase >= 10:
+            self.lbl_pontos.text = f"ZEROU! {self.pontos} PTS!"
+            self.lbl_recorde_tela.text = "NOVO RECORDE SALVO!"
+            Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
+        else:
+            self.lbl_pontos.text = f"FASE OK! {self.pontos} PTS"
+            Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
         if self._event_andar: self._event_andar.cancel()
