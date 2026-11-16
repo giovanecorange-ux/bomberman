@@ -1,15 +1,15 @@
 [app]
-title = Bomberman
-package.name = bomberman
+title = Pacman
+package.name = pacman
 package.domain = org.corange
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,mp3,wav,json
-version = 1.2
+version = 1.0
 requirements = python3,kivy==2.3.0
 orientation = portrait
 fullscreen = 0
 
-# ICONE - CORRIGIDO
+# ICONE - PACMAN AMARELO COM 4 FANTASMAS
 icon.filename = icon.png
 presplash.filename = icon.png
 
