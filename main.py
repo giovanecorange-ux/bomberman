@@ -59,40 +59,33 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-# === SO AQUI MUDOU: PACMAN - FUNDO PRETO + 5 MAPAS COLORIDOS ===
-FASES_SKINS = [
-    {"chao": (0,0,0,1), "fixo": (0, 0.4, 1, 1), "dest": (0,0,0,1), "detalhe": (0,0.4,1,1), "nome": "Azul"},
-    {"chao": (0,0,0,1), "fixo": (0, 0.8, 0.2, 1), "dest": (0,0,0,1), "detalhe": (0,0.8,0.2,1), "nome": "Verde"},
-    {"chao": (0,0,0,1), "fixo": (1, 0.2, 0.2, 1), "dest": (0,0,0,1), "detalhe": (1,0.2,0.2,1), "nome": "Vermelho"},
-    {"chao": (0,0,0,1), "fixo": (0.6, 0.2, 1, 1), "dest": (0,0,0,1), "detalhe": (0.6,0.2,1,1), "nome": "Roxo"},
-    {"chao": (0,0,0,1), "fixo": (1, 0.9, 0.2, 1), "dest": (0,0,0,1), "detalhe": (1,0.9,0.2,1), "nome": "Amarelo"},
+# 6 MAPAS DA TUA FOTO - Ms Pac-Man - 1=parede, 0=pastilha, 2=poder
+FASES_MAPAS = [
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,1,0,1,1,0,0,1],[1,0,1,0,0,0,0,1,0,1,1],[1,0,0,0,1,1,0,0,0,0,1],[1,0,1,0,0,0,0,1,0,1,1],[1,0,1,0,1,1,0,1,0,0,1],[1,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,0,1,1,0,0,0,1],[1,2,0,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,1,0,1,0,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,1,0,1,0,1,0,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,1,0,1,0,1,0,2,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,0,1,0,1,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,2,0,1,0,1,0,1,0,2,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,0,0,1],[1,0,1,1,0,0,0,1,1,0,1],[1,0,0,0,0,1,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,1,0,1,1,0,1,0,1],[1,2,0,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1]],
+    [[1,1,1,1,1,0,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,2,1],[1,0,1,1,0,1,0,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,0,0,0,1,0,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,2,0,0,0,0,0,0,0,2,1],[1,0,1,1,0,1,0,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,0,1,1,1,1,1]],
+    [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,0,0,0,0,0,2,1],[1,0,1,1,1,1,1,1,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,0,1,1,1,0,1,0,1],[1,0,0,0,1,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,1,1,1,1,1,1,1,0,1],[1,2,0,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1]],
 ]
 
-# Labirinto Pacman 11x11 - 1=parede, 0=pastilha
-MAPA_PACMAN = [
-    [1,1,1,1,1,1,1,1,1,1,1],
-    [1,0,0,0,0,1,0,0,0,0,1],
-    [1,0,1,1,0,1,0,1,1,0,1],
-    [1,0,1,0,0,0,0,0,1,0,1],
-    [1,0,0,0,1,1,1,0,0,0,1],
-    [1,1,0,1,1,0,1,1,0,1,1],
-    [1,0,0,0,1,0,1,0,0,0,1],
-    [1,0,1,0,0,0,0,0,1,0,1],
-    [1,0,1,1,0,1,0,1,1,0,1],
-    [1,0,0,0,0,1,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1,1,1,1],
+FASES_SKINS = [
+    {"chao": (0,0,0,1), "fixo": (1, 0.4, 0.6, 1), "nome": "Rosa"},
+    {"chao": (0,0,0,1), "fixo": (0.2, 0.7, 1, 1), "nome": "Azul"},
+    {"chao": (0,0,0,1), "fixo": (1, 0.8, 0.6, 1), "nome": "Bege"},
+    {"chao": (0,0,0,1), "fixo": (0.6, 0.2, 1, 1), "nome": "Roxo"},
+    {"chao": (0,0,0,1), "fixo": (1, 0.9, 0.2, 1), "nome": "Amarelo"},
+    {"chao": (0,0,0,1), "fixo": (1, 0.6, 0.8, 1), "nome": "Espiral"},
 ]
 
 class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.tipo = 'chao'
-        self.cor_atual = (0,0,0,1)
         self.bind(pos=self._redesenhar, size=self._redesenhar)
-    def _redesenhar(self, *args): self.desenhar(self.tipo, self.cor_atual)
+    def _redesenhar(self, *args): self.desenhar(self.tipo, None, None)
     def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='vermelho'):
         self.tipo = tipo
-        if cor_fase: self.cor_atual = cor_fase
         self.canvas.clear()
         x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
@@ -107,21 +100,22 @@ class Bloco(Widget):
             elif tipo == 'pastilha':
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.38, y + h*0.38), size=(w*0.24, h*0.24))
                 return
-            elif tipo == 'moeda':
-                Color(1,1,0,1); Ellipse(pos=(x + w*0.30, y + h*0.30), size=(w*0.40, h*0.40))
+            elif tipo == 'poder':
+                Color(1,1,1,1); Ellipse(pos=(x + w*0.15, y + h*0.15), size=(w*0.70, h*0.70))
                 return
             elif tipo == 'player':
-                # PACMAN AMARELO - igual teu icone
                 Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.55, y + h*0.62), size=(w*0.12, h*0.12))
                 Color(0,0,0,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30])
                 return
+            elif tipo == 'assustado':
+                Color(0,0,1,1); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
+                Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
+                return
             elif tipo == 'inimigo':
-                # 4 FANTASMAS - igual teu icone
-                cores = {'vermelho': (1,0,0,1), 'rosa': (1,0.6,0.8,1), 'ciano': (0,1,1,1), 'laranja': (1,0.6,0,1), 'azul': (0,1,1,1), 'verde': (1,0,0,1)}
+                cores = {'vermelho': (1,0,0,1), 'rosa': (1,0.6,0.8,1), 'ciano': (0,1,1,1), 'laranja': (1,0.6,0,1)}
                 c = cores.get(inimigo_tipo, (1,0,0,1))
-                Color(*c); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60))
-                Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
+                Color(*c); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14))
                 return
@@ -140,16 +134,13 @@ class DesenhoCapa(Widget):
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
             bx = x + espaco
-            # Pacman igual icone
             Color(1,1,0,1); Ellipse(pos=(bx, cy), size=(lado, lado))
             Color(0,0,0,1); Triangle(points=[bx+lado*0.5, cy+lado*0.5, bx+lado*1.05, cy+lado*0.75, bx+lado*1.05, cy+lado*0.25])
             cores = [(1,0,0,1),(1,0.6,0.8,1),(0,1,1,1),(1,0.6,0,1)]
             for i, cor in enumerate(cores):
                 fx = bx + (lado+espaco)*(i+1)
-                Color(*cor); Ellipse(pos=(fx, cy+lado*0.2), size=(lado*0.8, lado*0.6))
-                Rectangle(pos=(fx, cy), size=(lado*0.8, lado*0.3))
+                Color(*cor); Ellipse(pos=(fx, cy+lado*0.2), size=(lado*0.8, lado*0.6)); Rectangle(pos=(fx, cy), size=(lado*0.8, lado*0.3))
                 Color(1,1,1,1); Ellipse(pos=(fx+lado*0.15, cy+lado*0.5), size=(lado*0.18, lado*0.2)); Ellipse(pos=(fx+lado*0.45, cy+lado*0.5), size=(lado*0.18, lado*0.2))
-                Color(0,0,0,1); Ellipse(pos=(fx+lado*0.20, cy+lado*0.54), size=(lado*0.08, lado*0.1)); Ellipse(pos=(fx+lado*0.50, cy+lado*0.54), size=(lado*0.08, lado*0.1))
 
 class TelaInicial(Screen):
     def __init__(self, **kwargs):
@@ -168,36 +159,26 @@ class TelaInicial(Screen):
         self.add_widget(layout)
     def on_enter(self):
         rec = carregar_recorde()
-        if rec["fase"] > 1 or rec["pontos"] > 0:
-            self.lbl_recorde.text = f"RECORDE: FASE {rec['fase']} - {rec['pontos']} PONTOS"
-        else:
-            self.lbl_recorde.text = "SEM RECORDE - JOGUE!"
+        if rec["fase"] > 1 or rec["pontos"] > 0: self.lbl_recorde.text = f"RECORDE: FASE {rec['fase']} - {rec['pontos']} PONTOS"
+        else: self.lbl_recorde.text = "SEM RECORDE - JOGUE!"
         Clock.schedule_once(lambda dt: self.tocar_musica(), 0.2)
     def on_leave(self): self.parar_musica()
     def tocar_musica(self):
         try:
             if self.musica: self.musica.stop()
-            nome_arquivo = None
             pasta = os.path.dirname(os.path.abspath(__file__))
+            caminho = None
             for nome in os.listdir(pasta):
                 if nome.lower() == "nes.mp3":
-                    nome_arquivo = nome
+                    caminho = os.path.join(pasta, nome)
                     break
-            caminho = None
-            if nome_arquivo:
-                caminho = os.path.join(pasta, nome_arquivo)
-            else:
-                caminho = resource_find("nes.mp3")
-                if not caminho: caminho = resource_find("nes.Mp3")
+            if not caminho: caminho = resource_find("nes.mp3")
             if caminho and os.path.exists(caminho):
                 self.musica = SoundLoader.load(caminho)
-                if self.musica:
-                    self.musica.loop = True
-                    self.musica.volume = 1.0
-                    self.musica.play()
+                if self.musica: self.musica.loop = True; self.musica.play()
         except: pass
     def parar_musica(self):
-        try:
+        try: 
             if self.musica: self.musica.stop()
         except: pass
     def ir_para_jogo(self, *args):
@@ -211,45 +192,35 @@ class TelaJogo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fase = 1; self.pontos = 0; self.vidas = 3
-        self.player = [1, 1]; self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None; self.itens = {}
-        self._event_andar = None; self._dir_andar = (0, 0); self.pastilhas = set()
-        root = BoxLayout(orientation='vertical', spacing=4, padding=4)
-        self.lbl_info = Label(text="VIDAS: 3 - FASE 1/5", font_size='16sp', bold=True, size_hint_y=0.08, color=(1, 1, 1, 1))
+        self.player = [1, 1]; self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
+        self._event_andar = None; self._dir_andar = (0, 0); self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None
+        root = BoxLayout(orientation='vertical', spacing=2, padding=2)
+        self.lbl_info = Label(text="VIDAS: 3 - FASE 1/6", font_size='14sp', bold=True, size_hint_y=0.06, color=(1, 1, 1, 1))
         root.add_widget(self.lbl_info)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.68)
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.78)
         root.add_widget(self.grid)
-        controles = BoxLayout(orientation='horizontal', spacing=8, size_hint_y=0.24)
-        dpad = GridLayout(cols=3, rows=3, spacing=6)
+        # CONTROLES CENTRALIZADOS SEM TURBO
+        controles = BoxLayout(orientation='horizontal', spacing=6, size_hint_y=0.16)
+        controles.add_widget(Widget(size_hint_x=0.20))
+        dpad = GridLayout(cols=3, rows=3, spacing=4, size_hint_x=0.60)
         dpad.add_widget(Widget())
-        b_cima = Button(text="CIMA", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_cima.bind(on_press=lambda x: self.iniciar_andar(-1, 0))
-        b_cima.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_cima)
-        dpad.add_widget(Widget())
-        b_esq = Button(text="ESQ", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_esq.bind(on_press=lambda x: self.iniciar_andar(0, -1))
-        b_esq.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_esq)
-        dpad.add_widget(Widget())
-        b_dir = Button(text="DIR", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_dir.bind(on_press=lambda x: self.iniciar_andar(0, 1))
-        b_dir.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_dir)
-        dpad.add_widget(Widget())
-        b_baixo = Button(text="BAIXO", font_size='16sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
-        b_baixo.bind(on_press=lambda x: self.iniciar_andar(1, 0))
-        b_baixo.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_baixo)
-        dpad.add_widget(Widget())
+        b_cima = Button(text="CIMA", font_size='12sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
+        b_cima.bind(on_press=lambda x: self.iniciar_andar(-1, 0)); b_cima.bind(on_release=lambda x: self.parar_andar())
+        dpad.add_widget(b_cima); dpad.add_widget(Widget())
+        b_esq = Button(text="ESQ", font_size='12sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
+        b_esq.bind(on_press=lambda x: self.iniciar_andar(0, -1)); b_esq.bind(on_release=lambda x: self.parar_andar())
+        dpad.add_widget(b_esq); dpad.add_widget(Widget())
+        b_dir = Button(text="DIR", font_size='12sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
+        b_dir.bind(on_press=lambda x: self.iniciar_andar(0, 1)); b_dir.bind(on_release=lambda x: self.parar_andar())
+        dpad.add_widget(b_dir); dpad.add_widget(Widget())
+        b_baixo = Button(text="BAIXO", font_size='12sp', bold=True, background_color=(0.25, 0.25, 0.28, 1))
+        b_baixo.bind(on_press=lambda x: self.iniciar_andar(1, 0)); b_baixo.bind(on_release=lambda x: self.parar_andar())
+        dpad.add_widget(b_baixo); dpad.add_widget(Widget())
         controles.add_widget(dpad)
-        acoes = BoxLayout(orientation='vertical', spacing=8)
-        b_bomba = Button(text="TURBO", font_size='28sp', bold=True, background_color=(1, 0.85, 0, 1), color=(0,0,0,1), size_hint_y=0.7)
-        b_bomba.bind(on_release=lambda x: self.turbo())
-        acoes.add_widget(b_bomba)
-        b_voltar = Button(text="VOLTAR", font_size='16sp', background_color=(0.3, 0.3, 0.35, 1), size_hint_y=0.3)
+        controles.add_widget(Widget(size_hint_x=0.05))
+        b_voltar = Button(text="VOLTAR", font_size='11sp', bold=True, background_color=(0.3, 0.3, 0.35, 1), size_hint_x=0.15)
         b_voltar.bind(on_release=lambda x: self.voltar_menu())
-        acoes.add_widget(b_voltar)
-        controles.add_widget(acoes)
+        controles.add_widget(b_voltar)
         root.add_widget(controles)
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
@@ -259,35 +230,33 @@ class TelaJogo(Screen):
         elif key == 274: self.mover(1, 0)
         elif key == 275: self.mover(0, 1)
         elif key == 276: self.mover(0, -1)
-        elif key == 32: self.turbo()
         return True
     def iniciar_andar(self, dl, dc):
-        self._dir_andar = (dl, dc)
-        self.mover(dl, dc)
+        self._dir_andar = (dl, dc); self.mover(dl, dc)
         if self._event_andar: self._event_andar.cancel()
-        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.25)
+        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.22)
     def parar_andar(self, *args):
-        if self._event_andar:
-            self._event_andar.cancel()
-            self._event_andar = None
-    def turbo(self):
-        if not self.game_over:
-            self.mover(self._dir_andar[0], self._dir_andar[1])
-            self.mover(self._dir_andar[0], self._dir_andar[1])
+        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
     def iniciar_fase(self, fase):
-        self.fase = fase; self.game_over = False
+        self.fase = fase; self.game_over = False; self.modo_poder = False
         if fase == 1: self.vidas = 3; self.pontos = 0
-        self.player = [1, 1]; self.inimigos = []; self.mapa = []; self.itens = {}
-        self.mapa = [row[:] for row in MAPA_PACMAN]
-        self.pastilhas = set()
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        self.player = [1, 1]; self.inimigos = []; self.mapa = [row[:] for row in FASES_MAPAS[fase-1]]
+        self.pastilhas = set(); self.poderes = set()
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
-                if self.mapa[l][c] == 0:
-                    self.pastilhas.add((l,c))
+                if self.mapa[l][c] == 0: self.pastilhas.add((l,c))
+                elif self.mapa[l][c] == 2: self.poderes.add((l,c))
+        self.mapa[1][1] = 0
+        if (1,1) in self.pastilhas: self.pastilhas.remove((1,1))
+        if (1,1) in self.poderes: self.poderes.remove((1,1))
         tipos = ['vermelho','rosa','ciano','laranja']
-        pos_f = [(5,5),(5,6),(6,5),(6,6)]
-        for i, (l,c) in enumerate(pos_f):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
+        livres = [(l,c) for l in range(3,8) for c in range(3,8) if self.mapa[l][c] != 1]
+        random.shuffle(livres)
+        for i in range(4):
+            if i < len(livres):
+                l,c = livres[i]
+                self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
             linha_blocos = []
@@ -296,25 +265,24 @@ class TelaJogo(Screen):
             self.blocos.append(linha_blocos)
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.5)
+        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.45)
     def atualizar_info(self):
-        coracoes = "♥ " * self.vidas
         nome = FASES_SKINS[self.fase-1]["nome"]
-        self.lbl_info.text = f"{coracoes} FASE {self.fase}/5 {nome} - {self.pontos} PTS"
+        modo = " PODER!" if self.modo_poder else ""
+        self.lbl_info.text = f"VIDAS: {self.vidas} - FASE {self.fase}/6 {nome}{modo} - {self.pontos} PTS"
     def desenhar_mapa(self):
-        cor_fase = self.CORES_FASE[self.fase - 1]
-        skin = FASES_SKINS[self.fase - 1]
+        cor_fase = self.CORES_FASE[self.fase - 1]; skin = FASES_SKINS[self.fase - 1]
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = 'chao'
                 if self.mapa[l][c] == 1: tipo = 'fixo'
+                elif (l,c) in self.poderes: tipo = 'poder'
                 elif (l,c) in self.pastilhas: tipo = 'pastilha'
                 if [l, c] == self.player: tipo = 'player'
                 inimigo_tipo = 'vermelho'
                 for e in self.inimigos:
                     if e[0] == l and e[1] == c:
-                        tipo = 'inimigo'
-                        inimigo_tipo = e[3]
+                        tipo = 'assustado' if self.modo_poder else 'inimigo'; inimigo_tipo = e[3]
                 self.blocos[l][c].desenhar(tipo, cor_fase, skin, inimigo_tipo)
     def pode_andar(self, l, c):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
@@ -324,61 +292,55 @@ class TelaJogo(Screen):
         nl, nc = self.player[0] + dl, self.player[1] + dc
         if not self.pode_andar(nl, nc): return
         self.player = [nl, nc]
-        if (nl, nc) in self.pastilhas:
-            self.pastilhas.remove((nl, nc))
-            self.pontos += 10
-            tocar_bip('bip_venceu.wav')
-            self.atualizar_info()
-            if len(self.pastilhas) == 0:
-                self.venceu_fase(); return
-        for e in self.inimigos:
-            if e[0] == nl and e[1] == nc: self.perdeu(); return
+        if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
+        if (nl, nc) in self.poderes: self.poderes.remove((nl, nc)); self.pontos += 50; self.modo_poder = True; tocar_bip('bip_venceu.wav'); 
+        if self.tempo_poder: self.tempo_poder.cancel()
+        if self.modo_poder: self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
+        for e in self.inimigos[:]:
+            if e[0] == nl and e[1] == nc:
+                if self.modo_poder: self.inimigos.remove(e); self.pontos += 200; tocar_bip('bip_bicho.wav')
+                else: self.perdeu(); return
+        self.atualizar_info()
+        if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
         self.desenhar_mapa()
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
-        for e in self.inimigos:
-            tipo = e[3]
+        for e in self.inimigos[:]:
             dl, dc = e[2]
-            if tipo == 'vermelho' and random.random() < 0.7:
+            if e[3] == 'vermelho' and not self.modo_poder and random.random() < 0.7:
                 if self.player[0] > e[0]: dl, dc = 1, 0
                 elif self.player[0] < e[0]: dl, dc = -1, 0
                 elif self.player[1] > e[1]: dl, dc = 0, 1
                 elif self.player[1] < e[1]: dl, dc = 0, -1
-            elif tipo in ['rosa','ciano'] and random.random() < 0.4:
-                dl, dc = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
             nl, nc = e[0] + dl, e[1] + dc
             if not self.pode_andar(nl, nc): e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
             else: e[0], e[1] = nl, nc; e[2] = (dl, dc)
-            if [e[0], e[1]] == self.player: self.perdeu(); return
+            if [e[0], e[1]] == self.player:
+                if self.modo_poder: self.inimigos.remove(e); self.pontos += 200; tocar_bip('bip_bicho.wav'); self.atualizar_info(); return
+                else: self.perdeu(); return
         self.desenhar_mapa()
+    def fim_poder(self): self.modo_poder = False; self.tempo_poder = None; self.atualizar_info(); self.desenhar_mapa()
     def perdeu(self):
         if self.game_over: return
-        tocar_bip('bip_morreu.wav')
-        self.vidas -= 1
-        salvar_recorde(self.fase, self.pontos)
+        tocar_bip('bip_morreu.wav'); self.vidas -= 1; salvar_recorde(self.fase, self.pontos)
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None; self.modo_poder = False
         if self.vidas <= 0:
             self.game_over = True
             if self._event_inimigo: self._event_inimigo.cancel()
-            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS - VOLTAR"
-            self.desenhar_mapa()
-        else:
-            self.player = [1, 1]
-            self.atualizar_info(); self.desenhar_mapa()
+            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS - VOLTAR"; self.desenhar_mapa()
+        else: self.player = [1, 1]; self.atualizar_info(); self.desenhar_mapa()
     def venceu_fase(self):
         if self.game_over: return
-        self.game_over = True; tocar_bip('bip_venceu.wav')
-        self.pontos += 200
-        salvar_recorde(self.fase, self.pontos)
+        self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 200; salvar_recorde(self.fase, self.pontos)
         if self._event_inimigo: self._event_inimigo.cancel()
-        if self.fase >= 5:
-            self.lbl_info.text = f"ZEROU! {self.pontos} PTS!"
-            Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
-        else:
-            self.lbl_info.text = f"FASE {self.fase} OK! {self.pontos} PTS"
-            Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1), 1.5)
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        if self.fase >= 6: self.lbl_info.text = f"ZEROU! {self.pontos} PTS!"; Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
+        else: self.lbl_info.text = f"FASE {self.fase} OK! {self.pontos} PTS"; Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1), 1.5)
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
         if self._event_andar: self._event_andar.cancel()
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        self.modo_poder = False
         self.manager.current = 'inicio'
 
 class PacmanApp(App):
