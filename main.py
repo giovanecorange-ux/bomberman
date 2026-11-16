@@ -49,6 +49,7 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
+# MAPAS - O MEIO VAI SER LIMPO AUTOMATICAMENTE PRA CABER A CASINHA
 FASES_MAPAS = [
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1],[1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1],[1,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,2,0,1,1,0,0,0,0,0,0,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1],[1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,2,0,0,1,0,1,0,1,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
@@ -78,10 +79,10 @@ FASES_SKINS = [
 class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.tipo = 'chao'
+        self.tipo = 'chao'; self.l = 0; self.c = 0
         self.bind(pos=self._redesenhar, size=self._redesenhar)
     def _redesenhar(self, *args): self.desenhar(self.tipo, None, None)
-    def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='vermelho'):
+    def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='vermelho', casa_set=None, porta=None):
         self.tipo = tipo; self.canvas.clear()
         x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
@@ -109,9 +110,22 @@ class Bloco(Widget):
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
             elif tipo == 'casinha':
-                # CORRIGIDO - Quadradinho Atari: fundo cinza + borda rosa grossa
-                Color(0.25, 0.25, 0.25, 1); Rectangle(pos=(x, y), size=(w, h))
-                Color(*fixo); Line(rectangle=(x, y, w, h), width=2.5); return
+                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                if casa_set is None: return
+                Color(*fixo)
+                if (self.l-1, self.c) not in casa_set and (self.l-1, self.c) != porta:
+                    Line(points=[x, y+h, x+w, y+h], width=2.5)
+                if (self.l+1, self.c) not in casa_set:
+                    Line(points=[x, y, x+w, y], width=2.5)
+                if (self.l, self.c-1) not in casa_set:
+                    Line(points=[x, y, x, y+h], width=2.5)
+                if (self.l, self.c+1) not in casa_set:
+                    Line(points=[x+w, y, x+w, y+h], width=2.5)
+                return
+            elif tipo == 'porta':
+                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(1,1,1,0.95); Rectangle(pos=(x, y + h*0.38), size=(w, h*0.24))
+                return
 
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
@@ -177,7 +191,6 @@ class TelaInicial(Screen):
         self.manager.get_screen('jogo').iniciar_fase(1, True)
         self.manager.current = 'jogo'
 
-# === BOTAO COM SETA DESENHADA - NAO USA TEXTO, NAO DA QUADRADINHO ===
 class BotaoSeta(Button):
     def __init__(self, direcao='cima', **kwargs):
         super().__init__(**kwargs)
@@ -256,12 +269,16 @@ class TelaJogo(Screen):
 
     def set_direcao(self, dl, dc):
         self._dir_desejada = (dl, dc)
+        if self._dir_atual == (-dl, -dc):
+            self._dir_atual = (dl, dc)
+            self.mover(dl, dc)
+            return
         nl, nc = self.player[0] + dl, self.player[1] + dc
         if self.pode_andar(nl, nc, fantasma=False):
             self._dir_atual = (dl, dc)
             self.mover(dl, dc)
         if not self._event_andar:
-            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.16)
+            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.10)
 
     def tentar_mover(self):
         if self.game_over: return
@@ -276,12 +293,32 @@ class TelaJogo(Screen):
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1])
                 return
-            self._dir_atual = (0,0)
 
+    # === AQUI TA O SEGREDO: LIMPA O MEIO DE TODOS OS MAPAS PRA CABER A CASINHA ===
     def definir_spawn_e_casinha(self):
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
         self.porta_casinha = (cr-2, cc)
+        # LIMPA TUDO EM VOLTA PRA VIRAR AREA LIVRE IGUAL DA TUA FOTO
+        area_livre = []
+        for r in range(cr-3, cr+3):
+            for c in range(cc-4, cc+5):
+                area_livre.append((r,c))
+        for (r,c) in area_livre:
+            if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS:
+                if (r,c) not in self.casa_fantasmas and (r,c) != self.porta_casinha:
+                    # deixa corredor livre em volta da casinha
+                    if abs(r-cr) <= 2 and abs(c-cc) <= 3:
+                        if self.mapa[r][c] == 1:
+                            # só limpa se não for borda externa
+                            if r > 1 and r < self.LINHAS-2 and c > 1 and c < self.COLUNAS-2:
+                                self.mapa[r][c] = 0
+        # Garante que a casinha e a porta tão livres
+        for (r,c) in self.casa_fantasmas:
+            if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS:
+                self.mapa[r][c] = 0
+        self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
+        # Spawn do player embaixo
         for r in range(self.LINHAS-1, 0, -1):
             for dc in [0,-1,1,-2,2]:
                 c2 = cc + dc
@@ -303,7 +340,7 @@ class TelaJogo(Screen):
             self.pastilhas = set(); self.poderes = set()
             for l in range(self.LINHAS):
                 for c in range(self.COLUNAS):
-                    if self.mapa[l][c] == 0 and (l,c) not in self.casa_fantasmas and [l,c] != self.spawn_player:
+                    if self.mapa[l][c] == 0 and (l,c) not in set(self.casa_fantasmas) and [l,c] != self.spawn_player and (l,c) != self.porta_casinha:
                         self.pastilhas.add((l,c))
                     elif self.mapa[l][c] == 2: self.poderes.add((l,c))
             if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
@@ -315,7 +352,8 @@ class TelaJogo(Screen):
         for l in range(self.LINHAS):
             linha_blocos = []
             for c in range(self.COLUNAS):
-                b = Bloco(); self.grid.add_widget(b); linha_blocos.append(b)
+                b = Bloco(); b.l = l; b.c = c
+                self.grid.add_widget(b); linha_blocos.append(b)
             self.blocos.append(linha_blocos)
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
@@ -346,22 +384,25 @@ class TelaJogo(Screen):
 
     def desenhar_mapa(self):
         skin = FASES_SKINS[self.fase - 1]
+        casa_set = set(self.casa_fantasmas)
+        porta = getattr(self, 'porta_casinha', None)
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = 'chao'
                 if self.mapa[l][c] == 1: tipo = 'fixo'
-                elif (l,c) in self.casa_fantasmas: tipo = 'casinha'
+                elif (l,c) == porta: tipo = 'porta'
+                elif (l,c) in casa_set: tipo = 'casinha'
                 elif (l,c) in self.poderes: tipo = 'poder'
                 elif (l,c) in self.pastilhas: tipo = 'pastilha'
                 if [l, c] == self.player: tipo = 'player'
-                self.blocos[l][c].desenhar(tipo, None, skin, 'vermelho')
+                self.blocos[l][c].desenhar(tipo, None, skin, 'vermelho', casa_set, porta)
         for e in self.inimigos:
-            self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3])
+            self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta)
 
     def pode_andar(self, l, c, fantasma=False):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] == 1: return False
-        if not fantasma and (l,c) in self.casa_fantasmas:
+        if not fantasma and (l,c) in set(self.casa_fantasmas):
             return False
         return True
 
