@@ -201,37 +201,36 @@ class TelaJogo(Screen):
         root.add_widget(topo)
         self.lbl_recorde_tela = Label(text="", font_size='11sp', color=(0.6,1,0.6,1), bold=True, size_hint_y=0.03)
         root.add_widget(self.lbl_recorde_tela)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.89)
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.72)
         root.add_widget(self.grid)
+
+        # === BOTÕES DE SETA EMBAIXO - CORRIGIDO ===
+        controles = BoxLayout(orientation='vertical', size_hint_y=0.17, spacing=2, padding=4)
+        linha_cima = BoxLayout(orientation='horizontal', spacing=4)
+        linha_cima.add_widget(Widget())
+        b_cima = Button(text="▲", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_cima.bind(on_press=lambda x: self.set_direcao(-1, 0))
+        linha_cima.add_widget(b_cima)
+        linha_cima.add_widget(Widget())
+        controles.add_widget(linha_cima)
+
+        linha_meio = BoxLayout(orientation='horizontal', spacing=4)
+        b_esq = Button(text="◀", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_esq.bind(on_press=lambda x: self.set_direcao(0, -1))
+        b_baixo = Button(text="▼", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_baixo.bind(on_press=lambda x: self.set_direcao(1, 0))
+        b_dir = Button(text="▶", font_size='28sp', bold=True, background_color=(0.2, 0.4, 1, 1))
+        b_dir.bind(on_press=lambda x: self.set_direcao(0, 1))
+        linha_meio.add_widget(b_esq)
+        linha_meio.add_widget(b_baixo)
+        linha_meio.add_widget(b_dir)
+        controles.add_widget(linha_meio)
+        root.add_widget(controles)
+
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
 
-    # === SWIPE NO LUGAR DOS BOTOES ===
-    def on_touch_down(self, touch):
-        if self.manager and self.manager.current == 'jogo':
-            # ignora toque na barrinha de cima
-            if touch.y > self.height * 0.92:
-                return super().on_touch_down(touch)
-            self._touch_start = (touch.x, touch.y)
-            return True
-        return super().on_touch_down(touch)
-    def on_touch_move(self, touch):
-        if self._touch_start and self.manager and self.manager.current == 'jogo':
-            dx = touch.x - self._touch_start[0]
-            dy = touch.y - self._touch_start[1]
-            if abs(dx) < 20 and abs(dy) < 20:
-                return True
-            if abs(dx) > abs(dy):
-                self.set_direcao(0, 1 if dx > 0 else -1)
-            else:
-                # Kivy Y invertido: subir dedo = -1 linha
-                self.set_direcao(-1 if dy > 0 else 1, 0)
-            self._touch_start = (touch.x, touch.y)
-            return True
-        return super().on_touch_move(touch)
-    def on_touch_up(self, touch):
-        self._touch_start = None
-        return super().on_touch_up(touch)
+    # SWIPE REMOVIDO - AGORA É SÓ BOTÃO
 
     def teclado(self, window, key, *args):
         if self.manager and self.manager.current != 'jogo': return False
@@ -241,31 +240,25 @@ class TelaJogo(Screen):
         elif key == 276: self.set_direcao(0, -1)
         return True
 
-    # === CORRECAO 2: DIRECAO DESEJADA ===
     def set_direcao(self, dl, dc):
         self._dir_desejada = (dl, dc)
-        # tenta virar na hora
         self.tentar_mover()
-        # comeca loop de andar se ainda nao tem
         if not self._event_andar:
             self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.16)
 
     def tentar_mover(self):
         if self.game_over: return
-        # 1) tenta a direcao desejada
         if self._dir_desejada != (0,0):
             nl, nc = self.player[0] + self._dir_desejada[0], self.player[1] + self._dir_desejada[1]
             if self.pode_andar(nl, nc, fantasma=False):
                 self._dir_atual = self._dir_desejada
                 self.mover(self._dir_atual[0], self._dir_atual[1])
                 return
-        # 2) se nao deu, continua na atual
         if self._dir_atual != (0,0):
             nl, nc = self.player[0] + self._dir_atual[0], self.player[1] + self._dir_atual[1]
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1])
                 return
-            # bateu na parede, para
             self._dir_atual = (0,0)
 
     def iniciar_andar(self, dl, dc): self.set_direcao(dl, dc)
@@ -273,9 +266,7 @@ class TelaJogo(Screen):
 
     def definir_spawn_e_casinha(self):
         cr, cc = self.LINHAS//2, self.COLUNAS//2
-        # casinha 3x3 - NAO zera parede no mapa, so marca as posicoes
         self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
-        # porta de saida: 1 celula acima da casinha
         self.porta_casinha = (cr-2, cc)
         for r in range(self.LINHAS-1, 0, -1):
             for dc in [0,-1,1,-2,2]:
@@ -305,7 +296,7 @@ class TelaJogo(Screen):
         self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
         for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])  # ultimo = tempo preso
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
             linha_blocos = []
@@ -353,19 +344,16 @@ class TelaJogo(Screen):
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3])
 
-    # === CORRECAO 3: CASINHA ===
     def pode_andar(self, l, c, fantasma=False):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] == 1: return False
         if not fantasma and (l,c) in self.casa_fantasmas:
-            return False  # Pac-Man NUNCA entra na casinha
+            return False
         if not fantasma and (l,c) == getattr(self, 'porta_casinha', (-99,-99)):
-            # Pac-Man pode passar na frente da porta, mas nao entrar
             pass
         return True
 
     def ativar_poder(self):
-        # CORRECAO 4: so cria o timer UMA VEZ, quando come o poder
         self.modo_poder = True
         self.tempo_restante_poder = 6
         if self.tempo_poder: self.tempo_poder.cancel()
@@ -384,15 +372,14 @@ class TelaJogo(Screen):
         if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
         if (nl, nc) in self.poderes:
             self.poderes.remove((nl, nc)); self.pontos += 50
-            self.ativar_poder()  # <-- aqui sim cria o timer
+            self.ativar_poder()
             tocar_bip('bip_venceu.wav')
-        # REMOVIDO o bug que resetava o timer a cada passo
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
                 if self.modo_poder:
                     e[0], e[1] = cr, cc
-                    e[4] = 2  # fica 2 ticks preso na casinha
+                    e[4] = 2
                     self.pontos += 200; tocar_bip('bip_bicho.wav')
                 else: self.perdeu(); return
         self.atualizar_info()
@@ -403,13 +390,11 @@ class TelaJogo(Screen):
         if self.game_over or self.manager.current != 'jogo': return
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
-            # se foi comido, fica preso um pouco e depois sai
             if e[4] > 0:
                 e[4] -= 1
                 if e[4] == 0:
                     e[0], e[1] = self.porta_casinha
                 continue
-            # se esta dentro da casinha, tenta sair pela porta
             if (e[0], e[1]) in self.casa_fantasmas:
                 if e[0] > self.porta_casinha[0]:
                     e[0] -= 1; continue
@@ -419,7 +404,6 @@ class TelaJogo(Screen):
                     e[0] -= 1; continue
             dl, dc = e[2]
             if self.modo_poder:
-                # foge do player
                 if abs(self.player[0]-e[0]) > abs(self.player[1]-e[1]):
                     dl, dc = (-1,0) if self.player[0] < e[0] else (1,0)
                 else:
