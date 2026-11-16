@@ -237,17 +237,22 @@ class TelaJogo(Screen):
         return True
 
     def set_direcao(self, dl, dc):
+        # NOVO: guarda sempre a desejada, não trava mais
         self._dir_desejada = (dl, dc)
-        if self._dir_atual == (-dl, -dc): self._dir_atual = (dl, dc); return
-        if not self._event_andar: self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.14)
+        if self._dir_atual == (0,0):
+            self._dir_atual = (dl, dc)
+        if not self._event_andar:
+            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
 
     def tentar_mover(self):
         if self.game_over: return
+        # tenta primeiro a direção que o jogador clicou (memória de curva)
         if self._dir_desejada != (0,0):
             nl = self.player[0] + self._dir_desejada[0]; nc = self.player[1] + self._dir_desejada[1]
             if self.pode_andar(nl, nc, fantasma=False):
                 self._dir_atual = self._dir_desejada
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
+        # se não deu, continua na atual
         if self._dir_atual != (0,0):
             nl = self.player[0] + self._dir_atual[0]; nc = self.player[1] + self._dir_atual[1]
             if self.pode_andar(nl, nc, fantasma=False):
@@ -261,30 +266,29 @@ class TelaJogo(Screen):
             if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS: self.mapa[r][c] = 0
         self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
         self.mapa[cr-2][cc-1] = 0; self.mapa[cr-2][cc+1] = 0
-        # tira beco sem saída
-        for _ in range(20):
-            beco = False
+        # NOVO: tira TODOS os becos sem saída, quebra parede mesmo
+        for _ in range(30):
+            achou = False
             for l in range(1, self.LINHAS-1):
                 for c in range(1, self.COLUNAS-1):
                     if self.mapa[l][c] != 0: continue
                     if (l,c) in set(self.casa_fantasmas): continue
                     if (l,c) == self.porta_casinha: continue
-                    abertos = 0; viz = []
+                    livres = []
+                    paredes = []
                     for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
                         nl, nc = l+dl, c+dc
-                        if self.mapa[nl][nc] == 0 or self.mapa[nl][nc] == 2:
-                            abertos += 1; viz.append((dl,dc))
-                    if abertos == 1:
-                        for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                            if (dl,dc) in viz: continue
-                            nl, nc = l+dl, c+dc
-                            n2l, n2c = l+dl*2, c+dc*2
-                            if 0 < nl < self.LINHAS-1 and 0 < nc < self.COLUNAS-1:
-                                if self.mapa[nl][nc] == 1:
-                                    if 0 < n2l < self.LINHAS-1 and 0 < n2c < self.COLUNAS-1:
-                                        if self.mapa[n2l][n2c] == 0:
-                                            self.mapa[nl][nc] = 0; beco = True; break
-            if not beco: break
+                        if self.mapa[nl][nc] == 0 or self.mapa[nl][nc] == 2: livres.append((dl,dc))
+                        elif self.mapa[nl][nc] == 1: paredes.append((dl,dc))
+                    if len(livres) == 1 and paredes:
+                        # é beco, quebra uma parede aleatória
+                        dl, dc = random.choice(paredes)
+                        nl, nc = l+dl, c+dc
+                        if 0 < nl < self.LINHAS-1 and 0 < nc < self.COLUNAS-1:
+                            if (nl,nc) not in set(self.casa_fantasmas):
+                                self.mapa[nl][nc] = 0
+                                achou = True
+            if not achou: break
         for r in range(self.LINHAS-1, 0, -1):
             for dc in [0,-1,1,-2,2]:
                 c2 = cc + dc
@@ -322,8 +326,8 @@ class TelaJogo(Screen):
             self.blocos.append(linha_blocos)
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.30)
-        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.14)
+        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.20)
+        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
 
     def reiniciar_apos_morte(self):
         self.player = self.spawn_player[:]
@@ -444,7 +448,7 @@ class TelaJogo(Screen):
             if self._event_inimigo: self._event_inimigo.cancel()
             self.lbl_pontos.text = f"FIM: {self.pontos} PTS"
             Clock.schedule_once(lambda dt: self.voltar_menu(), 2.0)
-        else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.14)
+        else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
     def venceu_fase(self):
         if self.game_over: return
         self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 200; salvar_recorde(self.fase, self.pontos)
