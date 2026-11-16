@@ -59,7 +59,6 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-# 6 MAPAS DA TUA FOTO - Ms Pac-Man - 1=parede, 0=pastilha, 2=poder
 FASES_MAPAS = [
     [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,1,0,1,1,0,0,1],[1,0,1,0,0,0,0,1,0,1,1],[1,0,0,0,1,1,0,0,0,0,1],[1,0,1,0,0,0,0,1,0,1,1],[1,0,1,0,1,1,0,1,0,0,1],[1,0,0,0,0,0,0,0,1,0,1],[1,0,1,1,0,1,1,0,0,0,1],[1,2,0,0,0,0,0,0,0,2,1],[1,1,1,1,1,1,1,1,1,1,1]],
     [[1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,1,0,1,0,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,1,0,1,0,1,0,0,1],[1,0,1,0,0,0,0,0,1,0,1],[1,2,0,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1]],
@@ -70,12 +69,12 @@ FASES_MAPAS = [
 ]
 
 FASES_SKINS = [
-    {"chao": (0,0,0,1), "fixo": (1, 0.4, 0.6, 1), "nome": "Rosa"},
-    {"chao": (0,0,0,1), "fixo": (0.2, 0.7, 1, 1), "nome": "Azul"},
-    {"chao": (0,0,0,1), "fixo": (1, 0.8, 0.6, 1), "nome": "Bege"},
-    {"chao": (0,0,0,1), "fixo": (0.6, 0.2, 1, 1), "nome": "Roxo"},
-    {"chao": (0,0,0,1), "fixo": (1, 0.9, 0.2, 1), "nome": "Amarelo"},
-    {"chao": (0,0,0,1), "fixo": (1, 0.6, 0.8, 1), "nome": "Espiral"},
+    {"fixo": (1, 0.4, 0.6, 1), "nome": "Rosa"},
+    {"fixo": (0.2, 0.7, 1, 1), "nome": "Azul"},
+    {"fixo": (1, 0.8, 0.6, 1), "nome": "Bege"},
+    {"fixo": (0.6, 0.2, 1, 1), "nome": "Roxo"},
+    {"fixo": (1, 0.9, 0.2, 1), "nome": "Amarelo"},
+    {"fixo": (1, 0.6, 0.8, 1), "nome": "Espiral"},
 ]
 
 class Bloco(Widget):
@@ -169,9 +168,7 @@ class TelaInicial(Screen):
             pasta = os.path.dirname(os.path.abspath(__file__))
             caminho = None
             for nome in os.listdir(pasta):
-                if nome.lower() == "nes.mp3":
-                    caminho = os.path.join(pasta, nome)
-                    break
+                if nome.lower() == "nes.mp3": caminho = os.path.join(pasta, nome); break
             if not caminho: caminho = resource_find("nes.mp3")
             if caminho and os.path.exists(caminho):
                 self.musica = SoundLoader.load(caminho)
@@ -188,7 +185,6 @@ class TelaInicial(Screen):
 
 class TelaJogo(Screen):
     LINHAS = 11; COLUNAS = 11
-    CORES_FASE = [s["chao"] for s in FASES_SKINS]
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.fase = 1; self.pontos = 0; self.vidas = 3
@@ -199,7 +195,6 @@ class TelaJogo(Screen):
         root.add_widget(self.lbl_info)
         self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=1, size_hint_y=0.78)
         root.add_widget(self.grid)
-        # CONTROLES CENTRALIZADOS SEM TURBO
         controles = BoxLayout(orientation='horizontal', spacing=6, size_hint_y=0.16)
         controles.add_widget(Widget(size_hint_x=0.20))
         dpad = GridLayout(cols=3, rows=3, spacing=4, size_hint_x=0.60)
@@ -226,10 +221,11 @@ class TelaJogo(Screen):
         Window.bind(on_key_down=self.teclado)
     def teclado(self, window, key, *args):
         if self.manager and self.manager.current != 'jogo': return False
-        if key == 273: self.mover(-1, 0)
-        elif key == 274: self.mover(1, 0)
-        elif key == 275: self.mover(0, 1)
-        elif key == 276: self.mover(0, -1)
+        if key in [273, 274, 275, 276]:
+            if key == 273: self.mover(-1, 0)
+            elif key == 274: self.mover(1, 0)
+            elif key == 275: self.mover(0, 1)
+            elif key == 276: self.mover(0, -1)
         return True
     def iniciar_andar(self, dl, dc):
         self._dir_andar = (dl, dc); self.mover(dl, dc)
@@ -271,7 +267,7 @@ class TelaJogo(Screen):
         modo = " PODER!" if self.modo_poder else ""
         self.lbl_info.text = f"VIDAS: {self.vidas} - FASE {self.fase}/6 {nome}{modo} - {self.pontos} PTS"
     def desenhar_mapa(self):
-        cor_fase = self.CORES_FASE[self.fase - 1]; skin = FASES_SKINS[self.fase - 1]
+        skin = FASES_SKINS[self.fase - 1]
         for l in range(self.LINHAS):
             for c in range(self.COLUNAS):
                 tipo = 'chao'
@@ -279,11 +275,17 @@ class TelaJogo(Screen):
                 elif (l,c) in self.poderes: tipo = 'poder'
                 elif (l,c) in self.pastilhas: tipo = 'pastilha'
                 if [l, c] == self.player: tipo = 'player'
-                inimigo_tipo = 'vermelho'
                 for e in self.inimigos:
                     if e[0] == l and e[1] == c:
-                        tipo = 'assustado' if self.modo_poder else 'inimigo'; inimigo_tipo = e[3]
-                self.blocos[l][c].desenhar(tipo, cor_fase, skin, inimigo_tipo)
+                        tipo = 'assustado' if self.modo_poder else 'inimigo'
+                self.blocos[l][c].desenhar(tipo, None, skin, e[3] if 'e' in locals() and e[0]==l and e[1]==c else 'vermelho')
+        # desenha certo com tipo do fantasma
+        for l in range(self.LINHAS):
+            for c in range(self.COLUNAS):
+                for e in self.inimigos:
+                    if e[0]==l and e[1]==c:
+                        self.blocos[l][c].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3])
+
     def pode_andar(self, l, c):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
         return self.mapa[l][c] != 1
@@ -295,7 +297,13 @@ class TelaJogo(Screen):
         if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
         if (nl, nc) in self.poderes: self.poderes.remove((nl, nc)); self.pontos += 50; self.modo_poder = True; tocar_bip('bip_venceu.wav'); 
         if self.tempo_poder: self.tempo_poder.cancel()
-        if self.modo_poder: self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
+        if self.modo_poder and (nl,nc) in self.poderes or self.modo_poder: 
+            if self.tempo_poder: self.tempo_poder.cancel()
+            self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
+        # corrige timer poder
+        if (nl,nc) in self.poderes or self.modo_poder and len(self.poderes) < 4:
+            if not self.tempo_poder:
+                self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
                 if self.modo_poder: self.inimigos.remove(e); self.pontos += 200; tocar_bip('bip_bicho.wav')
@@ -327,7 +335,7 @@ class TelaJogo(Screen):
         if self.vidas <= 0:
             self.game_over = True
             if self._event_inimigo: self._event_inimigo.cancel()
-            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS - VOLTAR"; self.desenhar_mapa()
+            self.lbl_info.text = f"VOCE PERDEU! {self.pontos} PTS"; self.desenhar_mapa()
         else: self.player = [1, 1]; self.atualizar_info(); self.desenhar_mapa()
     def venceu_fase(self):
         if self.game_over: return
