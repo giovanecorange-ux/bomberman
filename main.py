@@ -49,7 +49,7 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
-# 10 MAPAS - 21x17
+# 10 MAPAS - 21x17 - MANTIDOS IGUAIS AOS TEUS
 FASES_MAPAS = [
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,0,0,0,0,1,1,0,1,1,0,0,0,0,0,1],[1,1,1,0,1,0,0,0,0,0,0,0,1,0,1,1,1],[1,0,0,0,1,0,1,1,1,1,1,0,1,0,0,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,0,0,1],[1,2,0,1,1,0,0,0,0,0,0,0,1,1,0,2,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
     [[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[1,2,0,0,1,1,0,0,1,0,0,1,1,0,0,2,1],[1,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1],[1,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,1],[1,0,0,0,1,0,0,0,0,0,0,0,1,0,0,0,1],[1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1],[1,0,1,0,1,0,1,0,0,0,1,0,1,0,0,0,1],[1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1],[1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1],[1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1],[1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1],[1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1],[1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,0,1],[1,2,0,0,1,0,1,0,1,0,1,0,1,0,0,2,1],[1,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1],[1,0,1,1,1,0,1,1,1,1,1,0,1,1,1,0,1],[1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]],
@@ -185,74 +185,112 @@ class TelaJogo(Screen):
         self.player = [18, 8]; self.spawn_player = [18, 8]
         self.casa_fantasmas = [(9,7),(9,8),(9,9),(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
         self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
-        self._event_andar = None; self._dir_andar = (0, 0); self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None
+        self._event_andar = None; self._dir_atual = (0, 0); self._dir_desejada = (0, 0)
+        self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None; self.tempo_restante_poder = 0
+        self._touch_start = None
         root = BoxLayout(orientation='vertical', spacing=2, padding=2)
-        # PLACAR - ESCORE SEMPRE NA TELA
-        topo = BoxLayout(orientation='horizontal', size_hint_y=0.07, padding=[6,2,6,2])
-        self.lbl_info = Label(text="VIDAS: 3", font_size='13sp', bold=True, size_hint_x=0.35)
-        self.lbl_fase = Label(text="FASE 1/10", font_size='13sp', bold=True, size_hint_x=0.30)
-        self.lbl_pontos = Label(text="0 PTS", font_size='15sp', bold=True, color=(1,1,0,1), size_hint_x=0.35)
+        # === BARRINHA DE CIMA COM MENU ===
+        topo = BoxLayout(orientation='horizontal', size_hint_y=0.08, padding=[4,2,4,2], spacing=4)
+        b_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.18)
+        b_menu.bind(on_release=lambda x: self.voltar_menu())
+        topo.add_widget(b_menu)
+        self.lbl_info = Label(text="VIDAS: 3", font_size='12sp', bold=True, size_hint_x=0.28)
+        self.lbl_fase = Label(text="FASE 1/10", font_size='12sp', bold=True, size_hint_x=0.27)
+        self.lbl_pontos = Label(text="0 PTS", font_size='13sp', bold=True, color=(1,1,0,1), size_hint_x=0.27)
         topo.add_widget(self.lbl_info); topo.add_widget(self.lbl_fase); topo.add_widget(self.lbl_pontos)
         root.add_widget(topo)
         self.lbl_recorde_tela = Label(text="", font_size='11sp', color=(0.6,1,0.6,1), bold=True, size_hint_y=0.03)
         root.add_widget(self.lbl_recorde_tela)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.73)
+        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.89)
         root.add_widget(self.grid)
-        # BOTOES GRANDES
-        controles = BoxLayout(orientation='horizontal', spacing=4, size_hint_y=0.17, padding=[4,2,4,2])
-        b_voltar = Button(text="MENU", font_size='13sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.20)
-        b_voltar.bind(on_release=lambda x: self.voltar_menu())
-        controles.add_widget(b_voltar)
-        dpad = GridLayout(cols=3, rows=3, spacing=3, size_hint_x=0.60)
-        dpad.add_widget(Widget())
-        b_cima = Button(text="CIMA", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
-        b_cima.bind(on_press=lambda x: self.iniciar_andar(-1, 0)); b_cima.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_cima); dpad.add_widget(Widget())
-        b_esq = Button(text="ESQ", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
-        b_esq.bind(on_press=lambda x: self.iniciar_andar(0, -1)); b_esq.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_esq); dpad.add_widget(Widget())
-        b_dir = Button(text="DIR", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
-        b_dir.bind(on_press=lambda x: self.iniciar_andar(0, 1)); b_dir.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_dir); dpad.add_widget(Widget())
-        b_baixo = Button(text="BAIXO", font_size='13sp', bold=True, background_color=(0.25,0.25,0.28,1))
-        b_baixo.bind(on_press=lambda x: self.iniciar_andar(1, 0)); b_baixo.bind(on_release=lambda x: self.parar_andar())
-        dpad.add_widget(b_baixo); dpad.add_widget(Widget())
-        controles.add_widget(dpad)
-        controles.add_widget(Widget(size_hint_x=0.20))
-        root.add_widget(controles)
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
+
+    # === SWIPE NO LUGAR DOS BOTOES ===
+    def on_touch_down(self, touch):
+        if self.manager and self.manager.current == 'jogo':
+            # ignora toque na barrinha de cima
+            if touch.y > self.height * 0.92:
+                return super().on_touch_down(touch)
+            self._touch_start = (touch.x, touch.y)
+            return True
+        return super().on_touch_down(touch)
+    def on_touch_move(self, touch):
+        if self._touch_start and self.manager and self.manager.current == 'jogo':
+            dx = touch.x - self._touch_start[0]
+            dy = touch.y - self._touch_start[1]
+            if abs(dx) < 20 and abs(dy) < 20:
+                return True
+            if abs(dx) > abs(dy):
+                self.set_direcao(0, 1 if dx > 0 else -1)
+            else:
+                # Kivy Y invertido: subir dedo = -1 linha
+                self.set_direcao(-1 if dy > 0 else 1, 0)
+            self._touch_start = (touch.x, touch.y)
+            return True
+        return super().on_touch_move(touch)
+    def on_touch_up(self, touch):
+        self._touch_start = None
+        return super().on_touch_up(touch)
+
     def teclado(self, window, key, *args):
         if self.manager and self.manager.current != 'jogo': return False
-        if key == 273: self.mover(-1, 0)
-        elif key == 274: self.mover(1, 0)
-        elif key == 275: self.mover(0, 1)
-        elif key == 276: self.mover(0, -1)
+        if key == 273: self.set_direcao(-1, 0)
+        elif key == 274: self.set_direcao(1, 0)
+        elif key == 275: self.set_direcao(0, 1)
+        elif key == 276: self.set_direcao(0, -1)
         return True
-    def iniciar_andar(self, dl, dc):
-        self._dir_andar = (dl, dc); self.mover(dl, dc)
-        if self._event_andar: self._event_andar.cancel()
-        self._event_andar = Clock.schedule_interval(lambda dt: self.mover(self._dir_andar[0], self._dir_andar[1]), 0.18)
-    def parar_andar(self, *args):
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
+
+    # === CORRECAO 2: DIRECAO DESEJADA ===
+    def set_direcao(self, dl, dc):
+        self._dir_desejada = (dl, dc)
+        # tenta virar na hora
+        self.tentar_mover()
+        # comeca loop de andar se ainda nao tem
+        if not self._event_andar:
+            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.16)
+
+    def tentar_mover(self):
+        if self.game_over: return
+        # 1) tenta a direcao desejada
+        if self._dir_desejada != (0,0):
+            nl, nc = self.player[0] + self._dir_desejada[0], self.player[1] + self._dir_desejada[1]
+            if self.pode_andar(nl, nc, fantasma=False):
+                self._dir_atual = self._dir_desejada
+                self.mover(self._dir_atual[0], self._dir_atual[1])
+                return
+        # 2) se nao deu, continua na atual
+        if self._dir_atual != (0,0):
+            nl, nc = self.player[0] + self._dir_atual[0], self.player[1] + self._dir_atual[1]
+            if self.pode_andar(nl, nc, fantasma=False):
+                self.mover(self._dir_atual[0], self._dir_atual[1])
+                return
+            # bateu na parede, para
+            self._dir_atual = (0,0)
+
+    def iniciar_andar(self, dl, dc): self.set_direcao(dl, dc)
+    def parar_andar(self, *args): pass
+
     def definir_spawn_e_casinha(self):
         cr, cc = self.LINHAS//2, self.COLUNAS//2
-        for dr in [-1,0,1]:
-            for dc in [-1,0,1]:
-                self.mapa[cr+dr][cc+dc] = 0
-        self.mapa[cr-2][cc] = 0
+        # casinha 3x3 - NAO zera parede no mapa, so marca as posicoes
         self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
+        # porta de saida: 1 celula acima da casinha
+        self.porta_casinha = (cr-2, cc)
         for r in range(self.LINHAS-1, 0, -1):
             for dc in [0,-1,1,-2,2]:
                 c2 = cc + dc
-                if 0 <= c2 < self.COLUNAS and self.mapa[r][c2] != 1:
+                if 0 <= c2 < self.COLUNAS and self.mapa[r][c2] != 1 and (r,c2) not in self.casa_fantasmas:
                     self.spawn_player = [r, c2]
                     return
         self.spawn_player = [18, 8]
+
     def iniciar_fase(self, fase, reset_mapa=False):
         self.fase = fase; self.game_over = False; self.modo_poder = False
+        self._dir_atual = (0,0); self._dir_desejada = (0,0)
         if fase == 1 and reset_mapa: self.vidas = 3; self.pontos = 0
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
         self.mapa = [row[:] for row in FASES_MAPAS[fase-1]]
         self.definir_spawn_e_casinha()
         self.player = self.spawn_player[:]
@@ -267,7 +305,7 @@ class TelaJogo(Screen):
         self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
         for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])  # ultimo = tempo preso
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
             linha_blocos = []
@@ -277,15 +315,18 @@ class TelaJogo(Screen):
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
         self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
+
     def reiniciar_apos_morte(self):
         self.player = self.spawn_player[:]
+        self._dir_atual = (0,0); self._dir_desejada = (0,0)
         self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
         for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i]])
+            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
         self.modo_poder = False
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.atualizar_info(); self.desenhar_mapa()
+
     def atualizar_info(self):
         nome = FASES_SKINS[self.fase-1]["nome"]
         modo = " PODER!" if self.modo_poder else ""
@@ -297,6 +338,7 @@ class TelaJogo(Screen):
             self.lbl_recorde_tela.text = f"RECORDE: FASE {rec['fase']}/10 - {rec['pontos']} PTS"
         else:
             self.lbl_recorde_tela.text = "NOVO RECORDE? JOGUE!"
+
     def desenhar_mapa(self):
         skin = FASES_SKINS[self.fase - 1]
         for l in range(self.LINHAS):
@@ -310,57 +352,105 @@ class TelaJogo(Screen):
                 self.blocos[l][c].desenhar(tipo, None, skin, 'vermelho')
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3])
-    def pode_andar(self, l, c):
+
+    # === CORRECAO 3: CASINHA ===
+    def pode_andar(self, l, c, fantasma=False):
         if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
-        return self.mapa[l][c] != 1
+        if self.mapa[l][c] == 1: return False
+        if not fantasma and (l,c) in self.casa_fantasmas:
+            return False  # Pac-Man NUNCA entra na casinha
+        if not fantasma and (l,c) == getattr(self, 'porta_casinha', (-99,-99)):
+            # Pac-Man pode passar na frente da porta, mas nao entrar
+            pass
+        return True
+
+    def ativar_poder(self):
+        # CORRECAO 4: so cria o timer UMA VEZ, quando come o poder
+        self.modo_poder = True
+        self.tempo_restante_poder = 6
+        if self.tempo_poder: self.tempo_poder.cancel()
+        self.tempo_poder = Clock.schedule_interval(lambda dt: self.contar_poder(), 1)
+
+    def contar_poder(self):
+        self.tempo_restante_poder -= 1
+        if self.tempo_restante_poder <= 0:
+            self.fim_poder()
+
     def mover(self, dl, dc):
         if self.game_over: return
         nl, nc = self.player[0] + dl, self.player[1] + dc
-        if not self.pode_andar(nl, nc): return
+        if not self.pode_andar(nl, nc, fantasma=False): return
         self.player = [nl, nc]
         if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
-        if (nl, nc) in self.poderes: self.poderes.remove((nl, nc)); self.pontos += 50; self.modo_poder = True; tocar_bip('bip_venceu.wav')
-        if self.tempo_poder: self.tempo_poder.cancel()
-        if self.modo_poder: self.tempo_poder = Clock.schedule_once(lambda dt: self.fim_poder(), 7)
+        if (nl, nc) in self.poderes:
+            self.poderes.remove((nl, nc)); self.pontos += 50
+            self.ativar_poder()  # <-- aqui sim cria o timer
+            tocar_bip('bip_venceu.wav')
+        # REMOVIDO o bug que resetava o timer a cada passo
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
                 if self.modo_poder:
                     e[0], e[1] = cr, cc
+                    e[4] = 2  # fica 2 ticks preso na casinha
                     self.pontos += 200; tocar_bip('bip_bicho.wav')
                 else: self.perdeu(); return
         self.atualizar_info()
         if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
         self.desenhar_mapa()
+
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
+            # se foi comido, fica preso um pouco e depois sai
+            if e[4] > 0:
+                e[4] -= 1
+                if e[4] == 0:
+                    e[0], e[1] = self.porta_casinha
+                continue
+            # se esta dentro da casinha, tenta sair pela porta
+            if (e[0], e[1]) in self.casa_fantasmas:
+                if e[0] > self.porta_casinha[0]:
+                    e[0] -= 1; continue
+                elif e[1] != self.porta_casinha[1]:
+                    e[1] += 1 if self.porta_casinha[1] > e[1] else -1; continue
+                else:
+                    e[0] -= 1; continue
             dl, dc = e[2]
             if self.modo_poder:
-                if e[0] > cr: dl, dc = -1, 0
-                elif e[0] < cr: dl, dc = 1, 0
-                elif e[1] > cc: dl, dc = 0, -1
-                elif e[1] < cc: dl, dc = 0, 1
+                # foge do player
+                if abs(self.player[0]-e[0]) > abs(self.player[1]-e[1]):
+                    dl, dc = (-1,0) if self.player[0] < e[0] else (1,0)
+                else:
+                    dl, dc = (0,-1) if self.player[1] < e[1] else (0,1)
             elif e[3] == 'vermelho' and random.random() < 0.65:
                 if self.player[0] > e[0]: dl, dc = 1, 0
                 elif self.player[0] < e[0]: dl, dc = -1, 0
                 elif self.player[1] > e[1]: dl, dc = 0, 1
                 elif self.player[1] < e[1]: dl, dc = 0, -1
             nl, nc = e[0] + dl, e[1] + dc
-            if not self.pode_andar(nl, nc): e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
-            else: e[0], e[1] = nl, nc; e[2] = (dl, dc)
+            if not self.pode_andar(nl, nc, fantasma=True):
+                e[2] = random.choice([(1,0),(-1,0),(0,1),(0,-1)])
+            else:
+                e[0], e[1] = nl, nc; e[2] = (dl, dc)
             if [e[0], e[1]] == self.player:
                 if self.modo_poder:
                     e[0], e[1] = cr, cc
+                    e[4] = 2
                     self.pontos += 200; tocar_bip('bip_bicho.wav'); self.atualizar_info(); return
                 else: self.perdeu(); return
         self.desenhar_mapa()
-    def fim_poder(self): self.modo_poder = False; self.tempo_poder = None; self.atualizar_info(); self.desenhar_mapa()
+
+    def fim_poder(self):
+        self.modo_poder = False; self.tempo_restante_poder = 0
+        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+        self.atualizar_info(); self.desenhar_mapa()
     def perdeu(self):
         if self.game_over: return
         tocar_bip('bip_morreu.wav'); self.vidas -= 1; salvar_recorde(self.fase, self.pontos)
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None; self.modo_poder = False
+        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
         if self.vidas <= 0:
             self.game_over = True
             if self._event_inimigo: self._event_inimigo.cancel()
@@ -372,6 +462,7 @@ class TelaJogo(Screen):
         if self.game_over: return
         self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 200; salvar_recorde(self.fase, self.pontos)
         if self._event_inimigo: self._event_inimigo.cancel()
+        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         if self.fase >= 10:
             self.lbl_pontos.text = f"ZEROU! {self.pontos} PTS!"
@@ -382,7 +473,7 @@ class TelaJogo(Screen):
             Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
-        if self._event_andar: self._event_andar.cancel()
+        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.modo_poder = False
         self.manager.current = 'inicio'
