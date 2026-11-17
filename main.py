@@ -58,22 +58,22 @@ def tocar_bip(nome):
 def _mapa_de_texto(linhas):
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# 5 MAPAS CORRIGIDOS - 21 linhas x 17 colunas, caminho único de 1, casinha limpa
+# 5 MAPAS CORRIGIDOS - 21 linhas x 17 colunas, FECHADO, SEM TUNEL, MAO UNICA
 FASES_MAPAS_TXT = [
-# FASE 1 - CLASSICO AZUL igual ao print
+# FASE 1 - AZUL CLASSICO - FECHADO
 [
 "#################",
 "#P.....#.#.....P#",
-"#.#.###.#.###.#.#",
-"#.#...........#.#",
+"#.###.#.#.#.###.#",
+"#.#...#.#.#...#.#",
+"#.###.#.#.#.###.#",
+"#.....#.#.#.....#",
+"#.###.#.#.#.###.#",
+"#.#...#.#.#...#.#",
 "#.###.###.###.###",
 "#.....#...#.....#",
-"#.##.##...##.##.#",
-"#....##...##....#",
-"####.##...##.####",
-"#....##...##....#",
-".................",
-"#....##...##....#",
+"#####.#######.###",
+"#.....#...#.....#",
 "####.#######.####",
 "#....#######....#",
 "#.##.#######.##.#",
@@ -84,20 +84,20 @@ FASES_MAPAS_TXT = [
 "#P.....#.#.....P#",
 "#################",
 ],
-# FASE 2 - VERDE
+# FASE 2 - VERDE - FECHADO
 [
 "#################",
 "#P.....#.#.....P#",
-"#.#.###.#.###.#.#",
-"#.#...........#.#",
-"#.##.###.###.##.#",
+"#.###.#.#.#.###.#",
+"#.#...#.#.#...#.#",
+"#.###.#.#.#.###.#",
+"#.....#.#.#.....#",
+"#.###.#.#.#.###.#",
+"#.#...#.#.#...#.#",
+"#.###.###.###.###",
 "#.....#...#.....#",
-"#.##.##...##.##.#",
-"#....##...##....#",
-"####.##...##.####",
-"#....##...##....#",
-".................",
-"#....##...##....#",
+"#####.#######.###",
+"#.....#...#.....#",
 "####.#######.####",
 "#....#######....#",
 "#.##.#######.##.#",
@@ -108,20 +108,20 @@ FASES_MAPAS_TXT = [
 "#P.............P#",
 "#################",
 ],
-# FASE 3 - AMARELO
+# FASE 3 - AMARELO - FECHADO
 [
 "#################",
 "#P.............P#",
 "#.#.##.###.##.#.#",
-"#.#...........#.#",
-"#.##.#######.##.#",
-"#...##.###.##...#",
-"#.###.......###.#",
-"#.....#####.....#",
-"####.##...##.####",
-"#....##...##....#",
-".................",
-"#....##...##....#",
+"#.#...#.#.#...#.#",
+"#.##.###.###.##.#",
+"#...#.#.#.#.#...#",
+"#.###.#.#.#.###.#",
+"#.....#.#.#.....#",
+"####.###.###.####",
+"#....#...#....#.#",
+"#####.#######.###",
+"#....#...#....#.#",
 "####.#######.####",
 "#....#######....#",
 "#.###.#####.###.#",
@@ -132,19 +132,19 @@ FASES_MAPAS_TXT = [
 "#P.............P#",
 "#################",
 ],
-# FASE 4 - VERMELHO
+# FASE 4 - VERMELHO - FECHADO
 [
 "#################",
 "#P.....#.#.....P#",
-"#.#.###.#.###.#.#",
-"#.#...........#.#",
+"#.###.#.#.#.###.#",
+"#.#...#.#.#...#.#",
 "#.##.##.#.##.##.#",
 "#....#.....#....#",
 "##.#.#.###.#.#.##",
 "#..#..#...#..#..#",
 "####.#.#.#.#.####",
 "#....##...##....#",
-".................",
+"#####.#######.###",
 "#....##...##....#",
 "####.#.#.#.#.####",
 "#..#..#...#..#..#",
@@ -156,7 +156,7 @@ FASES_MAPAS_TXT = [
 "#P.....#.#.....P#",
 "#################",
 ],
-# FASE 5 - ROXO
+# FASE 5 - ROXO - FECHADO
 [
 "#################",
 "#P..##.....##..P#",
@@ -168,7 +168,7 @@ FASES_MAPAS_TXT = [
 "#...##.###.##...#",
 "####.##...##.####",
 "#....##...##....#",
-".................",
+"#####.#######.###",
 "#....##...##....#",
 "####.#######.####",
 "#...##.###.##...#",
@@ -374,15 +374,12 @@ class TelaJogo(Screen):
         if self.game_over: return
         if self._dir_desejada != (0,0):
             nl = self.player[0] + self._dir_desejada[0]; nc = self.player[1] + self._dir_desejada[1]
-            if nc < 0: nc = self.COLUNAS-1
-            if nc >= self.COLUNAS: nc = 0
+            # CORRIGIDO: sem teletransporte, parede bloqueia
             if self.pode_andar(nl, nc, fantasma=False):
                 self._dir_atual = self._dir_desejada
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
         if self._dir_atual != (0,0):
             nl = self.player[0] + self._dir_atual[0]; nc = self.player[1] + self._dir_atual[1]
-            if nc < 0: nc = self.COLUNAS-1
-            if nc >= self.COLUNAS: nc = 0
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
     def definir_spawn_e_casinha(self):
@@ -395,6 +392,7 @@ class TelaJogo(Screen):
         self.mapa[cr-2][cc-1] = 0; self.mapa[cr-2][cc+1] = 0
         self.spawn_player = [self.LINHAS-3, cc]
         self.mapa[self.spawn_player[0]][self.spawn_player[1]] = 0
+        # CORRIGIDO: colchete que faltava
         self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
         self.mapa[self.spawn_player[0]][self.spawn_player[1]+1] = 0
     def iniciar_fase(self, fase, reset_mapa=False):
@@ -415,7 +413,6 @@ class TelaJogo(Screen):
             casa_set = set(self.casa_fantasmas)
             for l in range(self.LINHAS):
                 for c in range(self.COLUNAS):
-                    # CORRIGIDO: nunca cria bolinha dentro da casinha, nem na porta, nem no spawn
                     if (l,c) in casa_set: continue
                     if (l,c) == self.porta_casinha: continue
                     if [l,c] == self.spawn_player: continue
@@ -476,8 +473,7 @@ class TelaJogo(Screen):
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
     def pode_andar(self, l, c, fantasma=False):
         if l < 0 or l >= self.LINHAS: return False
-        if c < 0: c = self.COLUNAS-1
-        if c >= self.COLUNAS: c = 0
+        if c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] == 1: return False
         if not fantasma and (l,c) in set(self.casa_fantasmas): return False
         return True
@@ -496,8 +492,7 @@ class TelaJogo(Screen):
     def mover(self, dl, dc):
         if self.game_over: return
         nl = self.player[0] + dl; nc = self.player[1] + dc
-        if nc < 0: nc = self.COLUNAS-1
-        if nc >= self.COLUNAS: nc = 0
+        # CORRIGIDO: sem atravessar de um lado pro outro
         if not self.pode_andar(nl, nc, fantasma=False): return
         self.player = [nl, nc]
         if (nl, nc) in self.pastilhas:
@@ -531,19 +526,13 @@ class TelaJogo(Screen):
             for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
                 nl, nc = e[0] + dl, e[1] + dc
-                nc_real = nc
-                if nc_real < 0: nc_real = self.COLUNAS-1
-                if nc_real >= self.COLUNAS: nc_real = 0
-                if self.pode_andar(nl, nc_real, fantasma=True):
-                    possiveis.append((dl, dc, nl, nc_real))
+                if self.pode_andar(nl, nc, fantasma=True):
+                    possiveis.append((dl, dc, nl, nc))
             if not possiveis:
                 for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                     nl, nc = e[0] + dl, e[1] + dc
-                    nc_real = nc
-                    if nc_real < 0: nc_real = self.COLUNAS-1
-                    if nc_real >= self.COLUNAS: nc_real = 0
-                    if self.pode_andar(nl, nc_real, fantasma=True):
-                        possiveis.append((dl, dc, nl, nc_real))
+                    if self.pode_andar(nl, nc, fantasma=True):
+                        possiveis.append((dl, dc, nl, nc))
             if possiveis:
                 if self.modo_poder:
                     possiveis.sort(key=lambda x: - (abs(x[2]-self.player[0]) + abs(x[3]-self.player[1])))
