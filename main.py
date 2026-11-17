@@ -55,7 +55,7 @@ def tocar_bip(nome):
             s.play()
     except: pass
 
-# --- MAPA SIMPLIFICADO - COMPLEXIDADE REDUZIDA ---
+# --- MAPA SIMPLIFICADO MAS COM LABIRINTO ---
 def _base():
     m = [[1]*17 for _ in range(21)]
     for r in range(1, 20):
@@ -70,20 +70,29 @@ def _v(m, c, r1, r2):
     for r in range(r1, r2+1): m[r][c] = 1
 def _criar_mapas_simples():
     mapas = []
-    m = _base(); _h(m, 6, 4, 12); _h(m, 14, 4, 12); mapas.append(m)
-    m = _base(); _h(m, 5, 3, 5); _h(m, 5, 11, 13); _h(m, 15, 3, 5); _h(m, 15, 11, 13); mapas.append(m)
-    m = _base(); _v(m, 8, 5, 15); _h(m, 10, 3, 13); mapas.append(m)
-    m = _base(); _h(m, 7, 2, 14); _h(m, 13, 2, 14); mapas.append(m)
-    m = _base(); _h(m, 7, 5, 11); _h(m, 13, 5, 11); _v(m, 5, 7, 13); _v(m, 11, 7, 13); mapas.append(m)
-    m = _base(); _v(m, 4, 3, 8); _v(m, 12, 3, 8); _v(m, 8, 12, 17); mapas.append(m)
-    m = _base(); _h(m, 5, 3, 10); _h(m, 10, 6, 13); _h(m, 15, 3, 10); mapas.append(m)
-    m = _base(); _h(m, 5, 3, 6); _h(m, 9, 3, 6); _v(m, 3, 5, 9); _v(m, 6, 5, 9); mapas.append(m)
-    m = _base(); _h(m, 10, 6, 10); mapas.append(m)
-    m = _base(); _h(m, 6, 4, 7); _h(m, 6, 9, 12); _h(m, 14, 4, 7); _h(m, 14, 9, 12); mapas.append(m)
+    # FASE 1 - simplificada, corredores mais curtos
+    m = _base(); _h(m, 8, 4, 12); _h(m, 12, 4, 12); mapas.append(m)
+    # FASE 2
+    m = _base(); _h(m, 6, 3, 6); _h(m, 6, 10, 13); _h(m, 14, 3, 6); _h(m, 14, 10, 13); mapas.append(m)
+    # FASE 3
+    m = _base(); _v(m, 8, 6, 14); _h(m, 10, 4, 12); mapas.append(m)
+    # FASE 4
+    m = _base(); _h(m, 8, 2, 14); _h(m, 12, 2, 14); mapas.append(m)
+    # FASE 5 - quadrado pequeno no meio
+    m = _base(); _h(m, 8, 5, 11); _h(m, 12, 5, 11); _v(m, 5, 8, 12); _v(m, 11, 8, 12); mapas.append(m)
+    # FASE 6
+    m = _base(); _v(m, 4, 4, 8); _v(m, 12, 4, 8); _v(m, 8, 12, 16); mapas.append(m)
+    # FASE 7
+    m = _base(); _h(m, 6, 3, 9); _h(m, 10, 7, 13); _h(m, 14, 3, 9); mapas.append(m)
+    # FASE 8
+    m = _base(); _h(m, 6, 3, 6); _h(m, 9, 3, 6); _v(m, 3, 6, 9); _v(m, 6, 6, 9); mapas.append(m)
+    # FASE 9 - mais aberta pra respirar
+    m = _base(); _h(m, 10, 7, 9); mapas.append(m)
+    # FASE 10
+    m = _base(); _h(m, 7, 4, 6); _h(m, 7, 10, 12); _h(m, 13, 4, 6); _h(m, 13, 10, 12); mapas.append(m)
     return mapas
 
 FASES_MAPAS = _criar_mapas_simples()
-
 FASES_SKINS = [{"fixo": (0.2, 0.4, 1, 1), "nome": f"Fase {i+1}"} for i in range(9)] + [{"fixo": (1, 0.2, 0.2, 1), "nome": "Boss Final"}]
 
 class Bloco(Widget):
