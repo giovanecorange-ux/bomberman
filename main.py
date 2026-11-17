@@ -20,8 +20,7 @@ def salvar_recorde(fase, pontos):
             try:
                 with open(ARQ_RECORDE, "r") as f:
                     antigo = json.load(f)
-                    if antigo.get("fase", 1) > fase: return antigo
-                    if antigo.get("fase") == fase and antigo.get("pontos", 0) >= pontos: return antigo
+                    if antigo.get("pontos", 0) >= pontos: return antigo
             except: pass
         with open(ARQ_RECORDE, "w") as f: json.dump(dados, f)
         return dados
@@ -43,7 +42,6 @@ def criar_bip(nome, freq, duracao=0.2, volume=0.5):
                 sample = int(v * 32767 * math.sin(2 * math.pi * freq * i / framerate))
                 wav.writeframes(struct.pack('<h', sample))
     except: pass
-
 _sons_cache = {}
 def tocar_bip(nome):
     try:
@@ -51,60 +49,114 @@ def tocar_bip(nome):
             s = SoundLoader.load(nome)
             _sons_cache[nome] = s
         s = _sons_cache.get(nome)
-        if s:
-            s.play()
+        if s: s.play()
     except: pass
 
-# --- MAPA CORRIGIDO: ATARI SIMPLES, 128 PASTILHAS + 4 PODERES ---
 def _mapa_de_texto(linhas):
-    m=[]
-    for l in linhas:
-        r=[]
-        for ch in l:
-            r.append(1 if ch=='#' else 2 if ch=='P' else 0)
-        m.append(r)
-    return m
+    return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-def _criar_mapas_simples():
-    # 17x21 - Validado: 128 pastilhas jogáveis + 4 poderes nos cantos
-    base = [
-        "#################",
-        "#P.............P#",
-        "#.##.#######.##.#",
-        "#.##.#.....#.##.#",
-        "#.##.#.###.#.##.#",
-        "#.##.#.#.#.#.##.#",
-        "#.##.#.###.#.##.#",
-        "#.##.#.....#.##.#",
-        "#.##.#######.##.#",
-        "#.##.#######.##.#",
-        "#.##.#######.##.#",
-        "#.##.#.....#.##.#",
-        "#.##.#.###.#.##.#",
-        "#.##.#.#.#.#.##.#",
-        "#.##.#.###.#.##.#",
-        "#.##.#.....#.##.#",
-        "#.##.###.###.##.#",
-        "#.##.#######.##.#",
-        "#.##.#######.##.#",
-        "#P.............P#",
-        "#################",
-    ]
-    fases = [list(base) for _ in range(10)]
-    return [_mapa_de_texto(f) for f in fases]
+# MAPA CLASSICO DA FOTO - 128 pastilhas + 4 poderes - com TUNEL na linha 10
+FASES_MAPAS_TXT = [
+[
+"#################",
+"#P....#...#....P#",
+"#..#.##...##.#..#",
+"#.##.##.#.##.##.#",
+"#..##.#####.##..#",
+"#.##.#.#####.#.##",
+"#.##.#.....#.##.#",
+"####.##.#.##.####",
+"####.#.##..#.####",
+"#.#..##...##..#.#",
+".....#.....#.....",
+"#.#..##...##..#.#",
+"####.#..#..#.####",
+"####.##.#.##.####",
+"#.##.#.....#.##.#",
+"#.##.#.#####.#.##",
+"#..##..###..##..#",
+"#.##.##.#.##.##.#",
+"#..#.##...##.#..#",
+"#P....#...#....P#",
+"#################",
+],
+[
+"#################",
+"#P....#...#....P#",
+"#..#.##...##.#..#",
+"#.##.##.#.##.##.#",
+"#..##..###..##..#",
+"#.##.#.#####.#.##",
+"#.##.#.....#.##.#",
+"####.##.#.##.####",
+"####.#.##..#.####",
+"#.#..##...##..#.#",
+".....#.....#.....",
+"#.#..##...##..#.#",
+"####.#..#..#.####",
+"####.##.#.##.####",
+"#.##.#.....#.##.#",
+"#.##.#.#####.#.##",
+"#..##..###..##..#",
+"#.##.##.#.##.##.#",
+"#..#.##...##.#..#",
+"#P....#...#....P#",
+"#################",
+],
+[
+"#################",
+"#P....#...#....P#",
+"#..#.##...##.#..#",
+"#.##.##.#.##.##.#",
+"#..##..###..##..#",
+"#.##.#.#####.#.##",
+"#.##.......#.##.#",
+"####.##.#.##.####",
+"####.#..#..#.####",
+"#.#..##...##..#.#",
+".....#.....#.....",
+"#.#..##...##..#.#",
+"####.#..#..#.####",
+"####.##.#.##.####",
+"#.##.......#.##.#",
+"#.##.#.#####.#.##",
+"#..##..###..##..#",
+"#.##.##.#.##.##.#",
+"#..#.##...##.#..#",
+"#P....#...#....P#",
+"#################",
+],
+[
+"#################",
+"#P....#...#....P#",
+"#..#.##...##.#..#",
+"#.##.##.#.##.##.#",
+"#..##..###..##..#",
+"#.##.#.#####.#.##",
+"#.##.#.....#.##.#",
+"####.##.#.##.####",
+"####.#..#..#.####",
+"#.#..##...##..#.#",
+".....#.....#.....",
+"#.#..##...##..#.#",
+"####.#..#..#.####",
+"####.##.#.##.####",
+"#.##.#.....#.##.#",
+"#.##.#.#####.#.##",
+"#..##..###..##..#",
+"#.##.##.#.##.##.#",
+"#..#.##...##.#..#",
+"#P....#...#....P#",
+"#################",
+],
+]
+FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT]
 
-FASES_MAPAS = _criar_mapas_simples()
 FASES_SKINS = [
-    {"fixo": (0.2, 0.4, 1, 1), "nome": "Fase 1 Azul"},
-    {"fixo": (0, 1, 1, 1), "nome": "Fase 2 Ciano"},
-    {"fixo": (1, 0.6, 0.8, 1), "nome": "Fase 3 Rosa"},
-    {"fixo": (1, 1, 0, 1), "nome": "Fase 4 Amarelo"},
-    {"fixo": (0, 1, 0, 1), "nome": "Fase 5 Verde"},
-    {"fixo": (1, 0.6, 0, 1), "nome": "Fase 6 Laranja"},
-    {"fixo": (0.6, 0.2, 1, 1), "nome": "Fase 7 Roxo"},
-    {"fixo": (1, 0, 0, 1), "nome": "Fase 8 Vermelho"},
-    {"fixo": (1, 1, 1, 1), "nome": "Fase 9 Branco"},
-    {"fixo": (1, 0.84, 0, 1), "nome": "Boss Final Dourado"},
+    {"fixo": (0.15, 0.3, 1, 1), "nome": "Azul"},
+    {"fixo": (0, 0.85, 0, 1), "nome": "Verde"},
+    {"fixo": (1, 1, 0, 1), "nome": "Amarelo"},
+    {"fixo": (1, 0.15, 0.15, 1), "nome": "Vermelho"},
 ]
 
 class Bloco(Widget):
@@ -189,7 +241,7 @@ class TelaInicial(Screen):
         self.add_widget(layout)
     def on_enter(self):
         rec = carregar_recorde()
-        if rec["fase"] > 1 or rec["pontos"] > 0: self.lbl_recorde.text = f"RECORDE: FASE {rec['fase']}/10 - {rec['pontos']} PTS"
+        if rec["pontos"] > 0: self.lbl_recorde.text = f"RECORDE: {rec['pontos']} PTS"
         else: self.lbl_recorde.text = "SEM RECORDE - JOGUE!"
         Clock.schedule_once(lambda dt: self.tocar_musica(), 0.2)
     def on_leave(self): self.parar_musica()
@@ -235,6 +287,7 @@ class TelaJogo(Screen):
         super().__init__(**kwargs)
         self.LINHAS = 21; self.COLUNAS = 17
         self.fase = 1; self.pontos = 0; self.vidas = 3
+        self.proxima_vida_extra = 10000
         self.player = [18, 8]; self.spawn_player = [18, 8]
         self.casa_fantasmas = [(9,7),(9,8),(9,9),(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
         self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
@@ -246,7 +299,7 @@ class TelaJogo(Screen):
         b_menu.bind(on_release=lambda x: self.voltar_menu())
         topo.add_widget(b_menu)
         self.lbl_info = Label(text="VIDAS: 3", font_size='12sp', bold=True, size_hint_x=0.28)
-        self.lbl_fase = Label(text="FASE 1/10", font_size='12sp', bold=True, size_hint_x=0.27)
+        self.lbl_fase = Label(text="FASE 1", font_size='12sp', bold=True, size_hint_x=0.27)
         self.lbl_pontos = Label(text="0 PTS", font_size='13sp', bold=True, color=(1,1,0,1), size_hint_x=0.27)
         topo.add_widget(self.lbl_info); topo.add_widget(self.lbl_fase); topo.add_widget(self.lbl_pontos)
         root.add_widget(topo)
@@ -279,19 +332,23 @@ class TelaJogo(Screen):
         return True
     def set_direcao(self, dl, dc):
         self._dir_desejada = (dl, dc)
-        if self._dir_atual == (0,0):
-            self._dir_atual = (dl, dc)
+        if self._dir_atual == (0,0): self._dir_atual = (dl, dc)
         if not self._event_andar:
-            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.07)
+            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
     def tentar_mover(self):
         if self.game_over: return
         if self._dir_desejada != (0,0):
             nl = self.player[0] + self._dir_desejada[0]; nc = self.player[1] + self._dir_desejada[1]
+            # TUNEL no tentar_mover tambem
+            if nc < 0: nc = self.COLUNAS-1
+            if nc >= self.COLUNAS: nc = 0
             if self.pode_andar(nl, nc, fantasma=False):
                 self._dir_atual = self._dir_desejada
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
         if self._dir_atual != (0,0):
             nl = self.player[0] + self._dir_atual[0]; nc = self.player[1] + self._dir_atual[1]
+            if nc < 0: nc = self.COLUNAS-1
+            if nc >= self.COLUNAS: nc = 0
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
     def definir_spawn_e_casinha(self):
@@ -306,10 +363,14 @@ class TelaJogo(Screen):
     def iniciar_fase(self, fase, reset_mapa=False):
         self.fase = fase; self.game_over = False; self.modo_poder = False
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
-        if fase == 1 and reset_mapa: self.vidas = 3; self.pontos = 0
+        if fase == 1 and reset_mapa:
+            self.vidas = 3; self.pontos = 0; self.proxima_vida_extra = 10000
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        self.mapa = [row[:] for row in FASES_MAPAS[fase-1]]
+        idx_mapa = (fase-1) % len(FASES_MAPAS)
+        idx_cor = (fase-1) % len(FASES_SKINS)
+        self.mapa = [row[:] for row in FASES_MAPAS[idx_mapa]]
+        self.skin_atual = FASES_SKINS[idx_cor]
         self.definir_spawn_e_casinha()
         self.player = self.spawn_player[:]
         if reset_mapa:
@@ -333,9 +394,8 @@ class TelaJogo(Screen):
             self.blocos.append(linha_blocos)
         self.atualizar_info(); self.desenhar_mapa()
         if self._event_inimigo: self._event_inimigo.cancel()
-        vel_fantasma = max(0.32 - (self.fase * 0.01), 0.24)
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), vel_fantasma)
-        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.07)
+        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
+        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
     def reiniciar_apos_morte(self):
         self.player = self.spawn_player[:]
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
@@ -347,16 +407,16 @@ class TelaJogo(Screen):
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.atualizar_info(); self.desenhar_mapa()
     def atualizar_info(self):
-        nome = FASES_SKINS[self.fase-1]["nome"]
+        nome = self.skin_atual["nome"]
         modo = " PODER!" if self.modo_poder else ""
         self.lbl_info.text = f"VIDAS: {self.vidas}{modo}"
-        self.lbl_fase.text = f"FASE {self.fase}/10 {nome}"
+        self.lbl_fase.text = f"FASE {self.fase} {nome}"
         self.lbl_pontos.text = f"{self.pontos} PTS"
         rec = carregar_recorde()
-        if rec["pontos"] > 0: self.lbl_recorde_tela.text = f"RECORDE: FASE {rec['fase']}/10 - {rec['pontos']} PTS"
-        else: self.lbl_recorde_tela.text = "NOVO RECORDE? JOGUE!"
+        if rec["pontos"] > 0: self.lbl_recorde_tela.text = f"RECORDE: {rec['pontos']} PTS | EXTRA em {self.proxima_vida_extra}"
+        else: self.lbl_recorde_tela.text = f"VIDA EXTRA em {self.proxima_vida_extra} PTS"
     def desenhar_mapa(self):
-        skin = FASES_SKINS[self.fase - 1]
+        skin = self.skin_atual
         casa_set = set(self.casa_fantasmas)
         porta = getattr(self, 'porta_casinha', None)
         parede_set = set((l,c) for l in range(self.LINHAS) for c in range(self.COLUNAS) if self.mapa[l][c]==1)
@@ -373,7 +433,10 @@ class TelaJogo(Screen):
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
     def pode_andar(self, l, c, fantasma=False):
-        if l < 0 or l >= self.LINHAS or c < 0 or c >= self.COLUNAS: return False
+        if l < 0 or l >= self.LINHAS: return False
+        # TUNEL: volta para o outro lado
+        if c < 0: c = self.COLUNAS-1
+        if c >= self.COLUNAS: c = 0
         if self.mapa[l][c] == 1: return False
         if not fantasma and (l,c) in set(self.casa_fantasmas): return False
         return True
@@ -384,15 +447,25 @@ class TelaJogo(Screen):
     def contar_poder(self):
         self.tempo_restante_poder -= 1
         if self.tempo_restante_poder <= 0: self.fim_poder()
+    def checar_vida_extra(self):
+        while self.pontos >= self.proxima_vida_extra:
+            self.vidas += 1
+            tocar_bip('bip_venceu.wav')
+            self.proxima_vida_extra += 10000
     def mover(self, dl, dc):
         if self.game_over: return
-        nl, nc = self.player[0] + dl, self.player[1] + dc
+        nl = self.player[0] + dl; nc = self.player[1] + dc
+        # TUNEL
+        if nc < 0: nc = self.COLUNAS-1
+        if nc >= self.COLUNAS: nc = 0
         if not self.pode_andar(nl, nc, fantasma=False): return
         self.player = [nl, nc]
-        if (nl, nc) in self.pastilhas: self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
+        if (nl, nc) in self.pastilhas:
+            self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
         if (nl, nc) in self.poderes:
             self.poderes.remove((nl, nc)); self.pontos += 50
             self.ativar_poder(); tocar_bip('bip_venceu.wav')
+        self.checar_vida_extra()
         cr, cc = self.LINHAS//2, self.COLUNAS//2
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
@@ -418,18 +491,25 @@ class TelaJogo(Screen):
             for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
                 nl, nc = e[0] + dl, e[1] + dc
-                if self.pode_andar(nl, nc, fantasma=True):
-                    possiveis.append((dl, dc, nl, nc))
+                # TUNEL para fantasma tambem
+                nc_real = nc
+                if nc_real < 0: nc_real = self.COLUNAS-1
+                if nc_real >= self.COLUNAS: nc_real = 0
+                if self.pode_andar(nl, nc_real, fantasma=True):
+                    possiveis.append((dl, dc, nl, nc_real))
             if not possiveis:
                 for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                     nl, nc = e[0] + dl, e[1] + dc
-                    if self.pode_andar(nl, nc, fantasma=True):
-                        possiveis.append((dl, dc, nl, nc))
+                    nc_real = nc
+                    if nc_real < 0: nc_real = self.COLUNAS-1
+                    if nc_real >= self.COLUNAS: nc_real = 0
+                    if self.pode_andar(nl, nc_real, fantasma=True):
+                        possiveis.append((dl, dc, nl, nc_real))
             if possiveis:
                 if self.modo_poder:
                     possiveis.sort(key=lambda x: - (abs(x[2]-self.player[0]) + abs(x[3]-self.player[1])))
                 else:
-                    chase = 0.9 if e[3] == 'vermelho' else 0.7
+                    chase = 0.6
                     if random.random() < chase:
                         possiveis.sort(key=lambda x: abs(x[2]-self.player[0]) + abs(x[3]-self.player[1]))
                     else:
@@ -438,7 +518,7 @@ class TelaJogo(Screen):
                 e[0], e[1] = melhor[2], melhor[3]; e[2] = (melhor[0], melhor[1])
             if [e[0], e[1]] == self.player:
                 if self.modo_poder:
-                    e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav'); self.atualizar_info(); return
+                    e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav'); self.checar_vida_extra(); self.atualizar_info(); return
                 else: self.perdeu(); return
         self.desenhar_mapa()
     def fim_poder(self):
@@ -455,19 +535,16 @@ class TelaJogo(Screen):
             if self._event_inimigo: self._event_inimigo.cancel()
             self.lbl_pontos.text = f"FIM: {self.pontos} PTS"
             Clock.schedule_once(lambda dt: self.voltar_menu(), 2.0)
-        else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.07)
+        else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
     def venceu_fase(self):
         if self.game_over: return
-        self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 200; salvar_recorde(self.fase, self.pontos)
+        self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 500; salvar_recorde(self.fase, self.pontos)
+        self.checar_vida_extra()
         if self._event_inimigo: self._event_inimigo.cancel()
         if self._event_andar: self._event_andar.cancel(); self._event_andar = None
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        if self.fase >= 10:
-            self.lbl_pontos.text = f"ZEROU! {self.pontos} PTS!"
-            Clock.schedule_once(lambda dt: self.voltar_menu(), 2.5)
-        else:
-            self.lbl_pontos.text = f"FASE OK! {self.pontos} PTS"
-            Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
+        self.lbl_pontos.text = f"FASE OK! {self.pontos} PTS"
+        Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
         if self._event_andar: self._event_andar.cancel(); self._event_andar = None
