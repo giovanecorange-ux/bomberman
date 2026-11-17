@@ -58,13 +58,13 @@ def tocar_bip(nome):
 def _mapa_de_texto(linhas):
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# 5 MAPAS CORRIGIDOS - FASE 1 IGUAL AO PRINT CLASSICO QUE VOCE MANDOU
+# 5 MAPAS CORRIGIDOS - 21 linhas x 17 colunas, caminho único de 1, casinha limpa
 FASES_MAPAS_TXT = [
 # FASE 1 - CLASSICO AZUL igual ao print
 [
 "#################",
 "#P.....#.#.....P#",
-"#.#.#.#.#.#.#.#.#",
+"#.#.###.#.###.#.#",
 "#.#...........#.#",
 "#.###.###.###.###",
 "#.....#...#.....#",
@@ -87,14 +87,14 @@ FASES_MAPAS_TXT = [
 # FASE 2 - VERDE
 [
 "#################",
-"#P.....###.....P#",
-"#.###.##.##.###.#",
-"#...#.......#...#",
-"###.##.###.##.###",
-"#.....##.##.....#",
+"#P.....#.#.....P#",
+"#.#.###.#.###.#.#",
+"#.#...........#.#",
+"#.##.###.###.##.#",
+"#.....#...#.....#",
 "#.##.##...##.##.#",
 "#....##...##....#",
-"####.#######.####",
+"####.##...##.####",
 "#....##...##....#",
 ".................",
 "#....##...##....#",
@@ -104,7 +104,7 @@ FASES_MAPAS_TXT = [
 "#..###########..#",
 "#.#############.#",
 "#..##..###..##..#",
-"#..##..###..##..#",
+"#.#.###.#.###.#.#",
 "#P.............P#",
 "#################",
 ],
@@ -112,13 +112,13 @@ FASES_MAPAS_TXT = [
 [
 "#################",
 "#P.............P#",
-"#..##..###..##..#",
-"#...............#",
+"#.#.##.###.##.#.#",
+"#.#...........#.#",
 "#.##.#######.##.#",
 "#...##.###.##...#",
 "#.###.......###.#",
 "#.....#####.....#",
-"####.#######.####",
+"####.##...##.####",
 "#....##...##....#",
 ".................",
 "#....##...##....#",
@@ -128,7 +128,7 @@ FASES_MAPAS_TXT = [
 "#...##.###.##...#",
 "#.##.#######.##.#",
 "#..###########..#",
-"#..##..###..##..#",
+"#.#.##.###.##.#.#",
 "#P.............P#",
 "#################",
 ],
@@ -166,11 +166,11 @@ FASES_MAPAS_TXT = [
 "#..##.......##..#",
 "#.#.##.###.##.#.#",
 "#...##.###.##...#",
-"#####.#####.#####",
+"####.##...##.####",
 "#....##...##....#",
 ".................",
 "#....##...##....#",
-"#####.#####.#####",
+"####.#######.####",
 "#...##.###.##...#",
 "#.#.##.###.##.#.#",
 "#..##.......##..#",
@@ -205,7 +205,6 @@ class Bloco(Widget):
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'fixo':
-                # PAREDE FININHA AZUL IGUAL AO PRINT CLASSICO
                 Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
                 Color(*fixo)
                 Line(rectangle=(x+1, y+1, w-2, h-2), width=1.6)
@@ -394,7 +393,6 @@ class TelaJogo(Screen):
             if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS: self.mapa[r][c] = 0
         self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
         self.mapa[cr-2][cc-1] = 0; self.mapa[cr-2][cc+1] = 0
-        # GARANTE SPAWN LIVRE
         self.spawn_player = [self.LINHAS-3, cc]
         self.mapa[self.spawn_player[0]][self.spawn_player[1]] = 0
         self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
@@ -414,9 +412,14 @@ class TelaJogo(Screen):
         self.player = self.spawn_player[:]
         if reset_mapa:
             self.pastilhas = set(); self.poderes = set()
+            casa_set = set(self.casa_fantasmas)
             for l in range(self.LINHAS):
                 for c in range(self.COLUNAS):
-                    if self.mapa[l][c] == 0 and (l,c) not in set(self.casa_fantasmas) and [l,c] != self.spawn_player and (l,c) != self.porta_casinha:
+                    # CORRIGIDO: nunca cria bolinha dentro da casinha, nem na porta, nem no spawn
+                    if (l,c) in casa_set: continue
+                    if (l,c) == self.porta_casinha: continue
+                    if [l,c] == self.spawn_player: continue
+                    if self.mapa[l][c] == 0:
                         self.pastilhas.add((l,c))
                     elif self.mapa[l][c] == 2: self.poderes.add((l,c))
             if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
