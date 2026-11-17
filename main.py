@@ -10,6 +10,7 @@ Window.size = (360, 640)
 def _mapa_de_texto(linhas):
     mapa = []
     for l in linhas:
+        l = l.ljust(17, '#')[:17]  # CORRIGIDO: trava pra 17 colunas, nunca mais fecha
         row = []
         for c in l:
             if c == '#': row.append('fixo')
@@ -21,10 +22,6 @@ def _mapa_de_texto(linhas):
     return mapa
 
 def _criar_mapas_simples():
-    # PACK FINAL - 10 fases - Padrão Pac Chaves / Reinforced / Ms Pac-Man
-    # Todos sem parede gigante, 100% jogável
-
-    # FASE 1 - STAGE 1/20 TudoCelular - amarelo
     m1 = [
         "#################",
         "#P....##.##...P#",
@@ -48,7 +45,6 @@ def _criar_mapas_simples():
         "#P...##...##..P#",
         "#################",
     ]
-    # FASE 2 - Ghost AI Map 1 verde
     m2 = [
         "#################",
         "#P.............P#",
@@ -72,9 +68,7 @@ def _criar_mapas_simples():
         "#P...##...##...P#",
         "#################",
     ]
-    # FASE 3 - Ms Pac-Man (3) pêssego
     m3 = m1[:]
-    # FASE 4 - Ms Pac-Man (4) azul
     m4 = [
         "#################",
         "#PL.##.###.##.LP#",
@@ -98,9 +92,7 @@ def _criar_mapas_simples():
         "#P...##...##...P#",
         "#################",
     ]
-    # FASE 5 - Rosa 1UP 1630
     m5 = m1[:]
-    # FASE 6 - Azul fino L grande
     m6 = [
         "#################",
         "#P...#.......#..P#",
@@ -124,9 +116,8 @@ def _criar_mapas_simples():
         "#P...##.....##..P#",
         "#################",
     ]
-    # FASE 7 - Reinforced Pac-Man - Towards Data Science
     m7 = m6[:]
-    # FASE 8 - PAC CHAVES - Lego r/lego - IGUAL AO TEU ÚLTIMO PRINT
+    # FASE 8 - CORRIGIDA - 17 em todas as linhas
     m8 = [
         "#################",
         "#PL.##.TTT.##.LP#",
@@ -145,9 +136,9 @@ def _criar_mapas_simples():
         "#.##.##...##.##.#",
         "#P..##.....##..P#",
         "#.##.##...##.##.#",
-        "#P..###...###.P#",
-        "#P...##...##..P#",
-        "#P...#######..P#",
+        "#P..###...###..P#",
+        "#P...##...##...P#",
+        "#P...#######...P#",
         "#################",
     ]
     m9 = m8[:]
@@ -188,7 +179,6 @@ class Bloco(Widget):
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'fixo':
-                # LINHA FINA AZUL - IGUAL AOS PRINTS PAC CHAVES / REINFORCED
                 Color(*fixo)
                 tem_cima = (self.l-1, self.c) in (parede_set or set())
                 tem_baixo = (self.l+1, self.c) in (parede_set or set())
