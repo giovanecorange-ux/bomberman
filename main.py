@@ -25,12 +25,14 @@ def salvar_recorde(fase, pontos):
         with open(ARQ_RECORDE, "w") as f: json.dump(dados, f)
         return dados
     except: return {"fase": fase, "pontos": pontos}
+
 def carregar_recorde():
     try:
         if os.path.exists(ARQ_RECORDE):
             with open(ARQ_RECORDE, "r") as f: return json.load(f)
     except: pass
     return {"fase": 1, "pontos": 0}
+
 def criar_bip(nome, freq, duracao=0.2, volume=0.5):
     try:
         if os.path.exists(nome): return
@@ -42,6 +44,7 @@ def criar_bip(nome, freq, duracao=0.2, volume=0.5):
                 sample = int(v * 32767 * math.sin(2 * math.pi * freq * i / framerate))
                 wav.writeframes(struct.pack('<h', sample))
     except: pass
+
 _sons_cache = {}
 def tocar_bip(nome):
     try:
@@ -55,17 +58,42 @@ def tocar_bip(nome):
 def _mapa_de_texto(linhas):
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# 5 MAPAS - 128 pastilhas + 4 poderes - 100% ANDAVEL - TUNEL ABERTO
+# 5 MAPAS CORRIGIDOS - FASE 1 IGUAL AO PRINT CLASSICO QUE VOCE MANDOU
 FASES_MAPAS_TXT = [
+# FASE 1 - CLASSICO AZUL igual ao print
 [
 "#################",
-"#P.............P#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#.#############.#",
-"#..###########..#",
-"#.##.#######.##.#",
+"#P.....#.#.....P#",
+"#.#.#.#.#.#.#.#.#",
+"#.#...........#.#",
+"#.###.###.###.###",
+"#.....#...#.....#",
+"#.##.##...##.##.#",
+"#....##...##....#",
+"####.##...##.####",
+"#....##...##....#",
+".................",
+"#....##...##....#",
+"####.#######.####",
 "#....#######....#",
+"#.##.#######.##.#",
+"#....##...##....#",
+"#.##.##...##.##.#",
+"#.#...........#.#",
+"#.#.###.#.###.#.#",
+"#P.....#.#.....P#",
+"#################",
+],
+# FASE 2 - VERDE
+[
+"#################",
+"#P.....###.....P#",
+"#.###.##.##.###.#",
+"#...#.......#...#",
+"###.##.###.##.###",
+"#.....##.##.....#",
+"#.##.##...##.##.#",
+"#....##...##....#",
 "####.#######.####",
 "#....##...##....#",
 ".................",
@@ -80,38 +108,16 @@ FASES_MAPAS_TXT = [
 "#P.............P#",
 "#################",
 ],
+# FASE 3 - AMARELO
 [
 "#################",
 "#P.............P#",
 "#..##..###..##..#",
-"#..###.###.###..#",
-"#.####.###.####.#",
-"#..###########..#",
+"#...............#",
 "#.##.#######.##.#",
-"#....#######....#",
-"####.#######.####",
-"#....##...##....#",
-".................",
-"#....##...##....#",
-"####.#######.####",
-"#....#######....#",
-"#.##.#######.##.#",
-"#..###########..#",
-"#.#############.#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#P.............P#",
-"#################",
-],
-[
-"#################",
-"#P.............P#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#.#############.#",
 "#...##.###.##...#",
-"#.###.#####.###.#",
-"#....#######....#",
+"#.###.......###.#",
+"#.....#####.....#",
 "####.#######.####",
 "#....##...##....#",
 ".................",
@@ -120,63 +126,65 @@ FASES_MAPAS_TXT = [
 "#....#######....#",
 "#.###.#####.###.#",
 "#...##.###.##...#",
-"#.#############.#",
-"#..##..###..##..#",
+"#.##.#######.##.#",
+"#..###########..#",
 "#..##..###..##..#",
 "#P.............P#",
 "#################",
 ],
+# FASE 4 - VERMELHO
 [
 "#################",
-"#P.............P#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#.#############.#",
-"#..###########..#",
-"#.##.#######.##.#",
-"#....##...##....#",
-"####.#######.####",
+"#P.....#.#.....P#",
+"#.#.###.#.###.#.#",
+"#.#...........#.#",
+"#.##.##.#.##.##.#",
+"#....#.....#....#",
+"##.#.#.###.#.#.##",
+"#..#..#...#..#..#",
+"####.#.#.#.#.####",
 "#....##...##....#",
 ".................",
 "#....##...##....#",
-"####.#######.####",
-"#....##...##....#",
-"#.##.#######.##.#",
-"#..###########..#",
-"#.#############.#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#P.............P#",
+"####.#.#.#.#.####",
+"#..#..#...#..#..#",
+"##.#.#.###.#.#.##",
+"#....#.....#....#",
+"#.##.##.#.##.##.#",
+"#.#...........#.#",
+"#.#.###.#.###.#.#",
+"#P.....#.#.....P#",
 "#################",
 ],
+# FASE 5 - ROXO
 [
 "#################",
-"#P.............P#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#.#############.#",
-"#..###########..#",
-"#.##.#######.##.#",
-"#....#######....#",
+"#P..##.....##..P#",
+"#.##.##.#.##.##.#",
+"#....##...##....#",
+"##.##.##.##.##.##",
+"#..##.......##..#",
+"#.#.##.###.##.#.#",
+"#...##.###.##...#",
 "#####.#####.#####",
 "#....##...##....#",
 ".................",
 "#....##...##....#",
 "#####.#####.#####",
-"#....#######....#",
-"#.##.#######.##.#",
-"#..###########..#",
-"#.#############.#",
-"#..##..###..##..#",
-"#..##..###..##..#",
-"#P.............P#",
+"#...##.###.##...#",
+"#.#.##.###.##.#.#",
+"#..##.......##..#",
+"##.##.##.##.##.##",
+"#....##...##....#",
+"#.##.##.#.##.##.#",
+"#P..##.....##..P#",
 "#################",
 ],
 ]
 FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT]
 
 FASES_SKINS = [
-    {"fixo": (0.15, 0.3, 1, 1), "nome": "Azul"},
+    {"fixo": (0.12, 0.18, 1, 1), "nome": "Azul Classico"},
     {"fixo": (0, 0.85, 0, 1), "nome": "Verde"},
     {"fixo": (1, 1, 0, 1), "nome": "Amarelo"},
     {"fixo": (1, 0.15, 0.15, 1), "nome": "Vermelho"},
@@ -197,11 +205,15 @@ class Bloco(Widget):
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'fixo':
-                Color(*fixo); Rectangle(pos=(x, y), size=(w, h)); return
+                # PAREDE FININHA AZUL IGUAL AO PRINT CLASSICO
+                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(*fixo)
+                Line(rectangle=(x+1, y+1, w-2, h-2), width=1.6)
+                return
             elif tipo == 'pastilha':
-                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.32)/2, y + (h-m*0.32)/2), size=(m*0.32, m*0.32)); return
+                m = min(w,h); Color(1,1,0.7,1); Ellipse(pos=(x + (w-m*0.28)/2, y + (h-m*0.28)/2), size=(m*0.28, m*0.28)); return
             elif tipo == 'poder':
-                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.70)/2, y + (h-m*0.70)/2), size=(m*0.70, m*0.70)); return
+                m = min(w,h); Color(1,0.9,0.9,1); Ellipse(pos=(x + (w-m*0.65)/2, y + (h-m*0.65)/2), size=(m*0.65, m*0.65)); return
             elif tipo == 'player':
                 Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
                 Color(0,0,0,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
@@ -217,10 +229,10 @@ class Bloco(Widget):
             elif tipo == 'casinha':
                 Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
                 Color(*fixo)
-                if (self.l-1, self.c) not in (casa_set or set()) and (self.l-1, self.c) != porta: Line(points=[x, y+h, x+w, y+h], width=2.5)
-                if (self.l+1, self.c) not in (casa_set or set()): Line(points=[x, y, x+w, y], width=2.5)
-                if (self.l, self.c-1) not in (casa_set or set()): Line(points=[x, y, x, y+h], width=2.5)
-                if (self.l, self.c+1) not in (casa_set or set()): Line(points=[x+w, y, x+w, y+h], width=2.5)
+                if (self.l-1, self.c) not in (casa_set or set()) and (self.l-1, self.c) != porta: Line(points=[x, y+h, x+w, y+h], width=2.2)
+                if (self.l+1, self.c) not in (casa_set or set()): Line(points=[x, y, x+w, y], width=2.2)
+                if (self.l, self.c-1) not in (casa_set or set()): Line(points=[x, y, x, y+h], width=2.2)
+                if (self.l, self.c+1) not in (casa_set or set()): Line(points=[x+w, y, x+w, y+h], width=2.2)
                 return
             elif tipo == 'porta':
                 Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
@@ -254,7 +266,7 @@ class TelaInicial(Screen):
         self.musica = None
         layout = BoxLayout(orientation='vertical', padding=16, spacing=8)
         layout.add_widget(Label(text="CORANGE SOFTWARE", font_size='18sp', color=(0.4, 0.85, 1, 1), bold=True, size_hint_y=0.08))
-        layout.add_widget(Label(text="PACMAN", font_size='34sp', color=(1, 0.85, 0.1, 1), bold=True, size_hint_y=0.12))
+        layout.add_widget(Label(text="PACMAN CLASSICO", font_size='34sp', color=(1, 0.85, 0.1, 1), bold=True, size_hint_y=0.12))
         self.lbl_recorde = Label(text="", font_size='16sp', color=(1, 1, 0.4, 1), bold=True, size_hint_y=0.08)
         layout.add_widget(self.lbl_recorde)
         layout.add_widget(DesenhoCapa(size_hint_y=0.34))
@@ -382,7 +394,11 @@ class TelaJogo(Screen):
             if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS: self.mapa[r][c] = 0
         self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
         self.mapa[cr-2][cc-1] = 0; self.mapa[cr-2][cc+1] = 0
+        # GARANTE SPAWN LIVRE
         self.spawn_player = [self.LINHAS-3, cc]
+        self.mapa[self.spawn_player[0]][self.spawn_player[1]] = 0
+        self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
+        self.mapa[self.spawn_player[0]][self.spawn_player[1]+1] = 0
     def iniciar_fase(self, fase, reset_mapa=False):
         self.fase = fase; self.game_over = False; self.modo_poder = False
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
@@ -583,5 +599,6 @@ class PacmanApp(App):
         sm.add_widget(TelaInicial(name='inicio'))
         sm.add_widget(TelaJogo(name='jogo'))
         return sm
+
 if __name__ == '__main__':
     PacmanApp().run()
