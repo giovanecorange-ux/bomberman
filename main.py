@@ -91,7 +91,7 @@ FASES_MAPAS_TXT = [[
     "#.#...............#.#",
     "#.#.###.#####.###.#.#",
     "#.....#...#...#.....#",
-    "#####.###.#.###.#####",
+    "#####.###...###.#####",
     "#.........#.........#",
     "#.###.###...###.###.#",
     "#.#.......#.......#.#",
@@ -250,3 +250,6 @@ class TelaInicial(Screen):
         btn = Button(text="INICIAR JOGO", font_size='24sp', bold=True, background_color=(0.15, 0.75, 0.25, 1), size_hint_y=0.14)
         btn.bind(on_release=self.iniciar)
         layout.add_widget(btn)
+        self.add_widget(layout)
+
+    def on_pre_enter(self, *args):
