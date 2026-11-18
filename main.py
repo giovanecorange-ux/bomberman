@@ -1,537 +1,290 @@
-import os, json, random, math, wave, struct
-from kivy.app import App
-from kivy.clock import Clock
-from kivy.core.audio import SoundLoader
-from kivy.core.window import Window
-from kivy.graphics import Color, Ellipse, Line, Rectangle, Triangle
-from kivy.resources import resource_find
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivy.uix.gridlayout import GridLayout
-from kivy.uix.label import Label
-from kivy.uix.screenmanager import Screen, ScreenManager
-from kivy.uix.widget import Widget
+import pygame
+import random
+import sys
 
-ARQ_RECORDE = "recorde_pacman.json"
-def salvar_recorde(fase, pontos):
-    try:
-        dados = {"fase": fase, "pontos": pontos}
-        if os.path.exists(ARQ_RECORDE):
-            try:
-                with open(ARQ_RECORDE, "r") as f:
-                    antigo = json.load(f)
-                    if antigo.get("pontos", 0) >= pontos: return antigo
-            except: pass
-        with open(ARQ_RECORDE, "w") as f: json.dump(dados, f)
-        return dados
-    except: return {"fase": fase, "pontos": pontos}
+pygame.init()
 
-def carregar_recorde():
-    try:
-        if os.path.exists(ARQ_RECORDE):
-            with open(ARQ_RECORDE, "r") as f: return json.load(f)
-    except: pass
-    return {"fase": 1, "pontos": 0}
+# Legenda da matriz do mapa:
+# '#' = Parede
+# '.' = Pastilha (+10 pontos)
+# 'o' = Pastilha especial (+50 pontos e deixa o fantasma azul/comível)
+# ' ' = Caminho vazio / Túnel lateral
+# 'G' = Posição inicial do Fantasma
+# 'P' = Posição inicial do Pac-Man (também onde a comidinha bônus aparece)
 
-def criar_bip(nome, freq, duracao=0.2, volume=0.5):
-    try:
-        if os.path.exists(nome): return
-        framerate = 44100; nframes = int(framerate * duracao)
-        with wave.open(nome, 'w') as wav:
-            wav.setnchannels(1); wav.setsampwidth(2); wav.setframerate(framerate)
-            for i in range(nframes):
-                v = volume * (1 - i / nframes)
-                sample = int(v * 32767 * math.sin(2 * math.pi * freq * i / framerate))
-                wav.writeframes(struct.pack('<h', sample))
-    except: pass
-
-_sons_cache = {}
-def tocar_bip(nome):
-    try:
-        if nome not in _sons_cache:
-            s = SoundLoader.load(nome)
-            _sons_cache[nome] = s
-        s = _sons_cache.get(nome)
-        if s: s.play()
-    except: pass
-
-def _mapa_de_texto(linhas):
-    return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
-
-# MAPA ESTILO ATARI DO VIDEO - 17x21 - SÓ L's SOLTOS, FUNDO AZUL
-# # = parede, . = chao, P = super ponto, ESPAÇO NO MEIO EM CIMA E EMBAIXO = PORTAL
-MAPA_ATARI_TXT = [
-"######## ########", # 0 - portal no meio (col 8)
-"#......# #......#",
-"#.##...# #...##.#",
-"#..............#", 
-"#.##.#.###.#.##.#",
-"#....#.....#....#",
-"##.#.##...##.#.##",
-"#....##...##....#",
-"#.#..### ###..#.#",
-"#.#..#.....#..#.#",  # 9 - linha da casinha
-"#....#.....#....#",  # 10 - casinha no meio
-"#.#..#.....#..#.#",  # 11
-"#.#..### ###..#.#",
-"#....##...##....#",
-"##.#.##...##.#.##",
-"#....#.....#....#",
-"#.##.#.###.#.##.#",
-"#..............#",
-"#.##...# #...##.#",
-"#......# #......#",
-"######## ########", # 20 - portal embaixo
-]
-FASES_MAPAS = [_mapa_de_texto(MAPA_ATARI_TXT) for _ in range(100)]
-
-FASES_SKINS = [
-    {"fixo": (1, 0.85, 0.1, 1), "nome": "Amarelo Atari"},
-    {"fixo": (0.2, 1, 0.2, 1), "nome": "Verde"},
-    {"fixo": (1, 0.3, 0.3, 1), "nome": "Vermelho"},
-    {"fixo": (0.4, 0.6, 1, 1), "nome": "Azul Claro"},
-    {"fixo": (1, 0.4, 1, 1), "nome": "Rosa"},
-    {"fixo": (0.4, 1, 1, 1), "nome": "Ciano"},
-    {"fixo": (1, 0.6, 0.1, 1), "nome": "Laranja"},
+MAPA_INICIAL = [
+    "#################################",
+    "# . . . . # . . . . # . . . . . #",
+    "# ### ### # ### ### # ### ### ###",
+    "# # . . . . . . . . . . . . . o #",
+    "# # ### ### ### ### ### ### ### #",
+    "# . . # . . # . . . . # . . # . #",
+    "##### # ### # ####### # ### # ###",
+    "      . . . . . #G# . . . . .    ",
+    "##### # ### ### ### ### ### # ###",
+    "# . . # . . # . . . . # . . # . #",
+    "# # ### ### # ####### # ### ### #",
+    "# # . . . . . . .P. . . . . . . #",
+    "# ### ### ### ### ### ### ### # #",
+    "# . . . . # . . . . # . . . . o #",
+    "#################################"
 ]
 
-class Bloco(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.tipo = 'chao'; self.l = 0; self.c = 0
-        self.bind(pos=self._redesenhar, size=self._redesenhar)
-    def _redesenhar(self, *args): self.desenhar(self.tipo, None, None)
-    def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='vermelho', casa_set=None, porta=None, parede_set=None):
-        self.tipo = tipo; self.canvas.clear()
-        x, y = self.pos; w, h = self.size
-        if w <= 1 or h <= 1: return
-        fixo = skin["fixo"] if skin else (1,0.85,0.1,1)
-        with self.canvas:
-            # FUNDO AZUL ESTILO ATARI DO VIDEO
-            Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
-            if tipo == 'fixo':
-                Color(*fixo); Rectangle(pos=(x+1, y+1), size=(w-2, h-2))
-                return
-            elif tipo == 'pastilha':
-                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.22)/2, y + (h-m*0.22)/2), size=(m*0.22, m*0.22)); return
-            elif tipo == 'poder':
-                m = min(w,h); Color(0.6,1,0.6,1); Ellipse(pos=(x + (w-m*0.6)/2, y + (h-m*0.6)/2), size=(m*0.6, m*0.6)); return
-            elif tipo == 'player':
-                Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
-                Color(0,0.1,0.6,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
-            elif tipo == 'assustado':
-                Color(0.2,0.2,1,1); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
-                Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24)); return
-            elif tipo == 'inimigo':
-                cores = {'vermelho': (1,0,0,1), 'rosa': (1,0.6,0.8,1), 'ciano': (0,1,1,1), 'laranja': (1,0.6,0,1)}
-                c = cores.get(inimigo_tipo, (1,0,0,1))
-                Color(*c); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
-                Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
-                Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
-            elif tipo == 'casinha':
-                Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
-                Color(*fixo)
-                if (self.l-1, self.c) not in (casa_set or set()) and (self.l-1, self.c) != porta: Line(points=[x, y+h, x+w, y+h], width=2.2)
-                if (self.l+1, self.c) not in (casa_set or set()): Line(points=[x, y, x+w, y], width=2.2)
-                if (self.l, self.c-1) not in (casa_set or set()): Line(points=[x, y, x, y+h], width=2.2)
-                if (self.l, self.c+1) not in (casa_set or set()): Line(points=[x+w, y, x+w, y+h], width=2.2)
-                return
-            elif tipo == 'porta':
-                Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
-                Color(1,1,1,0.95); Rectangle(pos=(x, y + h*0.38), size=(w, h*0.24)); return
+# Paletas de cores por fase: (Fundo, Parede/Pastilha, Pastilha Especial)
+PALETAS_FASES = [
+    ((0, 68, 170), (218, 185, 92), (120, 220, 120)),    # Fase 1: Azul e Amarelo (Original)
+    ((15, 15, 35), (45, 140, 255), (255, 180, 50)),     # Fase 2: Preto e Azul Arcade
+    ((40, 10, 60), (235, 95, 165), (120, 255, 210)),    # Fase 3: Roxo Escuro e Rosa Neon
+    ((10, 55, 45), (110, 230, 140), (255, 230, 90)),    # Fase 4: Verde Floresta
+    ((75, 15, 15), (245, 155, 65), (110, 220, 255)),    # Fase 5: Vinho e Laranja
+    ((25, 25, 25), (225, 225, 225), (255, 80, 80)),     # Fase 6: Grafite e Branco
+]
 
-class DesenhoCapa(Widget):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.bind(pos=self._desenhar, size=self._desenhar)
-    def _desenhar(self, *args):
-        self.canvas.clear()
-        x, y = self.pos; w, h = self.size
-        if w <= 10 or h <= 10: return
-        lado = min(w / 4.5, h * 0.75)
-        espaco = (w - (lado * 4)) / 5.0
-        cy = y + (h - lado) / 2.0
-        with self.canvas:
-            Color(0.05,0.1,0.6,1); Rectangle(pos=(x, y), size=(w, h))
-            bx = x + espaco
-            Color(1,1,0,1); Ellipse(pos=(bx, cy), size=(lado, lado))
-            cores = [(1,0,0,1),(1,0.6,0.8,1),(0,1,1,1),(1,0.6,0,1)]
-            for i, cor in enumerate(cores):
-                fx = bx + (lado+espaco)*(i+1)
-                Color(*cor); Ellipse(pos=(fx, cy+lado*0.2), size=(lado*0.8, lado*0.6)); Rectangle(pos=(fx, cy), size=(lado*0.8, lado*0.3))
+TAMANHO_BLOCO = 24
+LINHAS = len(MAPA_INICIAL)
+COLUNAS = len(MAPA_INICIAL[0])
 
-class TelaInicial(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.musica = None
-        layout = BoxLayout(orientation='vertical', padding=16, spacing=8)
-        layout.add_widget(Label(text="CORANGE SOFTWARE", font_size='18sp', color=(0.4, 0.85, 1, 1), bold=True, size_hint_y=0.08))
-        layout.add_widget(Label(text="PACMAN CLASSICO", font_size='34sp', color=(1, 0.85, 0.1, 1), bold=True, size_hint_y=0.12))
-        self.lbl_recorde = Label(text="", font_size='16sp', color=(1, 1, 0.4, 1), bold=True, size_hint_y=0.08)
-        layout.add_widget(self.lbl_recorde)
-        layout.add_widget(DesenhoCapa(size_hint_y=0.34))
-        btn = Button(text="INICIAR JOGO", font_size='24sp', bold=True, background_color=(0.15, 0.75, 0.25, 1), size_hint_y=0.16)
-        btn.bind(on_release=self.ir_para_jogo)
-        layout.add_widget(btn)
-        layout.add_widget(Label(text="PIX: 51993359782", font_size='16sp', color=(0.3, 1, 0.45, 1), bold=True, size_hint_y=0.08))
-        self.add_widget(layout)
-    def on_enter(self):
-        rec = carregar_recorde()
-        if rec["pontos"] > 0: self.lbl_recorde.text = f"RECORDE: {rec['pontos']} PTS"
-        else: self.lbl_recorde.text = "SEM RECORDE - JOGUE!"
-    def on_leave(self): pass
-    def ir_para_jogo(self, *args):
-        self.manager.get_screen('jogo').iniciar_fase(1, True)
-        self.manager.current = 'jogo'
+LARGURA = COLUNAS * TAMANHO_BLOCO
+ALTURA = LINHAS * TAMANHO_BLOCO + 44
 
-class BotaoSeta(Button):
-    def __init__(self, direcao='cima', **kwargs):
-        super().__init__(**kwargs)
-        self.direcao = direcao; self.text = ""; self.background_color = (0.15, 0.3, 0.8, 1)
-        self.bind(pos=self.desenhar_seta, size=self.desenhar_seta)
-    def desenhar_seta(self, *args):
-        self.canvas.after.clear()
-        x, y = self.pos; w, h = self.size
-        cx = x + w/2; cy = y + h/2; tam = min(w, h) * 0.35
-        with self.canvas.after:
-            Color(1, 1, 1, 1)
-            if self.direcao == 'cima': Triangle(points=[cx, cy+tam, cx-tam, cy-tam, cx+tam, cy-tam])
-            elif self.direcao == 'baixo': Triangle(points=[cx, cy-tam, cx-tam, cy+tam, cx+tam, cy+tam])
-            elif self.direcao == 'esq': Triangle(points=[cx-tam, cy, cx+tam, cy+tam, cx+tam, cy-tam])
-            elif self.direcao == 'dir': Triangle(points=[cx+tam, cy, cx-tam, cy+tam, cx-tam, cy-tam])
+VERDE_BARRA = (115, 195, 115)
+PRETO = (0, 0, 0)
+CIANO_FANTASMA = (130, 230, 190)
+AZUL_VULNERAVEL = (70, 120, 255)
+AMARELO_PACMAN = (240, 230, 140)
+VERMELHO_BONUS = (235, 65, 65)
+VERDE_FOLHA = (80, 210, 90)
 
-class TelaJogo(Screen):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.LINHAS = 21; self.COLUNAS = 17
-        self.fase = 1; self.pontos = 0; self.vidas = 3
-        self.proxima_vida_extra = 10000
-        self.player = [18, 8]; self.spawn_player = [18, 8]
-        self.casa_fantasmas = [(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
-        self.porta_casinha = (9, 8)
-        # PORTAIS VERTICAIS - CIMA E BAIXO NO MEIO
-        self.portal_cima = (0, 8)
-        self.portal_baixo = (20, 8)
-        self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
-        self._event_andar = None; self._dir_atual = (0, 0); self._dir_desejada = (0, 0)
-        self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None; self.tempo_restante_poder = 0
-        root = BoxLayout(orientation='vertical', spacing=2, padding=2)
-        topo = BoxLayout(orientation='horizontal', size_hint_y=0.08, padding=[4,2,4,2], spacing=4)
-        b_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.18)
-        b_menu.bind(on_release=lambda x: self.voltar_menu())
-        topo.add_widget(b_menu)
-        self.lbl_info = Label(text="VIDAS: 3", font_size='12sp', bold=True, size_hint_x=0.28)
-        self.lbl_fase = Label(text="FASE 1", font_size='12sp', bold=True, size_hint_x=0.27)
-        self.lbl_pontos = Label(text="0 PTS", font_size='13sp', bold=True, color=(1,1,0,1), size_hint_x=0.27)
-        topo.add_widget(self.lbl_info); topo.add_widget(self.lbl_fase); topo.add_widget(self.lbl_pontos)
-        root.add_widget(topo)
-        self.lbl_recorde_tela = Label(text="", font_size='11sp', color=(0.6,1,0.6,1), bold=True, size_hint_y=0.03)
-        root.add_widget(self.lbl_recorde_tela)
-        self.grid = GridLayout(cols=self.COLUNAS, rows=self.LINHAS, spacing=0, size_hint_y=0.70)
-        root.add_widget(self.grid)
-        controles = BoxLayout(orientation='vertical', size_hint_y=0.19, spacing=4, padding=6)
-        linha_cima = BoxLayout(orientation='horizontal')
-        linha_cima.add_widget(Widget())
-        b_cima = BotaoSeta(direcao='cima', size_hint_x=0.34)
-        b_cima.bind(on_press=lambda x: self.set_direcao(-1, 0))
-        linha_cima.add_widget(b_cima); linha_cima.add_widget(Widget())
-        controles.add_widget(linha_cima)
-        linha_meio = BoxLayout(orientation='horizontal', spacing=8)
-        b_esq = BotaoSeta(direcao='esq'); b_esq.bind(on_press=lambda x: self.set_direcao(0, -1))
-        b_baixo = BotaoSeta(direcao='baixo'); b_baixo.bind(on_press=lambda x: self.set_direcao(1, 0))
-        b_dir = BotaoSeta(direcao='dir'); b_dir.bind(on_press=lambda x: self.set_direcao(0, 1))
-        linha_meio.add_widget(b_esq); linha_meio.add_widget(b_baixo); linha_meio.add_widget(b_dir)
-        controles.add_widget(linha_meio)
-        root.add_widget(controles)
-        self.add_widget(root)
-        Window.bind(on_key_down=self.teclado)
+tela = pygame.display.set_mode((LARGURA, ALTURA))
+pygame.display.set_caption("Pac-Man Clássico - Loop Infinito")
+fonte = pygame.font.SysFont("courier", 20, bold=True)
+fonte_grande = pygame.font.SysFont("courier", 34, bold=True)
 
-    def teclado(self, window, key, *args):
-        if self.manager and self.manager.current != 'jogo': return False
-        if key == 273: self.set_direcao(-1, 0)
-        elif key == 274: self.set_direcao(1, 0)
-        elif key == 275: self.set_direcao(0, 1)
-        elif key == 276: self.set_direcao(0, -1)
+
+def obter_cores_fase(fase):
+    indice = (fase - 1) % len(PALETAS_FASES)
+    return PALETAS_FASES[indice]
+
+
+def iniciar_mapa():
+    mapa = [list(linha) for linha in MAPA_INICIAL]
+    pac_l, pac_c = 11, 17
+    fant_l, fant_c = 7, 17
+
+    for l in range(LINHAS):
+        for c in range(COLUNAS):
+            if mapa[l][c] == "P":
+                pac_l, pac_c = l, c
+                mapa[l][c] = " "
+            elif mapa[l][c] == "G":
+                fant_l, fant_c = l, c
+                mapa[l][c] = " "
+
+    return mapa, pac_l, pac_c, fant_l, fant_c
+
+
+def pode_mover(mapa, l, c, eh_fantasma=False):
+    if l == 7 and (c < 0 or c >= COLUNAS):
         return True
+    if 0 <= l < LINHAS and 0 <= c < COLUNAS:
+        # Permite o fantasma sair da caixa central pelo teto (linha 6, coluna 17)
+        if eh_fantasma and l == 6 and c == 17:
+            return True
+        return mapa[l][c] != "#"
+    return False
 
-    def set_direcao(self, dl, dc):
-        self._dir_desejada = (dl, dc)
-        if self._dir_atual == (0,0): self._dir_atual = (dl, dc)
-        if not self._event_andar:
-            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
 
-    def tentar_mover(self):
-        if self.game_over: return
-        if self._dir_desejada != (0,0):
-            nl = self.player[0] + self._dir_desejada[0]; nc = self.player[1] + self._dir_desejada[1]
-            # CHECA PORTAL VERTICAL
-            if self.checa_portal(nl, nc):
-                self._dir_atual = self._dir_desejada
-                self.mover(self._dir_atual[0], self._dir_atual[1]); return
-            if self.pode_andar(nl, nc, fantasma=False):
-                self._dir_atual = self._dir_desejada
-                self.mover(self._dir_atual[0], self._dir_atual[1]); return
-        if self._dir_atual != (0,0):
-            nl = self.player[0] + self._dir_atual[0]; nc = self.player[1] + self._dir_atual[1]
-            if self.checa_portal(nl, nc):
-                self.mover(self._dir_atual[0], self._dir_atual[1]); return
-            if self.pode_andar(nl, nc, fantasma=False):
-                self.mover(self._dir_atual[0], self._dir_atual[1]); return
+def mover_fantasma(mapa, fant_l, fant_c, fant_dir, pac_l, pac_c, vulneravel):
+    # Se estiver dentro da caixa central (7, 17), sobe para sair
+    if fant_l == 7 and fant_c == 17:
+        return 6, 17, (-1, 0)
+    if fant_l == 6 and fant_c == 17:
+        return 5, 17, (-1, 0)
 
-    def checa_portal(self, l, c):
-        # Portal é quando tenta sair do mapa pela coluna 8
-        if c != 8: return False
-        if l < 0 or l >= self.LINHAS: return True
-        return False
+    direcoes = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    oposto = (-fant_dir[0], -fant_dir[1])
+    validas = []
 
-    def definir_spawn_e_casinha(self):
-        self.casa_fantasmas = [(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
-        self.porta_casinha = (9, 8)
-        for (r,c) in self.casa_fantasmas: self.mapa[r][c] = 0
-        self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
-        # Garante que os portais são livres
-        self.mapa[0][8] = 0
-        self.mapa[20][8] = 0
-        self.mapa[1][8] = 0
-        self.mapa[19][8] = 0
-        self.spawn_player = [18, 8]
-        self.mapa[18][8] = 0
-        self.mapa[18][7] = 0
-        self.mapa[18][9] = 0
+    for dl, dc in direcoes:
+        if (dl, dc) == oposto:
+            continue
+        if pode_mover(mapa, fant_l + dl, fant_c + dc, eh_fantasma=True):
+            validas.append((dl, dc))
 
-    def iniciar_fase(self, fase, reset_mapa=False):
-        self.fase = fase; self.game_over = False; self.modo_poder = False
-        self._dir_atual = (0,0); self._dir_desejada = (0,0)
-        if fase == 1 and reset_mapa:
-            self.vidas = 3; self.pontos = 0; self.proxima_vida_extra = 10000
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        idx_mapa = (fase-1) % len(FASES_MAPAS)
-        idx_cor = (fase-1) % len(FASES_SKINS)
-        self.mapa = [row[:] for row in FASES_MAPAS[idx_mapa]]
-        self.skin_atual = FASES_SKINS[idx_cor]
-        self.definir_spawn_e_casinha()
-        self.player = self.spawn_player[:]
-        if reset_mapa:
-            self.pastilhas = set(); self.poderes = set()
-            casa_set = set(self.casa_fantasmas)
-            for l in range(self.LINHAS):
-                for c in range(self.COLUNAS):
-                    if (l,c) in casa_set: continue
-                    if (l,c) == self.porta_casinha: continue
-                    if [l,c] == self.spawn_player: continue
-                    if (l,c) == self.portal_cima: continue
-                    if (l,c) == self.portal_baixo: continue
-                    if self.mapa[l][c] == 0: self.pastilhas.add((l,c))
-                    elif self.mapa[l][c] == 2: self.poderes.add((l,c))
-            if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
-        self.inimigos = []
-        tipos = ['vermelho','rosa','ciano','laranja']
-        pos_fantasmas = [(10,7),(10,8),(10,9),(11,8)]
-        for i, (l,c) in enumerate(pos_fantasmas):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
-        self.grid.clear_widgets(); self.blocos = []
-        for l in range(self.LINHAS):
-            linha_blocos = []
-            for c in range(self.COLUNAS):
-                b = Bloco(); b.l = l; b.c = c
-                self.grid.add_widget(b); linha_blocos.append(b)
-            self.blocos.append(linha_blocos)
-        self.atualizar_info(); self.desenhar_mapa()
-        if self._event_inimigo: self._event_inimigo.cancel()
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
-        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+    if not validas:
+        if pode_mover(mapa, fant_l + oposto[0], fant_c + oposto[1], eh_fantasma=True):
+            validas.append(oposto)
+        else:
+            return fant_l, fant_c, fant_dir
 
-    def reiniciar_apos_morte(self):
-        self.player = self.spawn_player[:]
-        self._dir_atual = (0,0); self._dir_desejada = (0,0)
-        self.inimigos = []
-        tipos = ['vermelho','rosa','ciano','laranja']
-        pos_fantasmas = [(10,7),(10,8),(10,9),(11,8)]
-        for i, (l,c) in enumerate(pos_fantasmas):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
-        self.modo_poder = False
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        self.atualizar_info(); self.desenhar_mapa()
+    # Escolhe direção: foge se vulnerável, persegue se normal (com toque aleatório)
+    if random.random() < 0.25:
+        escolha = random.choice(validas)
+    else:
+        def distancia(d):
+            nl, nc = fant_l + d[0], fant_c + d[1]
+            return abs(nl - pac_l) + abs(nc - pac_c)
 
-    def atualizar_info(self):
-        nome = self.skin_atual["nome"]
-        modo = " PODER!" if self.modo_poder else ""
-        self.lbl_info.text = f"VIDAS: {self.vidas}{modo}"
-        self.lbl_fase.text = f"FASE {self.fase} {nome}"
-        self.lbl_pontos.text = f"{self.pontos} PTS"
-        rec = carregar_recorde()
-        if rec["pontos"] > 0: self.lbl_recorde_tela.text = f"RECORDE: {rec['pontos']} PTS | EXTRA em {self.proxima_vida_extra}"
-        else: self.lbl_recorde_tela.text = f"VIDA EXTRA em {self.proxima_vida_extra} PTS"
+        escolha = max(validas, key=distancia) if vulneravel else min(validas, key=distancia)
 
-    def desenhar_mapa(self):
-        skin = self.skin_atual
-        casa_set = set(self.casa_fantasmas)
-        porta = getattr(self, 'porta_casinha', None)
-        parede_set = set((l,c) for l in range(self.LINHAS) for c in range(self.COLUNAS) if self.mapa[l][c]==1)
-        for l in range(self.LINHAS):
-            for c in range(self.COLUNAS):
-                tipo = 'chao'
-                if self.mapa[l][c] == 1: tipo = 'fixo'
-                elif (l,c) == porta: tipo = 'porta'
-                elif (l,c) in casa_set: tipo = 'casinha'
-                elif (l,c) in self.poderes: tipo = 'poder'
-                elif (l,c) in self.pastilhas: tipo = 'pastilha'
-                if [l, c] == self.player: tipo = 'player'
-                self.blocos[l][c].desenhar(tipo, None, skin, 'vermelho', casa_set, porta, parede_set)
-        for e in self.inimigos:
-            self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
+    nl = fant_l + escolha[0]
+    nc = fant_c + escolha[1]
 
-    def pode_andar(self, l, c, fantasma=False):
-        # Portal vertical - deixa passar
-        if (l < 0 or l >= self.LINHAS) and c == 8: return True
-        if l < 0 or l >= self.LINHAS: return False
-        if c < 0 or c >= self.COLUNAS: return False
-        if self.mapa[l][c] == 1: return False
-        if not fantasma:
-            if (l,c) in set(self.casa_fantasmas): return False
-            if (l,c) == self.porta_casinha: return False
-        return True
+    if nc < 0:
+        nc = COLUNAS - 1
+    elif nc >= COLUNAS:
+        nc = 0
 
-    def ativar_poder(self):
-        self.modo_poder = True; self.tempo_restante_poder = 6
-        if self.tempo_poder: self.tempo_poder.cancel()
-        self.tempo_poder = Clock.schedule_interval(lambda dt: self.contar_poder(), 1)
+    return nl, nc, escolha
 
-    def contar_poder(self):
-        self.tempo_restante_poder -= 1
-        if self.tempo_restante_poder <= 0: self.fim_poder()
 
-    def checar_vida_extra(self):
-        while self.pontos >= self.proxima_vida_extra:
-            self.vidas += 1
-            tocar_bip('bip_venceu.wav')
-            self.proxima_vida_extra += 10000
+def desenhar_tudo(mapa, pac_l, pac_c, fant_l, fant_c, pontos, fase, vidas, bonus_ativo, bonus_pos, vulneravel_timer, game_over):
+    cor_fundo, cor_parede, cor_especial = obter_cores_fase(fase)
+    tela.fill(cor_fundo)
 
-    def mover(self, dl, dc):
-        if self.game_over: return
-        nl = self.player[0] + dl; nc = self.player[1] + dc
+    for l in range(LINHAS):
+        for c in range(COLUNAS):
+            x = c * TAMANHO_BLOCO
+            y = l * TAMANHO_BLOCO
+            celula = mapa[l][c]
 
-        # PORTAL: SE SAI POR CIMA, VAI PRA BAIXO E VICE-VERSA
-        if nl < 0 and nc == 8:
-            nl = self.LINHAS - 2  # reaparece embaixo
-            tocar_bip('bip_bicho.wav')
-        elif nl >= self.LINHAS and nc == 8:
-            nl = 1  # reaparece em cima
-            tocar_bip('bip_bicho.wav')
+            if celula == "#":
+                pygame.draw.rect(tela, cor_parede, (x, y, TAMANHO_BLOCO, TAMANHO_BLOCO))
+            elif celula == ".":
+                pygame.draw.rect(
+                    tela,
+                    cor_parede,
+                    (x + 4, y + TAMANHO_BLOCO // 2 - 2, TAMANHO_BLOCO - 8, 4),
+                )
+            elif celula == "o":
+                pygame.draw.rect(
+                    tela,
+                    cor_especial,
+                    (x + 4, y + 4, TAMANHO_BLOCO - 8, TAMANHO_BLOCO - 8),
+                )
 
-        if not self.pode_andar(nl, nc, fantasma=False) and not (nl==1 or nl==self.LINHAS-2): return
-        self.player = [nl, nc]
-        if (nl, nc) in self.pastilhas:
-            self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
-        if (nl, nc) in self.poderes:
-            self.poderes.remove((nl, nc)); self.pontos += 50
-            self.ativar_poder(); tocar_bip('bip_venceu.wav')
-        self.checar_vida_extra()
-        cr, cc = 10, 8
-        for e in self.inimigos[:]:
-            if e[0] == nl and e[1] == nc:
-                if self.modo_poder:
-                    e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav')
-                else: self.perdeu(); return
-        self.atualizar_info()
-        if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
-        self.desenhar_mapa()
+    # Desenha a comidinha ponto extra (cereja retrô) quando ativa
+    if bonus_ativo:
+        bx = bonus_pos[1] * TAMANHO_BLOCO + TAMANHO_BLOCO // 2
+        by = bonus_pos[0] * TAMANHO_BLOCO + TAMANHO_BLOCO // 2
+        pygame.draw.circle(tela, VERMELHO_BONUS, (bx - 4, by + 3), 5)
+        pygame.draw.circle(tela, VERMELHO_BONUS, (bx + 4, by + 4), 5)
+        pygame.draw.line(tela, VERDE_FOLHA, (bx - 4, by - 2), (bx + 1, by - 8), 2)
+        pygame.draw.line(tela, VERDE_FOLHA, (bx + 4, by - 1), (bx + 1, by - 8), 2)
 
-    def atualizar_inimigos(self):
-        if self.game_over or self.manager.current != 'jogo': return
-        cr, cc = 10, 8
-        for e in self.inimigos[:]:
-            if e[4] > 0:
-                e[4] -= 1
-                if e[4] == 0: e[0], e[1] = self.porta_casinha
-                continue
-            if (e[0], e[1]) in set(self.casa_fantasmas):
-                if e[0] > self.porta_casinha[0]: e[0] -= 1; continue
-                elif e[1] != self.porta_casinha[1]: e[1] += 1 if self.porta_casinha[1] > e[1] else -1; continue
-                else: e[0] -= 1; continue
+    # Desenha o Fantasma (azul piscando quando vulnerável)
+    fx = fant_c * TAMANHO_BLOCO
+    fy = fant_l * TAMANHO_BLOCO
+    cor_fant = AZUL_VULNERAVEL if vulneravel_timer > 0 else CIANO_FANTASMA
+    pygame.draw.rect(
+        tela,
+        cor_fant,
+        (fx + 3, fy + 3, TAMANHO_BLOCO - 6, TAMANHO_BLOCO - 6),
+        border_top_left_radius=8,
+        border_top_right_radius=8,
+    )
 
-            # Portal para fantasmas também
-            if e[0] == 0 and e[1] == 8 and e[2] == (-1,0):
-                e[0] = self.LINHAS - 2; continue
-            if e[0] == self.LINHAS-1 and e[1] == 8 and e[2] == (1,0):
-                e[0] = 1; continue
+    # Desenha o Pac-Man
+    px = pac_c * TAMANHO_BLOCO + TAMANHO_BLOCO // 2
+    py = pac_l * TAMANHO_BLOCO + TAMANHO_BLOCO // 2
+    pygame.draw.circle(tela, AMARELO_PACMAN, (px, py), TAMANHO_BLOCO // 2 - 2)
 
-            possiveis = []
-            for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
-                if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
-                nl, nc = e[0] + dl, e[1] + dc
-                # permite portal
-                if (nl < 0 or nl >= self.LINHAS) and nc == 8:
-                    possiveis.append((dl, dc, nl, nc))
-                    continue
-                if self.pode_andar(nl, nc, fantasma=True):
-                    possiveis.append((dl, dc, nl, nc))
-            if possiveis:
-                if self.modo_poder:
-                    possiveis.sort(key=lambda x: - (abs(x[2]-self.player[0]) + abs(x[3]-self.player[1])))
-                else:
-                    if random.random() < 0.6:
-                        possiveis.sort(key=lambda x: abs(x[2]-self.player[0]) + abs(x[3]-self.player[1]))
-                    else:
-                        random.shuffle(possiveis)
-                melhor = possiveis[0]
-                # aplica portal
-                nl, nc = melhor[2], melhor[3]
-                if nl < 0: nl = self.LINHAS - 2
-                if nl >= self.LINHAS: nl = 1
-                e[0], e[1] = nl, nc; e[2] = (melhor[0], melhor[1])
-            if [e[0], e[1]] == self.player:
-                if self.modo_poder:
-                    e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav'); self.checar_vida_extra(); self.atualizar_info(); return
-                else: self.perdeu(); return
-        self.desenhar_mapa()
+    # Barra verde inferior com Pontos, Vidas e Fase
+    barra_y = LINHAS * TAMANHO_BLOCO
+    pygame.draw.rect(tela, PRETO, (0, barra_y, LARGURA, 6))
+    pygame.draw.rect(tela, VERDE_BARRA, (0, barra_y + 6, LARGURA, 38))
 
-    def fim_poder(self):
-        self.modo_poder = False; self.tempo_restante_poder = 0
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        self.atualizar_info(); self.desenhar_mapa()
+    texto_pontos = fonte.render(f"PONTOS:{pontos}", True, PRETO)
+    texto_vidas = fonte.render(f"VIDAS:{vidas}", True, PRETO)
+    texto_fase = fonte.render(f"FASE:{fase}", True, PRETO)
 
-    def perdeu(self):
-        if self.game_over: return
-        tocar_bip('bip_morreu.wav'); self.vidas -= 1; salvar_recorde(self.fase, self.pontos)
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None; self.modo_poder = False
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        if self.vidas <= 0:
-            self.game_over = True
-            if self._event_inimigo: self._event_inimigo.cancel()
-            self.lbl_pontos.text = f"FIM: {self.pontos} PTS"
-            Clock.schedule_once(lambda dt: self.voltar_menu(), 2.0)
-        else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+    tela.blit(texto_pontos, (12, barra_y + 13))
+    tela.blit(texto_vidas, (LARGURA // 2 - 55, barra_y + 13))
+    tela.blit(texto_fase, (LARGURA - 115, barra_y + 13))
 
-    def venceu_fase(self):
-        if self.game_over: return
-        self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 500; salvar_recorde(self.fase, self.pontos)
-        self.checar_vida_extra()
-        if self._event_inimigo: self._event_inimigo.cancel()
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        self.lbl_pontos.text = f"FASE OK! {self.pontos} PTS"
-        Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
+    if game_over:
+        overlay = pygame.Surface((LARGURA, ALTURA))
+        overlay.set_alpha(180)
+        overlay.fill(PRETO)
+        tela.blit(overlay, (0, 0))
+        msg1 = fonte_grande.render("FIM DE JOGO", True, AMARELO_PACMAN)
+        msg2 = fonte.render("Pressione ESPACO para jogar de novo", True, (255, 255, 255))
+        tela.blit(msg1, (LARGURA // 2 - msg1.get_width() // 2, ALTURA // 2 - 35))
+        tela.blit(msg2, (LARGURA // 2 - msg2.get_width() // 2, ALTURA // 2 + 10))
 
-    def voltar_menu(self):
-        if self._event_inimigo: self._event_inimigo.cancel()
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        self.modo_poder = False
-        self.manager.current = 'inicio'
 
-class PacmanApp(App):
-    def on_start(self):
-        Clock.schedule_once(lambda dt: criar_bip('bip_boom.wav', 120, 0.3, 0.8), 0.5)
-        Clock.schedule_once(lambda dt: criar_bip('bip_bicho.wav', 400, 0.15, 0.5), 0.6)
-        Clock.schedule_once(lambda dt: criar_bip('bip_morreu.wav', 180, 0.7, 0.6), 0.7)
-        Clock.schedule_once(lambda dt: criar_bip('bip_venceu.wav', 800, 0.25, 0.5), 0.8)
-    def build(self):
-        sm = ScreenManager()
-        sm.add_widget(TelaInicial(name='inicio'))
-        sm.add_widget(TelaJogo(name='jogo'))
-        return sm
+def main():
+    clock = pygame.time.Clock()
+    mapa, pac_l, pac_c, fant_l, fant_c = iniciar_mapa()
+    pos_inicial_pac = (pac_l, pac_c)
+    pos_inicial_fant = (fant_l, fant_c)
 
-if __name__ == '__main__':
-    PacmanApp().run()
+    dir_l, dir_c = 0, 0
+    prox_l, prox_c = 0, 0
+    fant_dir = (-1, 0)
+
+    pontos = 0
+    proximo_marco_vida = 10000
+    vidas = 4
+    fase = 1
+    game_over = False
+
+    # Controle da comidinha ponto extra
+    pastilhas_comidas = 0
+    bonus_ativo = False
+    bonus_timer = 0
+    bonus_pos = (11, 17)
+
+    vulneravel_timer = 0
+    contador_frames = 0
+
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif evento.type == pygame.KEYDOWN:
+                if game_over and evento.key == pygame.K_SPACE:
+                    mapa, pac_l, pac_c, fant_l, fant_c = iniciar_mapa()
+                    dir_l, dir_c = 0, 0
+                    prox_l, prox_c = 0, 0
+                    pontos = 0
+                    proximo_marco_vida = 10000
+                    vidas = 4
+                    fase = 1
+                    pastilhas_comidas = 0
+                    bonus_ativo = False
+                    vulneravel_timer = 0
+                    game_over = False
+                elif not game_over:
+                    if evento.key == pygame.K_UP:
+                        prox_l, prox_c = -1, 0
+                    elif evento.key == pygame.K_DOWN:
+                        prox_l, prox_c = 1, 0
+                    elif evento.key == pygame.K_LEFT:
+                        prox_l, prox_c = 0, -1
+                    elif evento.key == pygame.K_RIGHT:
+                        prox_l, prox_c = 0, 1
+
+        if not game_over:
+            contador_frames += 1
+            if contador_frames >= 4:
+                contador_frames = 0
+
+                if vulneravel_timer > 0:
+                    vulneravel_timer -= 1
+
+                if bonus_ativo:
+                    bonus_timer -= 1
+                    if bonus_timer <= 0:
+                        bonus_ativo = False
+
+                # Move Pac-Man
+                if pode_mover(mapa, pac_l + prox_l, pac_c + prox_c):
+                    dir_l, dir_c = prox_l, prox_c
+
+                if pode_mover(mapa, pac_l + dir_l, pac_c + dir_c):
+                    pac_l += dir_l
+                    pac_c += dir_c
+
+                    if pac_c < 0:
