@@ -56,29 +56,30 @@ def tocar_bip(nome):
     except: pass
 
 def _mapa_de_texto(linhas):
+    linhas = [l[:17].ljust(17, '#') for l in linhas] # garante 17 colunas
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# MAPA 100% IDÊNTICO AO VÍDEO ATARI 2600 - 17x21 COM PORTAL EM CIMA/EMBAIXO NO MEIO
+# MAPA ESTÁVEL - BASE QUE NÃO TRAVA + PORTAL ATARI NO MEIO
 FASES_MAPAS_TXT = [[
 "######## ########",
-"#..............P#",
-"#.##.###.###.##.#",
-"#.#............#",
-"#.#.##.###.##.#.#",
-"#.....#.#.....#.#",
-"#####.#.#.#.#####",
-"#####........####",
-"#####.#.#.#.#####",
-"#.....#.#.....#.#",
-"#.#.#.#####.#.#.#",
-"#.#.#.......#.#.#",
-"#.#.##.###.##.#.#",
-"#.....#.#.....#.#",
-"#.###.#.#.###.#.#",
-"#.#..........#.#",
-"#.#.##.###.##.#.#",
-"#...##..#..##...#",
-"#.##.##.#.##.##.#",
+"#P.............P#",
+"#.###.#...#.###.#",
+"#.....#...#.....#",
+"#.###.#####.###.#",
+"#.....#...#.....#",
+"#.###.#...#.###.#",
+"#.....#...#.....#",
+"#.#####...#####.#",
+"#.....#...#.....#",
+"#####.#...#.#####",
+"#.....#...#.....#",
+"#.#####...#####.#",
+"#.....#...#.....#",
+"#.###.#...#.###.#",
+"#.....#...#.....#",
+"#.###.#####.###.#",
+"#.....#...#.....#",
+"#.###.#...#.###.#",
 "#P.............P#",
 "######## ########",
 ]]
@@ -87,10 +88,10 @@ FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT] * 5
 
 FASES_SKINS = [
     {"fixo": (0.12, 0.18, 1, 1), "nome": "Atari Azul"},
-    {"fixo": (0, 0.85, 0, 1), "nome": "Atari Verde"},
-    {"fixo": (1, 1, 0, 1), "nome": "Atari Amarelo"},
-    {"fixo": (1, 0.15, 0.15, 1), "nome": "Atari Vermelho"},
-    {"fixo": (0.7, 0.2, 1, 1), "nome": "Atari Roxo"},
+    {"fixo": (0, 0.85, 0, 1), "nome": "Verde"},
+    {"fixo": (1, 1, 0, 1), "nome": "Amarelo"},
+    {"fixo": (1, 0.15, 0.15, 1), "nome": "Vermelho"},
+    {"fixo": (0.7, 0.2, 1, 1), "nome": "Roxo"},
 ]
 
 class Bloco(Widget):
@@ -194,9 +195,12 @@ class TelaInicial(Screen):
             if self.musica: self.musica.stop()
         except: pass
     def ir_para_jogo(self, *args):
-        self.parar_musica()
-        self.manager.get_screen('jogo').iniciar_fase(1, True)
-        self.manager.current = 'jogo'
+        try:
+            self.parar_musica()
+            self.manager.get_screen('jogo').iniciar_fase(1, True)
+            self.manager.current = 'jogo'
+        except Exception as e:
+            print(f"Erro ao iniciar: {e}")
 
 class BotaoSeta(Button):
     def __init__(self, direcao='cima', **kwargs):
@@ -293,45 +297,48 @@ class TelaJogo(Screen):
         self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
         self.mapa[self.spawn_player[0]][self.spawn_player[1]+1] = 0
     def iniciar_fase(self, fase, reset_mapa=False):
-        self.fase = fase; self.game_over = False; self.modo_poder = False
-        self._dir_atual = (0,0); self._dir_desejada = (0,0)
-        if fase == 1 and reset_mapa:
-            self.vidas = 3; self.pontos = 0; self.proxima_vida_extra = 10000
-        if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
-        if self._event_andar: self._event_andar.cancel(); self._event_andar = None
-        idx_mapa = (fase-1) % len(FASES_MAPAS)
-        idx_cor = (fase-1) % len(FASES_SKINS)
-        self.mapa = [row[:] for row in FASES_MAPAS[idx_mapa]]
-        self.skin_atual = FASES_SKINS[idx_cor]
-        self.definir_spawn_e_casinha()
-        self.player = self.spawn_player[:]
-        if reset_mapa:
-            self.pastilhas = set(); self.poderes = set()
-            casa_set = set(self.casa_fantasmas)
+        try:
+            self.fase = fase; self.game_over = False; self.modo_poder = False
+            self._dir_atual = (0,0); self._dir_desejada = (0,0)
+            if fase == 1 and reset_mapa:
+                self.vidas = 3; self.pontos = 0; self.proxima_vida_extra = 10000
+            if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
+            if self._event_andar: self._event_andar.cancel(); self._event_andar = None
+            idx_mapa = (fase-1) % len(FASES_MAPAS)
+            idx_cor = (fase-1) % len(FASES_SKINS)
+            self.mapa = [row[:] for row in FASES_MAPAS[idx_mapa]]
+            self.skin_atual = FASES_SKINS[idx_cor]
+            self.definir_spawn_e_casinha()
+            self.player = self.spawn_player[:]
+            if reset_mapa:
+                self.pastilhas = set(); self.poderes = set()
+                casa_set = set(self.casa_fantasmas)
+                for l in range(self.LINHAS):
+                    for c in range(self.COLUNAS):
+                        if (l,c) in casa_set: continue
+                        if (l,c) == self.porta_casinha: continue
+                        if [l,c] == self.spawn_player: continue
+                        if self.mapa[l][c] == 0:
+                            self.pastilhas.add((l,c))
+                        elif self.mapa[l][c] == 2: self.poderes.add((l,c))
+                if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
+            self.inimigos = []
+            tipos = ['vermelho','rosa','ciano','laranja']
+            for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
+                self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
+            self.grid.clear_widgets(); self.blocos = []
             for l in range(self.LINHAS):
+                linha_blocos = []
                 for c in range(self.COLUNAS):
-                    if (l,c) in casa_set: continue
-                    if (l,c) == self.porta_casinha: continue
-                    if [l,c] == self.spawn_player: continue
-                    if self.mapa[l][c] == 0:
-                        self.pastilhas.add((l,c))
-                    elif self.mapa[l][c] == 2: self.poderes.add((l,c))
-            if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
-        self.inimigos = []
-        tipos = ['vermelho','rosa','ciano','laranja']
-        for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
-            self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
-        self.grid.clear_widgets(); self.blocos = []
-        for l in range(self.LINHAS):
-            linha_blocos = []
-            for c in range(self.COLUNAS):
-                b = Bloco(); b.l = l; b.c = c
-                self.grid.add_widget(b); linha_blocos.append(b)
-            self.blocos.append(linha_blocos)
-        self.atualizar_info(); self.desenhar_mapa()
-        if self._event_inimigo: self._event_inimigo.cancel()
-        self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
-        self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+                    b = Bloco(); b.l = l; b.c = c
+                    self.grid.add_widget(b); linha_blocos.append(b)
+                self.blocos.append(linha_blocos)
+            self.atualizar_info(); self.desenhar_mapa()
+            if self._event_inimigo: self._event_inimigo.cancel()
+            self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
+            self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+        except Exception as e:
+            print(f"Erro iniciar_fase: {e}")
     def reiniciar_apos_morte(self):
         self.player = self.spawn_player[:]
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
@@ -369,7 +376,6 @@ class TelaJogo(Screen):
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
     def pode_andar(self, l, c, fantasma=False):
-        # Portal Atari no meio em cima/embaixo
         if c == 8 and (l < 0 or l >= self.LINHAS):
             return True
         if l < 0 or l >= self.LINHAS: return False
@@ -394,7 +400,6 @@ class TelaJogo(Screen):
     def mover(self, dl, dc):
         if self.game_over: return
         nl = self.player[0] + dl; nc = self.player[1] + dc
-        # Portal
         if nc == 8 and nl < 0:
             nl = self.LINHAS - 1
         elif nc == 8 and nl >= self.LINHAS:
@@ -432,7 +437,6 @@ class TelaJogo(Screen):
             for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
                 nl, nc = e[0] + dl, e[1] + dc
-                # Portal fantasma
                 if nc == 8 and nl < 0: nl = self.LINHAS - 1
                 elif nc == 8 and nl >= self.LINHAS: nl = 0
                 if self.pode_andar(nl, nc, fantasma=True):
