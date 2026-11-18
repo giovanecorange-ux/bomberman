@@ -1,4 +1,4 @@
-import os, json, random, math, wave, struct
+import os, json, random, math, wave, struct, copy
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.audio import SoundLoader
@@ -13,24 +13,17 @@ from kivy.uix.widget import Widget
 
 ARQ_RECORDE = "recorde_pacman.json"
 
-
 def salvar_recorde(fase, pontos):
     try:
+        antigo = carregar_recorde()
+        if antigo.get("pontos", 0) >= pontos:
+            return antigo
         dados = {"fase": fase, "pontos": pontos}
-        if os.path.exists(ARQ_RECORDE):
-            try:
-                with open(ARQ_RECORDE, "r") as f:
-                    antigo = json.load(f)
-                    if antigo.get("pontos", 0) >= pontos:
-                        return antigo
-            except Exception:
-                pass
         with open(ARQ_RECORDE, "w") as f:
             json.dump(dados, f)
         return dados
     except Exception:
         return {"fase": fase, "pontos": pontos}
-
 
 def carregar_recorde():
     try:
@@ -40,7 +33,6 @@ def carregar_recorde():
     except Exception:
         pass
     return {"fase": 1, "pontos": 0}
-
 
 def criar_bip(nome, freq, duracao=0.2, volume=0.5):
     try:
@@ -59,17 +51,13 @@ def criar_bip(nome, freq, duracao=0.2, volume=0.5):
     except Exception:
         pass
 
-
 _sons_cache = {}
-
-
 def tocar_bip(nome):
     try:
         if not os.path.exists(nome):
             return
         if nome not in _sons_cache:
-            s = SoundLoader.load(nome)
-            _sons_cache[nome] = s
+            _sons_cache[nome] = SoundLoader.load(nome)
         s = _sons_cache.get(nome)
         if s:
             s.stop()
@@ -77,14 +65,8 @@ def tocar_bip(nome):
     except Exception:
         pass
 
-
-def _mapa_de_texto(linhas):
-    linhas = [l[:21].ljust(21, '#') for l in linhas]
-    return [[1 if ch == '#' else 2 if ch == 'P' else 0 for ch in l] for l in linhas]
-
-
-# 21 colunas x 17 linhas - PAISAGEM fiel à foto com túnel vertical na coluna 10
-FASES_MAPAS_TXT = [[
+# CORRIGIDO: mapa 21 colunas x 17 linhas, simétrico, túnel vertical na coluna 10
+MAPA_TXT = [
     "########## ##########",
     "#P........#........P#",
     "#.###.###.#.###.###.#",
@@ -102,9 +84,23 @@ FASES_MAPAS_TXT = [[
     "#.###.###.#.###.###.#",
     "#P........#........P#",
     "########## ##########",
-]]
+]
 
-FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT] * 5
+def mapa_de_texto(linhas):
+    # 1 = parede, 2 = poder, 0 = chao com pastilha
+    out = []
+    for l in linhas:
+        l = l[:21].ljust(21, '#')
+        linha = []
+        for ch in l:
+            if ch == '#':
+                linha.append(1)
+            elif ch == 'P':
+                linha.append(2)
+            else:
+                linha.append(0)
+        out.append(linha)
+    return out
 
 FASES_SKINS = [
     {"fixo": (1.00, 0.82, 0.10, 1), "nome": "Atari Amarelo"},
@@ -113,7 +109,6 @@ FASES_SKINS = [
     {"fixo": (0.25, 0.85, 1.00, 1), "nome": "Atari Ciano"},
     {"fixo": (1.00, 0.50, 0.15, 1), "nome": "Atari Laranja"},
 ]
-
 
 class Bloco(Widget):
     def __init__(self, **kwargs):
@@ -178,37 +173,16 @@ class Bloco(Widget):
                 Ellipse(pos=(x + w * 0.30, y + h * 0.54), size=(w * 0.09, h * 0.14))
                 Ellipse(pos=(x + w * 0.62, y + h * 0.54), size=(w * 0.09, h * 0.14))
                 return
-            elif tipo == 'casinha':
-                Color(0, 0, 0.7, 1)
-                Rectangle(pos=(x, y), size=(w, h))
-                Color(*fixo)
-                if (self.l - 1, self.c) not in (casa_set or set()) and (self.l - 1, self.c) != porta:
-                    Line(points=[x, y + h, x + w, y + h], width=2.2)
-                if (self.l + 1, self.c) not in (casa_set or set()):
-                    Line(points=[x, y, x + w, y], width=2.2)
-                if (self.l, self.c - 1) not in (casa_set or set()):
-                    Line(points=[x, y, x, y + h], width=2.2)
-                if (self.l, self.c + 1) not in (casa_set or set()):
-                    Line(points=[x + w, y, x + w, y + h], width=2.2)
-                return
-            elif tipo == 'porta':
-                Color(0, 0, 0.7, 1)
-                Rectangle(pos=(x, y), size=(w, h))
-                Color(1, 1, 1, 0.95)
-                Rectangle(pos=(x, y + h * 0.38), size=(w, h * 0.24))
-                return
             elif tipo == 'vitamina':
                 m = min(w, h)
                 Color(1, 0.85, 0.1, 1)
                 Ellipse(pos=(x + (w - m * 0.55) / 2, y + (h - m * 0.55) / 2), size=(m * 0.55, m * 0.55))
                 return
 
-
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.bind(pos=self._desenhar, size=self._desenhar)
-
     def _desenhar(self, *args):
         self.canvas.clear()
         x, y = self.pos
@@ -236,11 +210,9 @@ class DesenhoCapa(Widget):
                 Ellipse(pos=(fx + lado * 0.15, cy + lado * 0.5), size=(lado * 0.18, lado * 0.2))
                 Ellipse(pos=(fx + lado * 0.45, cy + lado * 0.5), size=(lado * 0.18, lado * 0.2))
 
-
 class TelaInicial(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.musica = None
         layout = BoxLayout(orientation='vertical', padding=16, spacing=8)
         layout.add_widget(Label(text="CORANGE SOFTWARE", font_size='18sp', color=(0.4, 0.85, 1, 1), bold=True, size_hint_y=0.08))
         layout.add_widget(Label(text="PACMAN CLASSICO", font_size='34sp', color=(1, 0.85, 0.1, 1), bold=True, size_hint_y=0.12))
@@ -253,3 +225,241 @@ class TelaInicial(Screen):
         self.add_widget(layout)
 
     def on_pre_enter(self, *args):
+        r = carregar_recorde()
+        self.lbl_recorde.text = f"RECORDE: Fase {r.get('fase',1)} - {r.get('pontos',0)} pts"
+
+    def iniciar(self, *args):
+        criar_bip("bip.wav", 880, 0.15)
+        tocar_bip("bip.wav")
+        self.manager.current = "jogo"
+
+class TelaJogo(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.fase = 1
+        self.pontos = 0
+        self.vidas = 3
+        self.mapa = []
+        self.blocos = []
+        self.player = [1, 1]
+        self.direcao = (0, 0)
+        self.prox_direcao = (0, 0)
+        self.fantasmas = []
+        self.assustado = 0
+        self.pastilhas_restantes = 0
+        self.evento = None
+
+        layout = BoxLayout(orientation='vertical', spacing=4, padding=4)
+        topo = BoxLayout(size_hint_y=0.08, spacing=8)
+        self.lbl_pontos = Label(text="PONTOS: 0", bold=True)
+        self.lbl_fase = Label(text="FASE: 1", bold=True)
+        self.lbl_vidas = Label(text="VIDAS: 3", bold=True)
+        topo.add_widget(self.lbl_pontos)
+        topo.add_widget(self.lbl_fase)
+        topo.add_widget(self.lbl_vidas)
+        layout.add_widget(topo)
+
+        self.grid = GridLayout(cols=21, rows=17, spacing=0, size_hint_y=0.78)
+        layout.add_widget(self.grid)
+
+        controles = GridLayout(cols=3, rows=3, size_hint_y=0.22, spacing=4)
+        controles.add_widget(Widget())
+        b_cima = Button(text="▲", font_size='28sp')
+        b_cima.bind(on_release=lambda x: self.mudar_dir(-1, 0))
+        controles.add_widget(b_cima)
+        controles.add_widget(Widget())
+        b_esq = Button(text="◀", font_size='28sp')
+        b_esq.bind(on_release=lambda x: self.mudar_dir(0, -1))
+        controles.add_widget(b_esq)
+        b_baixo = Button(text="▼", font_size='28sp')
+        b_baixo.bind(on_release=lambda x: self.mudar_dir(1, 0))
+        controles.add_widget(b_baixo)
+        b_dir = Button(text="▶", font_size='28sp')
+        b_dir.bind(on_release=lambda x: self.mudar_dir(0, 1))
+        controles.add_widget(b_dir)
+        layout.add_widget(controles)
+
+        btn_voltar = Button(text="VOLTAR", size_hint_y=0.06, background_color=(0.8, 0.2, 0.2, 1))
+        btn_voltar.bind(on_release=self.voltar)
+        layout.add_widget(btn_voltar)
+        self.add_widget(layout)
+        Window.bind(on_key_down=self.tecla)
+
+    def tecla(self, win, key, *args):
+        # setas do teclado
+        mapa_teclas = {273: (-1, 0), 274: (1, 0), 276: (0, -1), 275: (0, 1)}
+        if key in mapa_teclas:
+            self.mudar_dir(*mapa_teclas[key])
+        return True
+
+    def mudar_dir(self, dl, dc):
+        self.prox_direcao = (dl, dc)
+
+    def voltar(self, *args):
+        if self.evento:
+            self.evento.cancel()
+        self.manager.current = "inicio"
+
+    def on_pre_enter(self, *args):
+        self.iniciar_fase(1, 0, 3)
+
+    def iniciar_fase(self, fase, pontos, vidas):
+        self.fase = fase
+        self.pontos = pontos
+        self.vidas = vidas
+        # CORRIGIDO: deepcopy pra não contaminar as outras fases
+        self.mapa = copy.deepcopy(mapa_de_texto(MAPA_TXT))
+        self.player = [1, 1]
+        self.direcao = (0, 0)
+        self.prox_direcao = (0, 0)
+        self.assustado = 0
+        # 4 fantasmas no centro
+        self.fantasmas = [
+            {"pos": [8, 10], "tipo": "vermelho", "dir": (0, 1)},
+            {"pos": [8, 9], "tipo": "rosa", "dir": (0, -1)},
+            {"pos": [9, 10], "tipo": "ciano", "dir": (0, 1)},
+            {"pos": [9, 9], "tipo": "laranja", "dir": (0, -1)},
+        ]
+        self.pastilhas_restantes = sum(row.count(0) for row in self.mapa)
+        self.construir_grid()
+        self.atualizar_labels()
+        if self.evento:
+            self.evento.cancel()
+        self.evento = Clock.schedule_interval(self.update, 0.18)
+
+    def construir_grid(self):
+        self.grid.clear_widgets()
+        self.blocos = []
+        skin = FASES_SKINS[(self.fase - 1) % len(FASES_SKINS)]
+        for l in range(17):
+            linha_blocos = []
+            for c in range(21):
+                b = Bloco()
+                b.l, b.c = l, c
+                self.grid.add_widget(b)
+                linha_blocos.append(b)
+            self.blocos.append(linha_blocos)
+        self.desenhar_tudo(skin)
+
+    def pode_andar(self, l, c):
+        # túnel vertical na coluna 10 (linhas 0 e 16 são abertas)
+        if c < 0 or c >= 21:
+            return False
+        if l < 0 or l >= 17:
+            return False
+        return self.mapa[l][c] != 1
+
+    def desenhar_tudo(self, skin=None):
+        if skin is None:
+            skin = FASES_SKINS[(self.fase - 1) % len(FASES_SKINS)]
+        for l in range(17):
+            for c in range(21):
+                b = self.blocos[l][c]
+                if [l, c] == self.player:
+                    b.desenhar('player', skin=skin)
+                elif any(f["pos"] == [l, c] for f in self.fantasmas):
+                    f = next(x for x in self.fantasmas if x["pos"] == [l, c])
+                    if self.assustado > 0:
+                        b.desenhar('assustado', skin=skin)
+                    else:
+                        b.desenhar('inimigo', skin=skin, inimigo_tipo=f["tipo"])
+                else:
+                    v = self.mapa[l][c]
+                    if v == 1:
+                        b.desenhar('fixo', skin=skin)
+                    elif v == 2:
+                        b.desenhar('poder', skin=skin)
+                    elif v == 0:
+                        b.desenhar('pastilha', skin=skin)
+                    else:
+                        b.desenhar('chao', skin=skin)
+
+    def atualizar_labels(self):
+        self.lbl_pontos.text = f"PONTOS: {self.pontos}"
+        self.lbl_fase.text = f"FASE: {self.fase} - {FASES_SKINS[(self.fase-1)%len(FASES_SKINS)]['nome']}"
+        self.lbl_vidas.text = f"VIDAS: {self.vidas}"
+
+    def update(self, dt):
+        # tentar trocar direção
+        dl, dc = self.prox_direcao
+        nl, nc = self.player[0] + dl, self.player[1] + dc
+        # túnel vertical: sai por cima volta por baixo na coluna 10
+        if nc == 10 and (nl < 0 or nl >= 17):
+            nl = 16 if nl < 0 else 0
+        if self.pode_andar(nl, nc) or (nc == 10 and nl in (0, 16)):
+            self.direcao = self.prox_direcao
+
+        dl, dc = self.direcao
+        if dl != 0 or dc != 0:
+            nl, nc = self.player[0] + dl, self.player[1] + dc
+            if nc == 10 and (nl < 0 or nl >= 17):
+                nl = 16 if nl < 0 else 0
+            if self.pode_andar(nl, nc):
+                self.player = [nl, nc]
+                # comer
+                if self.mapa[nl][nc] == 0:
+                    self.mapa[nl][nc] = 3
+                    self.pontos += 10
+                    self.pastilhas_restantes -= 1
+                    tocar_bip("bip.wav")
+                elif self.mapa[nl][nc] == 2:
+                    self.mapa[nl][nc] = 3
+                    self.pontos += 50
+                    self.assustado = 25
+                    tocar_bip("bip.wav")
+
+        # fantasmas - movimento aleatório simples
+        for f in self.fantasmas:
+            opcoes = []
+            for dl, dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+                nl, nc = f["pos"][0]+dl, f["pos"][1]+dc
+                if self.pode_andar(nl, nc):
+                    opcoes.append((dl, dc))
+            if opcoes:
+                # evita voltar direto se puder
+                if (-f["dir"][0], -f["dir"][1]) in opcoes and len(opcoes) > 1:
+                    opcoes.remove((-f["dir"][0], -f["dir"][1]))
+                f["dir"] = random.choice(opcoes)
+                f["pos"][0] += f["dir"][0]
+                f["pos"][1] += f["dir"][1]
+
+        if self.assustado > 0:
+            self.assustado -= 1
+
+        # colisão
+        for f in self.fantasmas:
+            if f["pos"] == self.player:
+                if self.assustado > 0:
+                    self.pontos += 200
+                    f["pos"] = [8, 10]
+                else:
+                    self.vidas -= 1
+                    if self.vidas <= 0:
+                        salvar_recorde(self.fase, self.pontos)
+                        if self.evento:
+                            self.evento.cancel()
+                        self.lbl_pontos.text = f"FIM! {self.pontos} pts"
+                        Clock.schedule_once(lambda x: setattr(self.manager, 'current', 'inicio'), 1.5)
+                        return
+                    else:
+                        self.player = [1, 1]
+                        self.direcao = (0,0)
+                        self.prox_direcao = (0,0)
+
+        self.atualizar_labels()
+        self.desenhar_tudo()
+
+        if self.pastilhas_restantes <= 0:
+            salvar_recorde(self.fase, self.pontos)
+            self.iniciar_fase(self.fase + 1, self.pontos, self.vidas)
+
+class PacmanApp(App):
+    def build(self):
+        criar_bip("bip.wav", 880, 0.12)
+        sm = ScreenManager()
+        sm.add_widget(TelaInicial(name="inicio"))
+        sm.add_widget(TelaJogo(name="jogo"))
+        return sm
+
+if __name__ == "__main__":
+    PacmanApp().run()
