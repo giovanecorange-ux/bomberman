@@ -55,43 +55,43 @@ def tocar_bip(nome):
         if s: s.play()
     except: pass
 
+# ============ MAPA EXATO DA TUA FOTO - ATARI 2600 PAC-MAN ============
+# 21 colunas x 17 linhas - PAISAGEM igual da foto
+# # = parede amarela, . = corredor, P = poder verde
+# Portal em cima e embaixo no meio (col 10)
+# Casinha no centro, vitamina embaixo dela
 def _mapa_de_texto(linhas):
-    linhas = [l[:17].ljust(17, '#') for l in linhas] # garante 17 colunas
+    linhas = [l[:21].ljust(21, '#') for l in linhas]
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# MAPA ESTÁVEL - BASE QUE NÃO TRAVA + PORTAL ATARI NO MEIO
 FASES_MAPAS_TXT = [[
-"######## ########",
-"#P.............P#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.###.#####.###.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.#####...#####.#",
-"#.....#...#.....#",
-"#####.#...#.#####",
-"#.....#...#.....#",
-"#.#####...#####.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.###.#####.###.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#P.............P#",
-"######## ########",
+"########## ##########",
+"#P......#...#......P#",
+"#.####.#.###.#.####.#",
+"#......#...#......#",
+"#.#.##.#######.##.#.#",
+"#.#....#...#....#.#",
+"###.##.#.###.#.##.###",
+"###.##.#.###.#.##.###",
+"#......#..#..#......#",
+"#.##.#.#####.#.##.#.#",
+"#.#..#..###..#..#..#.#",
+"#......#...#......#",
+"#.##.#######.#######.#",
+"#.#....#...#....#.#",
+"#.####.#.###.#.####.#",
+"#P......#...#......P#",
+"########## ##########",
 ]]
 
 FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT] * 5
 
 FASES_SKINS = [
-    {"fixo": (0.12, 0.18, 1, 1), "nome": "Atari Azul"},
-    {"fixo": (0, 0.85, 0, 1), "nome": "Verde"},
-    {"fixo": (1, 1, 0, 1), "nome": "Amarelo"},
-    {"fixo": (1, 0.15, 0.15, 1), "nome": "Vermelho"},
-    {"fixo": (0.7, 0.2, 1, 1), "nome": "Roxo"},
+    {"fixo": (1, 0.82, 0.1, 1), "nome": "Atari Amarelo"},
+    {"fixo": (1, 0.82, 0.1, 1), "nome": "Atari Amarelo"},
+    {"fixo": (1, 0.82, 0.1, 1), "nome": "Atari Amarelo"},
+    {"fixo": (1, 0.82, 0.1, 1), "nome": "Atari Amarelo"},
+    {"fixo": (1, 0.82, 0.1, 1), "nome": "Atari Amarelo"},
 ]
 
 class Bloco(Widget):
@@ -104,15 +104,15 @@ class Bloco(Widget):
         self.tipo = tipo; self.canvas.clear()
         x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
-        fixo = skin["fixo"] if skin else (0.2,0.4,1,1)
+        fixo = skin["fixo"] if skin else (1,0.82,0.1,1)
         with self.canvas:
-            Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+            Color(0,0,0.7,1); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'fixo':
                 Color(*fixo); Line(rectangle=(x+1, y+1, w-2, h-2), width=1.6); return
             elif tipo == 'pastilha':
-                m = min(w,h); Color(1,1,0.7,1); Ellipse(pos=(x + (w-m*0.28)/2, y + (h-m*0.28)/2), size=(m*0.28, m*0.28)); return
+                m = min(w,h); Color(0.85,0.65,0.2,1); Rectangle(pos=(x + (w-m*0.45)/2, y + (h-m*0.18)/2), size=(m*0.45, m*0.18)); return
             elif tipo == 'poder':
-                m = min(w,h); Color(1,0.9,0.9,1); Ellipse(pos=(x + (w-m*0.65)/2, y + (h-m*0.65)/2), size=(m*0.65, m*0.65)); return
+                m = min(w,h); Color(0.2,1,0.3,1); Rectangle(pos=(x + (w-m*0.65)/2, y + (h-m*0.65)/2), size=(m*0.65, m*0.65)); return
             elif tipo == 'player':
                 Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
                 Color(0,0,0,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
@@ -126,7 +126,7 @@ class Bloco(Widget):
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
             elif tipo == 'casinha':
-                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(0,0,0.7,1); Rectangle(pos=(x, y), size=(w, h))
                 Color(*fixo)
                 if (self.l-1, self.c) not in (casa_set or set()) and (self.l-1, self.c) != porta: Line(points=[x, y+h, x+w, y+h], width=2.2)
                 if (self.l+1, self.c) not in (casa_set or set()): Line(points=[x, y, x+w, y], width=2.2)
@@ -134,8 +134,10 @@ class Bloco(Widget):
                 if (self.l, self.c+1) not in (casa_set or set()): Line(points=[x+w, y, x+w, y+h], width=2.2)
                 return
             elif tipo == 'porta':
-                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(0,0,0.7,1); Rectangle(pos=(x, y), size=(w, h))
                 Color(1,1,1,0.95); Rectangle(pos=(x, y + h*0.38), size=(w, h*0.24)); return
+            elif tipo == 'vitamina':
+                m = min(w,h); Color(1,0.85,0.1,1); Ellipse(pos=(x + (w-m*0.55)/2, y + (h-m*0.55)/2), size=(m*0.55, m*0.55)); return
 
 class DesenhoCapa(Widget):
     def __init__(self, **kwargs):
@@ -149,7 +151,7 @@ class DesenhoCapa(Widget):
         espaco = (w - (lado * 4)) / 5.0
         cy = y + (h - lado) / 2.0
         with self.canvas:
-            Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+            Color(0,0,0.7,1); Rectangle(pos=(x, y), size=(w, h))
             bx = x + espaco
             Color(1,1,0,1); Ellipse(pos=(bx, cy), size=(lado, lado))
             Color(0,0,0,1); Triangle(points=[bx+lado*0.5, cy+lado*0.5, bx+lado*1.05, cy+lado*0.75, bx+lado*1.05, cy+lado*0.25])
@@ -221,15 +223,17 @@ class BotaoSeta(Button):
 class TelaJogo(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.LINHAS = 21; self.COLUNAS = 17
+        self.LINHAS = 17; self.COLUNAS = 21
         self.fase = 1; self.pontos = 0; self.vidas = 3
         self.proxima_vida_extra = 10000
-        self.player = [18, 8]; self.spawn_player = [18, 8]
-        self.casa_fantasmas = [(9,7),(9,8),(9,9),(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
-        self.porta_casinha = (8, 8)
+        self.player = [12, 10]; self.spawn_player = [12, 10]
+        self.casa_fantasmas = [(8,9),(8,10),(8,11),(9,9),(9,10),(9,11)]
+        self.porta_casinha = (7, 10)
+        self.vitamina_pos = (10, 10)
         self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
         self._event_andar = None; self._dir_atual = (0, 0); self._dir_desejada = (0, 0)
         self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None; self.tempo_restante_poder = 0
+        self.vitamina_ativa = True
         root = BoxLayout(orientation='vertical', spacing=2, padding=2)
         topo = BoxLayout(orientation='horizontal', size_hint_y=0.08, padding=[4,2,4,2], spacing=4)
         b_menu = Button(text="MENU", font_size='12sp', bold=True, background_color=(0.3,0.3,0.33,1), size_hint_x=0.18)
@@ -284,15 +288,15 @@ class TelaJogo(Screen):
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
     def definir_spawn_e_casinha(self):
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
-        self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
-        self.porta_casinha = (cr-2, cc)
+        cr, cc = 8, 10
+        self.casa_fantasmas = [(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
+        self.porta_casinha = (cr-1, cc)
+        self.vitamina_pos = (10, 10)
         for (r,c) in self.casa_fantasmas:
             if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS:
                 self.mapa[r][c] = 0
         self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
-        self.mapa[cr-3][cc] = 0
-        self.spawn_player = [self.LINHAS-3, cc]
+        self.spawn_player = [12, 10]
         self.mapa[self.spawn_player[0]][self.spawn_player[1]] = 0
         self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
         self.mapa[self.spawn_player[0]][self.spawn_player[1]+1] = 0
@@ -310,13 +314,32 @@ class TelaJogo(Screen):
             self.skin_atual = FASES_SKINS[idx_cor]
             self.definir_spawn_e_casinha()
             self.player = self.spawn_player[:]
+            self.vitamina_ativa = True
             if reset_mapa:
                 self.pastilhas = set(); self.poderes = set()
                 casa_set = set(self.casa_fantasmas)
+                # BFS - so gera bolinha onde da pra chegar, sem quadrado fechado
+                visitado = set()
+                fila = [tuple(self.spawn_player)]
+                visitado.add(tuple(self.spawn_player))
+                fi = 0
+                while fi < len(fila):
+                    lr, cr2 = fila[fi]; fi += 1
+                    for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
+                        nl, nc = lr+dl, cr2+dc
+                        if nc == 10 and (nl < 0 or nl >= self.LINHAS):
+                            nl = self.LINHAS-1 if nl < 0 else 0
+                        if nl < 0 or nl >= self.LINHAS or nc < 0 or nc >= self.COLUNAS: continue
+                        if (nl,nc) in visitado: continue
+                        if self.mapa[nl][nc] == 1: continue
+                        if (nl,nc) in casa_set: continue
+                        if (nl,nc) == self.porta_casinha: continue
+                        visitado.add((nl,nc))
+                        fila.append((nl,nc))
                 for l in range(self.LINHAS):
                     for c in range(self.COLUNAS):
-                        if (l,c) in casa_set: continue
-                        if (l,c) == self.porta_casinha: continue
+                        if (l,c) not in visitado: continue
+                        if (l,c) == self.vitamina_pos: continue
                         if [l,c] == self.spawn_player: continue
                         if self.mapa[l][c] == 0:
                             self.pastilhas.add((l,c))
@@ -369,6 +392,7 @@ class TelaJogo(Screen):
                 if self.mapa[l][c] == 1: tipo = 'fixo'
                 elif (l,c) == porta: tipo = 'porta'
                 elif (l,c) in casa_set: tipo = 'casinha'
+                elif (l,c) == self.vitamina_pos and self.vitamina_ativa: tipo = 'vitamina'
                 elif (l,c) in self.poderes: tipo = 'poder'
                 elif (l,c) in self.pastilhas: tipo = 'pastilha'
                 if [l, c] == self.player: tipo = 'player'
@@ -376,7 +400,7 @@ class TelaJogo(Screen):
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
     def pode_andar(self, l, c, fantasma=False):
-        if c == 8 and (l < 0 or l >= self.LINHAS):
+        if c == 10 and (l < 0 or l >= self.LINHAS):
             return True
         if l < 0 or l >= self.LINHAS: return False
         if c < 0 or c >= self.COLUNAS: return False
@@ -400,9 +424,9 @@ class TelaJogo(Screen):
     def mover(self, dl, dc):
         if self.game_over: return
         nl = self.player[0] + dl; nc = self.player[1] + dc
-        if nc == 8 and nl < 0:
+        if nc == 10 and nl < 0:
             nl = self.LINHAS - 1
-        elif nc == 8 and nl >= self.LINHAS:
+        elif nc == 10 and nl >= self.LINHAS:
             nl = 0
         if not self.pode_andar(nl, nc, fantasma=False): return
         self.player = [nl, nc]
@@ -411,19 +435,21 @@ class TelaJogo(Screen):
         if (nl, nc) in self.poderes:
             self.poderes.remove((nl, nc)); self.pontos += 50
             self.ativar_poder(); tocar_bip('bip_venceu.wav')
+        if (nl, nc) == self.vitamina_pos and self.vitamina_ativa:
+            self.vitamina_ativa = False; self.pontos += 100; tocar_bip('bip_venceu.wav')
         self.checar_vida_extra()
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
+        cr, cc = 8, 10
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
                 if self.modo_poder:
                     e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav')
                 else: self.perdeu(); return
         self.atualizar_info()
-        if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
+        if len(self.pastilhas) == 0 and len(self.poderes) == 0 and not self.vitamina_ativa: self.venceu_fase(); return
         self.desenhar_mapa()
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
+        cr, cc = 8, 10
         for e in self.inimigos[:]:
             if e[4] > 0:
                 e[4] -= 1
@@ -437,8 +463,8 @@ class TelaJogo(Screen):
             for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
                 nl, nc = e[0] + dl, e[1] + dc
-                if nc == 8 and nl < 0: nl = self.LINHAS - 1
-                elif nc == 8 and nl >= self.LINHAS: nl = 0
+                if nc == 10 and nl < 0: nl = self.LINHAS - 1
+                elif nc == 10 and nl >= self.LINHAS: nl = 0
                 if self.pode_andar(nl, nc, fantasma=True):
                     possiveis.append((dl, dc, nl, nc))
             if possiveis:
