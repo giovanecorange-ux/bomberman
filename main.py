@@ -58,132 +58,41 @@ def tocar_bip(nome):
 def _mapa_de_texto(linhas):
     return [[1 if ch=='#' else 2 if ch=='P' else 0 for ch in l] for l in linhas]
 
-# MAPAS CLASSICOS CORRIGIDOS - 17x21 - TUDO LIGADO, SEM QUADRADO FECHADO
-FASES_MAPAS_TXT = [
-[
-"#################",
-"#P.............P#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.###.#####.###.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.#####...#####.#",
-"#.....#...#.....#",
-"#####.#...#.#####",
-"#.....#...#.....#",
-"#.#####...#####.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.###.#####.###.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#P.............P#",
-"#################",
-],
-[
-"#################",
-"#P.............P#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.#.###...###.#.#",
-"#.#.....#.....#.#",
-"#.#.###.#.###.#.#",
-"#...#...#...#...#",
-"###.#.###.#.###.#",
-"#...#.#...#.#...#",
-"###.#.#...#.###.#",
-"#...#.#...#.#...#",
-"###.#.###.#.###.#",
-"#...#...#...#...#",
-"#.#.###.#.###.#.#",
-"#.#.....#.....#.#",
-"#.#.###...###.#.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#P.............P#",
-"#################",
-],
-[
-"#################",
-"#P.............P#",
-"#.#.###.#.###.#.#",
-"#.#...#.#.#...#.#",
-"#.#.###.#.###.#.#",
-"#...#.......#...#",
-"###.#.###.#.###.#",
-"#...#..#.#..#...#",
-"#.#.#.#...#.#.#.#",
-"#.#.#.#...#.#.#.#",
-"###.#.#...#.###.#",
-"#...#..#.#..#...#",
-"###.#.###.#.###.#",
-"#...#.......#...#",
-"#.#.###.#.###.#.#",
-"#.#...#.#.#...#.#",
-"#.#.###.#.###.#.#",
-"#...#.......#...#",
-"#.#.###.#.###.#.#",
-"#P.............P#",
-"#################",
-],
-[
-"#################",
-"#P.............P#",
-"#.#.#.#.#.#.#.#.#",
-"#.#.#.#.#.#.#.#.#",
-"#...#..#.#..#...#",
-"#.###.#.#.#.###.#",
-"#...#.#...#.#...#",
-"###.#.#.#.#.#.###",
-"#...#.#...#.#...#",
-"#.#.#.#...#.#.#.#",
-"###.#.#...#.###.#",
-"#.#.#.#...#.#.#.#",
-"#...#.#...#.#...#",
-"###.#.#.#.#.#.###",
-"#...#.#...#.#...#",
-"#.###.#.#.#.###.#",
-"#...#..#.#..#...#",
-"#.#.#.#.#.#.#.#.#",
-"#.#.#.#.#.#.#.#.#",
-"#P.............P#",
-"#################",
-],
-[
-"#################",
-"#P.............P#",
-"#.###.###.###.#.#",
-"#.....#...#.....#",
-"#.###.#...#.###.#",
-"#...#.#...#.#...#",
-"#.#.#.###.#.#.#.#",
-"#.#.#.....#.#.#.#",
-"#.#.###...###.#.#",
-"#.....#...#.....#",
-"#####.#...#.#####",
-"#.....#...#.....#",
-"#.#.###...###.#.#",
-"#.#.#.....#.#.#.#",
-"#.#.#.###.#.#.#.#",
-"#...#.#...#.#...#",
-"#.###.#...#.###.#",
-"#.....#...#.....#",
-"#.###.###.###.#.#",
-"#P.............P#",
-"#################",
-],
+# MAPA ESTILO ATARI DO VIDEO - 17x21 - SÓ L's SOLTOS, FUNDO AZUL
+# # = parede, . = chao, P = super ponto, ESPAÇO NO MEIO EM CIMA E EMBAIXO = PORTAL
+MAPA_ATARI_TXT = [
+"######## ########", # 0 - portal no meio (col 8)
+"#......# #......#",
+"#.##...# #...##.#",
+"#..............#", 
+"#.##.#.###.#.##.#",
+"#....#.....#....#",
+"##.#.##...##.#.##",
+"#....##...##....#",
+"#.#..### ###..#.#",
+"#.#..#.....#..#.#",  # 9 - linha da casinha
+"#....#.....#....#",  # 10 - casinha no meio
+"#.#..#.....#..#.#",  # 11
+"#.#..### ###..#.#",
+"#....##...##....#",
+"##.#.##...##.#.##",
+"#....#.....#....#",
+"#.##.#.###.#.##.#",
+"#..............#",
+"#.##...# #...##.#",
+"#......# #......#",
+"######## ########", # 20 - portal embaixo
 ]
-FASES_MAPAS = [_mapa_de_texto(m) for m in FASES_MAPAS_TXT]
+FASES_MAPAS = [_mapa_de_texto(MAPA_ATARI_TXT) for _ in range(100)]
 
 FASES_SKINS = [
-    {"fixo": (0.12, 0.18, 1, 1), "nome": "Azul Classico"},
-    {"fixo": (0, 0.85, 0, 1), "nome": "Verde"},
-    {"fixo": (1, 1, 0, 1), "nome": "Amarelo"},
-    {"fixo": (1, 0.15, 0.15, 1), "nome": "Vermelho"},
-    {"fixo": (0.7, 0.2, 1, 1), "nome": "Roxo"},
+    {"fixo": (1, 0.85, 0.1, 1), "nome": "Amarelo Atari"},
+    {"fixo": (0.2, 1, 0.2, 1), "nome": "Verde"},
+    {"fixo": (1, 0.3, 0.3, 1), "nome": "Vermelho"},
+    {"fixo": (0.4, 0.6, 1, 1), "nome": "Azul Claro"},
+    {"fixo": (1, 0.4, 1, 1), "nome": "Rosa"},
+    {"fixo": (0.4, 1, 1, 1), "nome": "Ciano"},
+    {"fixo": (1, 0.6, 0.1, 1), "nome": "Laranja"},
 ]
 
 class Bloco(Widget):
@@ -196,23 +105,22 @@ class Bloco(Widget):
         self.tipo = tipo; self.canvas.clear()
         x, y = self.pos; w, h = self.size
         if w <= 1 or h <= 1: return
-        fixo = skin["fixo"] if skin else (0.2,0.4,1,1)
+        fixo = skin["fixo"] if skin else (1,0.85,0.1,1)
         with self.canvas:
-            Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+            # FUNDO AZUL ESTILO ATARI DO VIDEO
+            Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
             if tipo == 'fixo':
-                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
-                Color(*fixo)
-                Line(rectangle=(x+1, y+1, w-2, h-2), width=1.6)
+                Color(*fixo); Rectangle(pos=(x+1, y+1), size=(w-2, h-2))
                 return
             elif tipo == 'pastilha':
-                m = min(w,h); Color(1,1,0.7,1); Ellipse(pos=(x + (w-m*0.28)/2, y + (h-m*0.28)/2), size=(m*0.28, m*0.28)); return
+                m = min(w,h); Color(1,1,1,1); Ellipse(pos=(x + (w-m*0.22)/2, y + (h-m*0.22)/2), size=(m*0.22, m*0.22)); return
             elif tipo == 'poder':
-                m = min(w,h); Color(1,0.9,0.9,1); Ellipse(pos=(x + (w-m*0.65)/2, y + (h-m*0.65)/2), size=(m*0.65, m*0.65)); return
+                m = min(w,h); Color(0.6,1,0.6,1); Ellipse(pos=(x + (w-m*0.6)/2, y + (h-m*0.6)/2), size=(m*0.6, m*0.6)); return
             elif tipo == 'player':
                 Color(1,1,0,1); Ellipse(pos=(x + w*0.10, y + h*0.10), size=(w*0.80, h*0.80))
-                Color(0,0,0,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
+                Color(0,0.1,0.6,1); Triangle(points=[x+w*0.55, y+h*0.5, x+w*0.95, y+h*0.70, x+w*0.95, y+h*0.30]); return
             elif tipo == 'assustado':
-                Color(0,0,1,1); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
+                Color(0.2,0.2,1,1); Ellipse(pos=(x + w*0.10, y + h*0.20), size=(w*0.80, h*0.60)); Rectangle(pos=(x + w*0.10, y + h*0.05), size=(w*0.80, h*0.30))
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24)); return
             elif tipo == 'inimigo':
                 cores = {'vermelho': (1,0,0,1), 'rosa': (1,0.6,0.8,1), 'ciano': (0,1,1,1), 'laranja': (1,0.6,0,1)}
@@ -221,7 +129,7 @@ class Bloco(Widget):
                 Color(1,1,1,1); Ellipse(pos=(x + w*0.24, y + h*0.50), size=(w*0.20, h*0.24)); Ellipse(pos=(x + w*0.56, y + h*0.50), size=(w*0.20, h*0.24))
                 Color(0,0,0,1); Ellipse(pos=(x + w*0.30, y + h*0.54), size=(w*0.09, h*0.14)); Ellipse(pos=(x + w*0.62, y + h*0.54), size=(w*0.09, h*0.14)); return
             elif tipo == 'casinha':
-                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
                 Color(*fixo)
                 if (self.l-1, self.c) not in (casa_set or set()) and (self.l-1, self.c) != porta: Line(points=[x, y+h, x+w, y+h], width=2.2)
                 if (self.l+1, self.c) not in (casa_set or set()): Line(points=[x, y, x+w, y], width=2.2)
@@ -229,7 +137,7 @@ class Bloco(Widget):
                 if (self.l, self.c+1) not in (casa_set or set()): Line(points=[x+w, y, x+w, y+h], width=2.2)
                 return
             elif tipo == 'porta':
-                Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+                Color(0.05, 0.1, 0.6, 1); Rectangle(pos=(x, y), size=(w, h))
                 Color(1,1,1,0.95); Rectangle(pos=(x, y + h*0.38), size=(w, h*0.24)); return
 
 class DesenhoCapa(Widget):
@@ -244,15 +152,13 @@ class DesenhoCapa(Widget):
         espaco = (w - (lado * 4)) / 5.0
         cy = y + (h - lado) / 2.0
         with self.canvas:
-            Color(0,0,0,1); Rectangle(pos=(x, y), size=(w, h))
+            Color(0.05,0.1,0.6,1); Rectangle(pos=(x, y), size=(w, h))
             bx = x + espaco
             Color(1,1,0,1); Ellipse(pos=(bx, cy), size=(lado, lado))
-            Color(0,0,0,1); Triangle(points=[bx+lado*0.5, cy+lado*0.5, bx+lado*1.05, cy+lado*0.75, bx+lado*1.05, cy+lado*0.25])
             cores = [(1,0,0,1),(1,0.6,0.8,1),(0,1,1,1),(1,0.6,0,1)]
             for i, cor in enumerate(cores):
                 fx = bx + (lado+espaco)*(i+1)
                 Color(*cor); Ellipse(pos=(fx, cy+lado*0.2), size=(lado*0.8, lado*0.6)); Rectangle(pos=(fx, cy), size=(lado*0.8, lado*0.3))
-                Color(1,1,1,1); Ellipse(pos=(fx+lado*0.15, cy+lado*0.5), size=(lado*0.18, lado*0.2)); Ellipse(pos=(fx+lado*0.45, cy+lado*0.5), size=(lado*0.18, lado*0.2))
 
 class TelaInicial(Screen):
     def __init__(self, **kwargs):
@@ -273,26 +179,8 @@ class TelaInicial(Screen):
         rec = carregar_recorde()
         if rec["pontos"] > 0: self.lbl_recorde.text = f"RECORDE: {rec['pontos']} PTS"
         else: self.lbl_recorde.text = "SEM RECORDE - JOGUE!"
-        Clock.schedule_once(lambda dt: self.tocar_musica(), 0.2)
-    def on_leave(self): self.parar_musica()
-    def tocar_musica(self):
-        try:
-            if self.musica: self.musica.stop()
-            pasta = os.path.dirname(os.path.abspath(__file__))
-            caminho = None
-            for nome in os.listdir(pasta):
-                if nome.lower() == "nes.mp3": caminho = os.path.join(pasta, nome); break
-            if not caminho: caminho = resource_find("nes.mp3")
-            if caminho and os.path.exists(caminho):
-                self.musica = SoundLoader.load(caminho)
-                if self.musica: self.musica.loop = True; self.musica.play()
-        except: pass
-    def parar_musica(self):
-        try:
-            if self.musica: self.musica.stop()
-        except: pass
+    def on_leave(self): pass
     def ir_para_jogo(self, *args):
-        self.parar_musica()
         self.manager.get_screen('jogo').iniciar_fase(1, True)
         self.manager.current = 'jogo'
 
@@ -319,8 +207,11 @@ class TelaJogo(Screen):
         self.fase = 1; self.pontos = 0; self.vidas = 3
         self.proxima_vida_extra = 10000
         self.player = [18, 8]; self.spawn_player = [18, 8]
-        self.casa_fantasmas = [(9,7),(9,8),(9,9),(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
-        self.porta_casinha = (8, 8)
+        self.casa_fantasmas = [(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
+        self.porta_casinha = (9, 8)
+        # PORTAIS VERTICAIS - CIMA E BAIXO NO MEIO
+        self.portal_cima = (0, 8)
+        self.portal_baixo = (20, 8)
         self.inimigos = []; self.mapa = []; self.blocos = []; self.game_over = False; self._event_inimigo = None
         self._event_andar = None; self._dir_atual = (0, 0); self._dir_desejada = (0, 0)
         self.pastilhas = set(); self.poderes = set(); self.modo_poder = False; self.tempo_poder = None; self.tempo_restante_poder = 0
@@ -354,6 +245,7 @@ class TelaJogo(Screen):
         root.add_widget(controles)
         self.add_widget(root)
         Window.bind(on_key_down=self.teclado)
+
     def teclado(self, window, key, *args):
         if self.manager and self.manager.current != 'jogo': return False
         if key == 273: self.set_direcao(-1, 0)
@@ -361,35 +253,52 @@ class TelaJogo(Screen):
         elif key == 275: self.set_direcao(0, 1)
         elif key == 276: self.set_direcao(0, -1)
         return True
+
     def set_direcao(self, dl, dc):
         self._dir_desejada = (dl, dc)
         if self._dir_atual == (0,0): self._dir_atual = (dl, dc)
         if not self._event_andar:
             self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+
     def tentar_mover(self):
         if self.game_over: return
         if self._dir_desejada != (0,0):
             nl = self.player[0] + self._dir_desejada[0]; nc = self.player[1] + self._dir_desejada[1]
+            # CHECA PORTAL VERTICAL
+            if self.checa_portal(nl, nc):
+                self._dir_atual = self._dir_desejada
+                self.mover(self._dir_atual[0], self._dir_atual[1]); return
             if self.pode_andar(nl, nc, fantasma=False):
                 self._dir_atual = self._dir_desejada
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
         if self._dir_atual != (0,0):
             nl = self.player[0] + self._dir_atual[0]; nc = self.player[1] + self._dir_atual[1]
+            if self.checa_portal(nl, nc):
+                self.mover(self._dir_atual[0], self._dir_atual[1]); return
             if self.pode_andar(nl, nc, fantasma=False):
                 self.mover(self._dir_atual[0], self._dir_atual[1]); return
+
+    def checa_portal(self, l, c):
+        # Portal é quando tenta sair do mapa pela coluna 8
+        if c != 8: return False
+        if l < 0 or l >= self.LINHAS: return True
+        return False
+
     def definir_spawn_e_casinha(self):
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
-        self.casa_fantasmas = [(cr-1,cc-1),(cr-1,cc),(cr-1,cc+1),(cr,cc-1),(cr,cc),(cr,cc+1),(cr+1,cc-1),(cr+1,cc),(cr+1,cc+1)]
-        self.porta_casinha = (cr-2, cc)
-        for (r,c) in self.casa_fantasmas:
-            if 0 <= r < self.LINHAS and 0 <= c < self.COLUNAS:
-                self.mapa[r][c] = 0
+        self.casa_fantasmas = [(10,7),(10,8),(10,9),(11,7),(11,8),(11,9)]
+        self.porta_casinha = (9, 8)
+        for (r,c) in self.casa_fantasmas: self.mapa[r][c] = 0
         self.mapa[self.porta_casinha[0]][self.porta_casinha[1]] = 0
-        self.mapa[cr-3][cc] = 0
-        self.spawn_player = [self.LINHAS-3, cc]
-        self.mapa[self.spawn_player[0]][self.spawn_player[1]] = 0
-        self.mapa[self.spawn_player[0]][self.spawn_player[1]-1] = 0
-        self.mapa[self.spawn_player[0]][self.spawn_player[1]+1] = 0
+        # Garante que os portais são livres
+        self.mapa[0][8] = 0
+        self.mapa[20][8] = 0
+        self.mapa[1][8] = 0
+        self.mapa[19][8] = 0
+        self.spawn_player = [18, 8]
+        self.mapa[18][8] = 0
+        self.mapa[18][7] = 0
+        self.mapa[18][9] = 0
+
     def iniciar_fase(self, fase, reset_mapa=False):
         self.fase = fase; self.game_over = False; self.modo_poder = False
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
@@ -411,13 +320,15 @@ class TelaJogo(Screen):
                     if (l,c) in casa_set: continue
                     if (l,c) == self.porta_casinha: continue
                     if [l,c] == self.spawn_player: continue
-                    if self.mapa[l][c] == 0:
-                        self.pastilhas.add((l,c))
+                    if (l,c) == self.portal_cima: continue
+                    if (l,c) == self.portal_baixo: continue
+                    if self.mapa[l][c] == 0: self.pastilhas.add((l,c))
                     elif self.mapa[l][c] == 2: self.poderes.add((l,c))
             if tuple(self.spawn_player) in self.pastilhas: self.pastilhas.remove(tuple(self.spawn_player))
         self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
-        for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
+        pos_fantasmas = [(10,7),(10,8),(10,9),(11,8)]
+        for i, (l,c) in enumerate(pos_fantasmas):
             self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
         self.grid.clear_widgets(); self.blocos = []
         for l in range(self.LINHAS):
@@ -430,16 +341,19 @@ class TelaJogo(Screen):
         if self._event_inimigo: self._event_inimigo.cancel()
         self._event_inimigo = Clock.schedule_interval(lambda dt: self.atualizar_inimigos(), 0.35)
         self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+
     def reiniciar_apos_morte(self):
         self.player = self.spawn_player[:]
         self._dir_atual = (0,0); self._dir_desejada = (0,0)
         self.inimigos = []
         tipos = ['vermelho','rosa','ciano','laranja']
-        for i, (l,c) in enumerate(self.casa_fantasmas[:4]):
+        pos_fantasmas = [(10,7),(10,8),(10,9),(11,8)]
+        for i, (l,c) in enumerate(pos_fantasmas):
             self.inimigos.append([l, c, random.choice([(1,0),(-1,0),(0,1),(0,-1)]), tipos[i], 0])
         self.modo_poder = False
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.atualizar_info(); self.desenhar_mapa()
+
     def atualizar_info(self):
         nome = self.skin_atual["nome"]
         modo = " PODER!" if self.modo_poder else ""
@@ -449,6 +363,7 @@ class TelaJogo(Screen):
         rec = carregar_recorde()
         if rec["pontos"] > 0: self.lbl_recorde_tela.text = f"RECORDE: {rec['pontos']} PTS | EXTRA em {self.proxima_vida_extra}"
         else: self.lbl_recorde_tela.text = f"VIDA EXTRA em {self.proxima_vida_extra} PTS"
+
     def desenhar_mapa(self):
         skin = self.skin_atual
         casa_set = set(self.casa_fantasmas)
@@ -466,7 +381,10 @@ class TelaJogo(Screen):
                 self.blocos[l][c].desenhar(tipo, None, skin, 'vermelho', casa_set, porta, parede_set)
         for e in self.inimigos:
             self.blocos[e[0]][e[1]].desenhar('assustado' if self.modo_poder else 'inimigo', None, skin, e[3], casa_set, porta, parede_set)
+
     def pode_andar(self, l, c, fantasma=False):
+        # Portal vertical - deixa passar
+        if (l < 0 or l >= self.LINHAS) and c == 8: return True
         if l < 0 or l >= self.LINHAS: return False
         if c < 0 or c >= self.COLUNAS: return False
         if self.mapa[l][c] == 1: return False
@@ -474,22 +392,35 @@ class TelaJogo(Screen):
             if (l,c) in set(self.casa_fantasmas): return False
             if (l,c) == self.porta_casinha: return False
         return True
+
     def ativar_poder(self):
         self.modo_poder = True; self.tempo_restante_poder = 6
         if self.tempo_poder: self.tempo_poder.cancel()
         self.tempo_poder = Clock.schedule_interval(lambda dt: self.contar_poder(), 1)
+
     def contar_poder(self):
         self.tempo_restante_poder -= 1
         if self.tempo_restante_poder <= 0: self.fim_poder()
+
     def checar_vida_extra(self):
         while self.pontos >= self.proxima_vida_extra:
             self.vidas += 1
             tocar_bip('bip_venceu.wav')
             self.proxima_vida_extra += 10000
+
     def mover(self, dl, dc):
         if self.game_over: return
         nl = self.player[0] + dl; nc = self.player[1] + dc
-        if not self.pode_andar(nl, nc, fantasma=False): return
+
+        # PORTAL: SE SAI POR CIMA, VAI PRA BAIXO E VICE-VERSA
+        if nl < 0 and nc == 8:
+            nl = self.LINHAS - 2  # reaparece embaixo
+            tocar_bip('bip_bicho.wav')
+        elif nl >= self.LINHAS and nc == 8:
+            nl = 1  # reaparece em cima
+            tocar_bip('bip_bicho.wav')
+
+        if not self.pode_andar(nl, nc, fantasma=False) and not (nl==1 or nl==self.LINHAS-2): return
         self.player = [nl, nc]
         if (nl, nc) in self.pastilhas:
             self.pastilhas.remove((nl, nc)); self.pontos += 10; tocar_bip('bip_venceu.wav')
@@ -497,7 +428,7 @@ class TelaJogo(Screen):
             self.poderes.remove((nl, nc)); self.pontos += 50
             self.ativar_poder(); tocar_bip('bip_venceu.wav')
         self.checar_vida_extra()
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
+        cr, cc = 10, 8
         for e in self.inimigos[:]:
             if e[0] == nl and e[1] == nc:
                 if self.modo_poder:
@@ -506,9 +437,10 @@ class TelaJogo(Screen):
         self.atualizar_info()
         if len(self.pastilhas) == 0 and len(self.poderes) == 0: self.venceu_fase(); return
         self.desenhar_mapa()
+
     def atualizar_inimigos(self):
         if self.game_over or self.manager.current != 'jogo': return
-        cr, cc = self.LINHAS//2, self.COLUNAS//2
+        cr, cc = 10, 8
         for e in self.inimigos[:]:
             if e[4] > 0:
                 e[4] -= 1
@@ -518,37 +450,48 @@ class TelaJogo(Screen):
                 if e[0] > self.porta_casinha[0]: e[0] -= 1; continue
                 elif e[1] != self.porta_casinha[1]: e[1] += 1 if self.porta_casinha[1] > e[1] else -1; continue
                 else: e[0] -= 1; continue
+
+            # Portal para fantasmas também
+            if e[0] == 0 and e[1] == 8 and e[2] == (-1,0):
+                e[0] = self.LINHAS - 2; continue
+            if e[0] == self.LINHAS-1 and e[1] == 8 and e[2] == (1,0):
+                e[0] = 1; continue
+
             possiveis = []
             for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
                 if e[2] == (-dl, -dc) and len(possiveis) > 0: continue
                 nl, nc = e[0] + dl, e[1] + dc
+                # permite portal
+                if (nl < 0 or nl >= self.LINHAS) and nc == 8:
+                    possiveis.append((dl, dc, nl, nc))
+                    continue
                 if self.pode_andar(nl, nc, fantasma=True):
                     possiveis.append((dl, dc, nl, nc))
-            if not possiveis:
-                for dl, dc in [(1,0),(-1,0),(0,1),(0,-1)]:
-                    nl, nc = e[0] + dl, e[1] + dc
-                    if self.pode_andar(nl, nc, fantasma=True):
-                        possiveis.append((dl, dc, nl, nc))
             if possiveis:
                 if self.modo_poder:
                     possiveis.sort(key=lambda x: - (abs(x[2]-self.player[0]) + abs(x[3]-self.player[1])))
                 else:
-                    chase = 0.6
-                    if random.random() < chase:
+                    if random.random() < 0.6:
                         possiveis.sort(key=lambda x: abs(x[2]-self.player[0]) + abs(x[3]-self.player[1]))
                     else:
                         random.shuffle(possiveis)
                 melhor = possiveis[0]
-                e[0], e[1] = melhor[2], melhor[3]; e[2] = (melhor[0], melhor[1])
+                # aplica portal
+                nl, nc = melhor[2], melhor[3]
+                if nl < 0: nl = self.LINHAS - 2
+                if nl >= self.LINHAS: nl = 1
+                e[0], e[1] = nl, nc; e[2] = (melhor[0], melhor[1])
             if [e[0], e[1]] == self.player:
                 if self.modo_poder:
                     e[0], e[1] = cr, cc; e[4] = 3; self.pontos += 200; tocar_bip('bip_bicho.wav'); self.checar_vida_extra(); self.atualizar_info(); return
                 else: self.perdeu(); return
         self.desenhar_mapa()
+
     def fim_poder(self):
         self.modo_poder = False; self.tempo_restante_poder = 0
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.atualizar_info(); self.desenhar_mapa()
+
     def perdeu(self):
         if self.game_over: return
         tocar_bip('bip_morreu.wav'); self.vidas -= 1; salvar_recorde(self.fase, self.pontos)
@@ -560,6 +503,7 @@ class TelaJogo(Screen):
             self.lbl_pontos.text = f"FIM: {self.pontos} PTS"
             Clock.schedule_once(lambda dt: self.voltar_menu(), 2.0)
         else: self.reiniciar_apos_morte(); self._event_andar = Clock.schedule_interval(lambda dt: self.tentar_mover(), 0.09)
+
     def venceu_fase(self):
         if self.game_over: return
         self.game_over = True; tocar_bip('bip_venceu.wav'); self.pontos += 500; salvar_recorde(self.fase, self.pontos)
@@ -569,6 +513,7 @@ class TelaJogo(Screen):
         if self.tempo_poder: self.tempo_poder.cancel(); self.tempo_poder = None
         self.lbl_pontos.text = f"FASE OK! {self.pontos} PTS"
         Clock.schedule_once(lambda dt: self.iniciar_fase(self.fase + 1, True), 1.5)
+
     def voltar_menu(self):
         if self._event_inimigo: self._event_inimigo.cancel()
         if self._event_andar: self._event_andar.cancel(); self._event_andar = None
