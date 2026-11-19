@@ -136,7 +136,7 @@ class Bloco(Widget):
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x,y), size=(w,h))
             if tipo==1:
-                Color(0.10,0.10,0.65,1); Line(rectangle=(x+0.5,y+0.5,w-1,h-1), width=1.2); return
+                Color(*fixo); Line(rectangle=(x+0.5,y+0.5,w-1,h-1), width=1.2); return
             elif tipo==5:
                 Color(1,0.72,1,1); Rectangle(pos=(x, y+h*0.45), size=(w, h*0.10)); return
             elif tipo==4:
@@ -211,6 +211,7 @@ class TelaJogo(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.fase=1; self.pontos=0; self.vidas=3; self.mapa=[]; self.blocos=[]; self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0); self.fantasmas=[]; self.assustado=0; self.pastilhas_restantes=0; self.evento=None; self.contador_fantasma=0
+        self.proxima_vida_extra = 10000  # VIDA EXTRA
         layout=BoxLayout(orientation='vertical', spacing=2, padding=2)
         topo=BoxLayout(size_hint_y=0.06, spacing=8)
         self.lbl_pontos=Label(text="PONTOS: 0", bold=True, font_size='14sp'); self.lbl_fase=Label(text="FASE: 1", bold=True, font_size='14sp'); self.lbl_vidas=Label(text="VIDAS: 3", bold=True, font_size='14sp')
@@ -245,9 +246,10 @@ class TelaJogo(Screen):
     def on_pre_enter(self,*args): self.iniciar_fase(1,0,3)
     def iniciar_fase(self, fase, pontos, vidas):
         self.fase=fase; self.pontos=pontos; self.vidas=vidas; self.contador_fantasma=0
+        if fase == 1:
+            self.proxima_vida_extra = 10000
         self.mapa=copy.deepcopy(MAPA_BASE)
         self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0); self.assustado=0
-        # CORRIGIDO - fantasmas já fora da casa, prontos pra andar
         self.fantasmas=[
             {"pos":[11,13],"tipo":"vermelho","dir":(0,1)},
             {"pos":[11,14],"tipo":"rosa","dir":(0,-1)},
@@ -257,7 +259,6 @@ class TelaJogo(Screen):
         self.pastilhas_restantes=sum(row.count(0)+row.count(2) for row in self.mapa)
         self.construir_grid(); self.atualizar_labels()
         if self.evento: self.evento.cancel()
-        # CORRIGIDO - MAIS RÁPIDO: era 0.16, agora 0.11
         self.evento=Clock.schedule_interval(self.update, 0.11)
     def construir_grid(self):
         self.grid.clear_widgets(); self.blocos=[]
@@ -302,52 +303,53 @@ class TelaJogo(Screen):
         self.lbl_fase.text=f"FASE: {self.fase}"
         self.lbl_vidas.text=f"VIDAS: {self.vidas}"
     def update(self,dt):
-        # Tenta virar
-        dl,dc=self.prox_direcao
-        nl=self.player[0]+dl
-        nc=self.player[1]+dc
-        if nc<0: nc=COLS-1
-        if nc>=COLS: nc=0
-        if self.pode_andar(nl,nc):
-            self.direcao=self.prox_direcao
-        
-        dl,dc=self.direcao
-        if dl!=0 or dc!=0:
+        for _ in range(2):
+            dl,dc=self.prox_direcao
             nl=self.player[0]+dl
             nc=self.player[1]+dc
             if nc<0: nc=COLS-1
             if nc>=COLS: nc=0
             if self.pode_andar(nl,nc):
-                self.player=[nl,nc]
-                if self.mapa[nl][nc]==0: self.mapa[nl][nc]=3; self.pontos+=10; self.pastilhas_restantes-=1; tocar_bip("bip.wav")
-                elif self.mapa[nl][nc]==2: self.mapa[nl][nc]=3; self.pontos+=50; self.assustado=30; tocar_bip("bip.wav")
+                self.direcao=self.prox_direcao
+            dl,dc=self.direcao
+            if dl!=0 or dc!=0:
+                nl=self.player[0]+dl
+                nc=self.player[1]+dc
+                if nc<0: nc=COLS-1
+                if nc>=COLS: nc=0
+                if self.pode_andar(nl,nc):
+                    self.player=[nl,nc]
+                    if self.mapa[nl][nc]==0: self.mapa[nl][nc]=3; self.pontos+=10; self.pastilhas_restantes-=1; tocar_bip("bip.wav")
+                    elif self.mapa[nl][nc]==2: self.mapa[nl][nc]=3; self.pontos+=50; self.assustado=30; tocar_bip("bip.wav")
 
-        # Fantasmas andam mais devagar que o Pac-Man
-        self.contador_fantasma+=1
-        if self.contador_fantasma % 2 == 0:
-            for f in self.fantasmas:
-                op=[]
-                for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nl=f["pos"][0]+dl
-                    nc=f["pos"][1]+dc
-                    if nc<0: nc=COLS-1
-                    if nc>=COLS: nc=0
-                    if self.pode_andar_fantasma(nl,nc):
-                        op.append((dl,dc))
-                if op:
-                    reverso = (-f["dir"][0],-f["dir"][1])
-                    if reverso in op and len(op)>1: op.remove(reverso)
-                    if f["tipo"]=="vermelho":
-                        # Vermelho persegue de verdade
-                        melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
-                        f["dir"]=melhor
-                    else:
-                        # Outros mais bobos
-                        f["dir"]=random.choice(op)
-                    f["pos"][0]+=f["dir"][0]
-                    f["pos"][1]+=f["dir"][1]
-                    if f["pos"][1]<0: f["pos"][1]=COLS-1
-                    if f["pos"][1]>=COLS: f["pos"][1]=0
+        # VIDA EXTRA A CADA 10.000 PONTOS
+        while self.pontos >= self.proxima_vida_extra:
+            self.vidas += 1
+            self.proxima_vida_extra += 10000
+            criar_bip("vida.wav", 1200, 0.4)
+            tocar_bip("vida.wav")
+
+        for f in self.fantasmas:
+            op=[]
+            for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+                nl=f["pos"][0]+dl
+                nc=f["pos"][1]+dc
+                if nc<0: nc=COLS-1
+                if nc>=COLS: nc=0
+                if self.pode_andar_fantasma(nl,nc):
+                    op.append((dl,dc))
+            if op:
+                reverso = (-f["dir"][0],-f["dir"][1])
+                if reverso in op and len(op)>1: op.remove(reverso)
+                if f["tipo"]=="vermelho":
+                    melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
+                    f["dir"]=melhor
+                else:
+                    f["dir"]=random.choice(op)
+                f["pos"][0]+=f["dir"][0]
+                f["pos"][1]+=f["dir"][1]
+                if f["pos"][1]<0: f["pos"][1]=COLS-1
+                if f["pos"][1]>=COLS: f["pos"][1]=0
 
         if self.assustado>0: self.assustado-=1
         for f in self.fantasmas:
@@ -368,6 +370,7 @@ class TelaJogo(Screen):
 class PacmanApp(App):
     def build(self):
         criar_bip("bip.wav",880,0.12)
+        criar_bip("vida.wav",1200,0.4)
         sm=ScreenManager(); sm.add_widget(TelaInicial(name="inicio")); sm.add_widget(TelaJogo(name="jogo")); return sm
 
 if __name__=="__main__":
