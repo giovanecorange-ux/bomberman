@@ -226,17 +226,17 @@ class TelaJogo(Screen):
         controles=GridLayout(cols=3, rows=3, size_hint_y=0.18, spacing=3)
         controles.add_widget(Widget())
         b_cima=Button(text="CIMA", font_size='14sp', bold=True, background_color=(0.3,0.3,0.3,1))
-        b_cima.bind(on_release=lambda x:self.mudar_dir(-1,0))
+        b_cima.bind(on_press=lambda x:self.mudar_dir(-1,0))
         controles.add_widget(b_cima)
         controles.add_widget(Widget())
         b_esq=Button(text="ESQ", font_size='14sp', bold=True, background_color=(0.3,0.3,0.3,1))
-        b_esq.bind(on_release=lambda x:self.mudar_dir(0,-1))
+        b_esq.bind(on_press=lambda x:self.mudar_dir(0,-1))
         controles.add_widget(b_esq)
         b_baixo=Button(text="BAIXO", font_size='14sp', bold=True, background_color=(0.3,0.3,0.3,1))
-        b_baixo.bind(on_release=lambda x:self.mudar_dir(1,0))
+        b_baixo.bind(on_press=lambda x:self.mudar_dir(1,0))
         controles.add_widget(b_baixo)
         b_dir=Button(text="DIR", font_size='14sp', bold=True, background_color=(0.3,0.3,0.3,1))
-        b_dir.bind(on_release=lambda x:self.mudar_dir(0,1))
+        b_dir.bind(on_press=lambda x:self.mudar_dir(0,1))
         controles.add_widget(b_dir)
         layout.add_widget(controles)
         btn_voltar=Button(text="VOLTAR", size_hint_y=0.05, background_color=(0.8,0.2,0.2,1)); btn_voltar.bind(on_release=self.voltar); layout.add_widget(btn_voltar)
@@ -245,7 +245,14 @@ class TelaJogo(Screen):
         mapa_teclas={273:(-1,0),274:(1,0),276:(0,-1),275:(0,1)}
         if key in mapa_teclas: self.mudar_dir(*mapa_teclas[key])
         return True
-    def mudar_dir(self, dl, dc): self.prox_direcao=(dl,dc)
+    def mudar_dir(self, dl, dc):
+        self.prox_direcao=(dl,dc)
+        nl=self.player[0]+dl
+        nc=self.player[1]+dc
+        if nc<0: nc=COLS-1
+        if nc>=COLS: nc=0
+        if self.pode_andar(nl,nc):
+            self.direcao=(dl,dc)
     def voltar(self,*args):
         if self.evento: self.evento.cancel()
         self.manager.current="inicio"
@@ -265,7 +272,7 @@ class TelaJogo(Screen):
         self.pastilhas_restantes=sum(row.count(0)+row.count(2) for row in self.mapa)
         self.construir_grid(); self.atualizar_labels()
         if self.evento: self.evento.cancel()
-        self.evento=Clock.schedule_interval(self.update, 0.11)
+        self.evento=Clock.schedule_interval(self.update, 0.07)
     def construir_grid(self):
         self.grid.clear_widgets(); self.blocos=[]
         for l in range(ROWS):
@@ -320,62 +327,60 @@ class TelaJogo(Screen):
                     return True
         return False
     def update(self,dt):
-        # PAC-MAN RÁPIDO - 2 passos
-        for _ in range(2):
-            dl,dc=self.prox_direcao
+        dl,dc=self.prox_direcao
+        nl=self.player[0]+dl
+        nc=self.player[1]+dc
+        if nc<0: nc=COLS-1
+        if nc>=COLS: nc=0
+        if self.pode_andar(nl,nc):
+            self.direcao=self.prox_direcao
+        dl,dc=self.direcao
+        if dl!=0 or dc!=0:
             nl=self.player[0]+dl
             nc=self.player[1]+dc
             if nc<0: nc=COLS-1
             if nc>=COLS: nc=0
             if self.pode_andar(nl,nc):
-                self.direcao=self.prox_direcao
-            dl,dc=self.direcao
-            if dl!=0 or dc!=0:
-                nl=self.player[0]+dl
-                nc=self.player[1]+dc
-                if nc<0: nc=COLS-1
-                if nc>=COLS: nc=0
-                if self.pode_andar(nl,nc):
-                    self.player=[nl,nc]
-                    if self.mapa[nl][nc]==0: self.mapa[nl][nc]=3; self.pontos+=10; self.pastilhas_restantes-=1; tocar_bip("bip.wav")
-                    elif self.mapa[nl][nc]==2: self.mapa[nl][nc]=3; self.pontos+=50; self.assustado=30; tocar_bip("bip.wav")
-                    if self.checar_colisao():
-                        self.vidas-=1
-                        if self.vidas<=0:
-                            salvar_recorde(self.fase,self.pontos)
-                            if self.evento: self.evento.cancel()
-                            self.lbl_pontos.text=f"FIM! {self.pontos} pts"
-                            Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
-                        else:
-                            self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
-                            break
+                self.player=[nl,nc]
+                if self.mapa[nl][nc]==0: self.mapa[nl][nc]=3; self.pontos+=10; self.pastilhas_restantes-=1; tocar_bip("bip.wav")
+                elif self.mapa[nl][nc]==2: self.mapa[nl][nc]=3; self.pontos+=50; self.assustado=40; tocar_bip("bip.wav")
+                if self.checar_colisao():
+                    self.vidas-=1
+                    if self.vidas<=0:
+                        salvar_recorde(self.fase,self.pontos)
+                        if self.evento: self.evento.cancel()
+                        self.lbl_pontos.text=f"FIM! {self.pontos} pts"
+                        Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
+                    else:
+                        self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
         while self.pontos >= self.proxima_vida_extra:
             self.vidas += 1
             self.proxima_vida_extra += 10000
             criar_bip("vida.wav", 1200, 0.4)
             tocar_bip("vida.wav")
-        # FANTASMA MAIS LENTO - 1 passo só
-        for f in self.fantasmas:
-            op=[]
-            for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                nl=f["pos"][0]+dl
-                nc=f["pos"][1]+dc
-                if nc<0: nc=COLS-1
-                if nc>=COLS: nc=0
-                if self.pode_andar_fantasma(nl,nc):
-                    op.append((dl,dc))
-            if op:
-                reverso = (-f["dir"][0],-f["dir"][1])
-                if reverso in op and len(op)>1: op.remove(reverso)
-                if f["tipo"]=="vermelho":
-                    melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
-                    f["dir"]=melhor
-                else:
-                    f["dir"]=random.choice(op)
-                f["pos"][0]+=f["dir"][0]
-                f["pos"][1]+=f["dir"][1]
-                if f["pos"][1]<0: f["pos"][1]=COLS-1
-                if f["pos"][1]>=COLS: f["pos"][1]=0
+        self.contador_fantasma+=1
+        if self.contador_fantasma % 2 == 0:
+            for f in self.fantasmas:
+                op=[]
+                for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    nl=f["pos"][0]+dl
+                    nc=f["pos"][1]+dc
+                    if nc<0: nc=COLS-1
+                    if nc>=COLS: nc=0
+                    if self.pode_andar_fantasma(nl,nc):
+                        op.append((dl,dc))
+                if op:
+                    reverso = (-f["dir"][0],-f["dir"][1])
+                    if reverso in op and len(op)>1: op.remove(reverso)
+                    if f["tipo"]=="vermelho":
+                        melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
+                        f["dir"]=melhor
+                    else:
+                        f["dir"]=random.choice(op)
+                    f["pos"][0]+=f["dir"][0]
+                    f["pos"][1]+=f["dir"][1]
+                    if f["pos"][1]<0: f["pos"][1]=COLS-1
+                    if f["pos"][1]>=COLS: f["pos"][1]=0
         if self.assustado>0: self.assustado-=1
         if self.checar_colisao():
             self.vidas-=1
