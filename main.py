@@ -320,6 +320,7 @@ class TelaJogo(Screen):
                     return True
         return False
     def update(self,dt):
+        # PAC-MAN RÁPIDO - 2 passos
         for _ in range(2):
             dl,dc=self.prox_direcao
             nl=self.player[0]+dl
@@ -353,39 +354,38 @@ class TelaJogo(Screen):
             self.proxima_vida_extra += 10000
             criar_bip("vida.wav", 1200, 0.4)
             tocar_bip("vida.wav")
-        for _ in range(2):
-            for f in self.fantasmas:
-                op=[]
-                for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
-                    nl=f["pos"][0]+dl
-                    nc=f["pos"][1]+dc
-                    if nc<0: nc=COLS-1
-                    if nc>=COLS: nc=0
-                    if self.pode_andar_fantasma(nl,nc):
-                        op.append((dl,dc))
-                if op:
-                    reverso = (-f["dir"][0],-f["dir"][1])
-                    if reverso in op and len(op)>1: op.remove(reverso)
-                    if f["tipo"]=="vermelho":
-                        melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
-                        f["dir"]=melhor
-                    else:
-                        f["dir"]=random.choice(op)
-                    f["pos"][0]+=f["dir"][0]
-                    f["pos"][1]+=f["dir"][1]
-                    if f["pos"][1]<0: f["pos"][1]=COLS-1
-                    if f["pos"][1]>=COLS: f["pos"][1]=0
-                if self.checar_colisao():
-                    self.vidas-=1
-                    if self.vidas<=0:
-                        salvar_recorde(self.fase,self.pontos)
-                        if self.evento: self.evento.cancel()
-                        self.lbl_pontos.text=f"FIM! {self.pontos} pts"
-                        Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
-                    else:
-                        self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
-                        break
+        # FANTASMA MAIS LENTO - 1 passo só
+        for f in self.fantasmas:
+            op=[]
+            for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+                nl=f["pos"][0]+dl
+                nc=f["pos"][1]+dc
+                if nc<0: nc=COLS-1
+                if nc>=COLS: nc=0
+                if self.pode_andar_fantasma(nl,nc):
+                    op.append((dl,dc))
+            if op:
+                reverso = (-f["dir"][0],-f["dir"][1])
+                if reverso in op and len(op)>1: op.remove(reverso)
+                if f["tipo"]=="vermelho":
+                    melhor = min(op, key=lambda d: abs((f["pos"][0]+d[0])-self.player[0]) + abs((f["pos"][1]+d[1])-self.player[1]))
+                    f["dir"]=melhor
+                else:
+                    f["dir"]=random.choice(op)
+                f["pos"][0]+=f["dir"][0]
+                f["pos"][1]+=f["dir"][1]
+                if f["pos"][1]<0: f["pos"][1]=COLS-1
+                if f["pos"][1]>=COLS: f["pos"][1]=0
         if self.assustado>0: self.assustado-=1
+        if self.checar_colisao():
+            self.vidas-=1
+            if self.vidas<=0:
+                salvar_recorde(self.fase,self.pontos)
+                if self.evento: self.evento.cancel()
+                self.lbl_pontos.text=f"FIM! {self.pontos} pts"
+                Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
+            else:
+                self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
         self.atualizar_labels(); self.desenhar_tudo()
         if self.pastilhas_restantes<=0:
             salvar_recorde(self.fase,self.pontos); self.iniciar_fase(self.fase+1,self.pontos,self.vidas)
