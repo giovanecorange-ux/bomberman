@@ -126,13 +126,19 @@ class Bloco(Widget):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.tipo='chao'; self.l=0; self.c=0; self.dir_player=(0,1)
+        self.ultima_skin = FASES_SKINS[0]
+        self.ultimo_inimigo = 'vermelho'
         self.bind(pos=self._redesenhar, size=self._redesenhar)
-    def _redesenhar(self,*args): self.desenhar(self.tipo, None, None)
+    def _redesenhar(self,*args): self.desenhar(self.tipo, skin=self.ultima_skin, inimigo_tipo=self.ultimo_inimigo)
     def desenhar(self, tipo, cor_fase=None, skin=None, inimigo_tipo='vermelho', casa_set=None, porta=None, parede_set=None):
-        self.tipo=tipo; self.canvas.clear()
+        self.tipo=tipo
+        if skin is not None:
+            self.ultima_skin = skin
+        self.ultimo_inimigo = inimigo_tipo
+        self.canvas.clear()
         x,y=self.pos; w,h=self.size
         if w<=1 or h<=1: return
-        fixo=skin["fixo"] if skin else (1,0.82,0.1,1)
+        fixo=self.ultima_skin["fixo"] if self.ultima_skin else (1,0.82,0.1,1)
         with self.canvas:
             Color(0,0,0,1); Rectangle(pos=(x,y), size=(w,h))
             if tipo==1:
@@ -211,7 +217,7 @@ class TelaJogo(Screen):
     def __init__(self,**kwargs):
         super().__init__(**kwargs)
         self.fase=1; self.pontos=0; self.vidas=3; self.mapa=[]; self.blocos=[]; self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0); self.fantasmas=[]; self.assustado=0; self.pastilhas_restantes=0; self.evento=None; self.contador_fantasma=0
-        self.proxima_vida_extra = 10000  # VIDA EXTRA
+        self.proxima_vida_extra = 10000
         layout=BoxLayout(orientation='vertical', spacing=2, padding=2)
         topo=BoxLayout(size_hint_y=0.06, spacing=8)
         self.lbl_pontos=Label(text="PONTOS: 0", bold=True, font_size='14sp'); self.lbl_fase=Label(text="FASE: 1", bold=True, font_size='14sp'); self.lbl_vidas=Label(text="VIDAS: 3", bold=True, font_size='14sp')
@@ -273,7 +279,7 @@ class TelaJogo(Screen):
         if c<0 or c>=COLS:
             return l==LINHA_TUNEL
         v=self.mapa[l][c]
-        return v in (0,2,3)
+        return v in (0,2,3,4)
     def pode_andar_fantasma(self,l,c):
         if l<0 or l>=ROWS: return False
         if c<0 or c>=COLS:
@@ -321,14 +327,11 @@ class TelaJogo(Screen):
                     self.player=[nl,nc]
                     if self.mapa[nl][nc]==0: self.mapa[nl][nc]=3; self.pontos+=10; self.pastilhas_restantes-=1; tocar_bip("bip.wav")
                     elif self.mapa[nl][nc]==2: self.mapa[nl][nc]=3; self.pontos+=50; self.assustado=30; tocar_bip("bip.wav")
-
-        # VIDA EXTRA A CADA 10.000 PONTOS
         while self.pontos >= self.proxima_vida_extra:
             self.vidas += 1
             self.proxima_vida_extra += 10000
             criar_bip("vida.wav", 1200, 0.4)
             tocar_bip("vida.wav")
-
         for f in self.fantasmas:
             op=[]
             for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
@@ -350,7 +353,6 @@ class TelaJogo(Screen):
                 f["pos"][1]+=f["dir"][1]
                 if f["pos"][1]<0: f["pos"][1]=COLS-1
                 if f["pos"][1]>=COLS: f["pos"][1]=0
-
         if self.assustado>0: self.assustado-=1
         for f in self.fantasmas:
             if f["pos"]==self.player:
