@@ -112,7 +112,23 @@ def mapa_de_texto(linhas):
         out.append(linha)
     return out, pac
 
+def limpar_bolinhas_presas(mapa):
+    for l in range(ROWS):
+        for c in range(COLS):
+            if mapa[l][c] in (0,2):
+                paredes = 0
+                for dl,dc in [(-1,0),(1,0),(0,-1),(0,1)]:
+                    nl,nc = l+dl, c+dc
+                    if nl<0 or nl>=ROWS or nc<0 or nc>=COLS:
+                        paredes+=1
+                    elif mapa[nl][nc] in (1,5):
+                        paredes+=1
+                if paredes >= 3:
+                    mapa[l][c]=4
+    return mapa
+
 MAPA_BASE, PAC_INICIAL = mapa_de_texto(MAPA_TXT)
+MAPA_BASE = limpar_bolinhas_presas(MAPA_BASE)
 
 FASES_SKINS = [
     {"fixo": (1.00, 0.82, 0.10, 1), "nome": "Atari Amarelo"},
@@ -222,7 +238,9 @@ class TelaJogo(Screen):
         topo=BoxLayout(size_hint_y=0.06, spacing=8)
         self.lbl_pontos=Label(text="PONTOS: 0", bold=True, font_size='14sp'); self.lbl_fase=Label(text="FASE: 1", bold=True, font_size='14sp'); self.lbl_vidas=Label(text="VIDAS: 3", bold=True, font_size='14sp')
         topo.add_widget(self.lbl_pontos); topo.add_widget(self.lbl_fase); topo.add_widget(self.lbl_vidas); layout.add_widget(topo)
-        self.grid=GridLayout(cols=COLS, rows=ROWS, spacing=0, size_hint_y=0.76); layout.add_widget(self.grid)
+        self.lbl_aviso=Label(text="", font_size='22sp', color=(1,0.2,0.2,1), bold=True, size_hint_y=0.05)
+        layout.add_widget(self.lbl_aviso)
+        self.grid=GridLayout(cols=COLS, rows=ROWS, spacing=0, size_hint_y=0.71); layout.add_widget(self.grid)
         controles=GridLayout(cols=3, rows=3, size_hint_y=0.18, spacing=3)
         controles.add_widget(Widget())
         b_cima=Button(text="CIMA", font_size='14sp', bold=True, background_color=(0.3,0.3,0.3,1))
@@ -241,6 +259,17 @@ class TelaJogo(Screen):
         layout.add_widget(controles)
         btn_voltar=Button(text="VOLTAR", size_hint_y=0.05, background_color=(0.8,0.2,0.2,1)); btn_voltar.bind(on_release=self.voltar); layout.add_widget(btn_voltar)
         self.add_widget(layout); Window.bind(on_key_down=self.tecla)
+    def resetar_posicoes(self):
+        self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
+        self.fantasmas=[
+            {"pos":[11,13],"tipo":"vermelho","dir":(0,1)},
+            {"pos":[11,14],"tipo":"rosa","dir":(0,-1)},
+            {"pos":[11,12],"tipo":"ciano","dir":(0,1)},
+            {"pos":[11,15],"tipo":"laranja","dir":(0,-1)},
+        ]
+        self.assustado=0
+        self.lbl_aviso.text="CUIDADO!!!"
+        Clock.schedule_once(lambda dt: setattr(self.lbl_aviso, 'text', ''), 1.5)
     def tecla(self, win, key, *args):
         mapa_teclas={273:(-1,0),274:(1,0),276:(0,-1),275:(0,1)}
         if key in mapa_teclas: self.mudar_dir(*mapa_teclas[key])
@@ -271,6 +300,8 @@ class TelaJogo(Screen):
         ]
         self.pastilhas_restantes=sum(row.count(0)+row.count(2) for row in self.mapa)
         self.construir_grid(); self.atualizar_labels()
+        self.lbl_aviso.text=f"FASE {fase}"
+        Clock.schedule_once(lambda dt: setattr(self.lbl_aviso, 'text', ''), 1.2)
         if self.evento: self.evento.cancel()
         self.evento=Clock.schedule_interval(self.update, 0.07)
     def construir_grid(self):
@@ -352,7 +383,7 @@ class TelaJogo(Screen):
                         self.lbl_pontos.text=f"FIM! {self.pontos} pts"
                         Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
                     else:
-                        self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
+                        self.resetar_posicoes()
         while self.pontos >= self.proxima_vida_extra:
             self.vidas += 1
             self.proxima_vida_extra += 10000
@@ -390,9 +421,10 @@ class TelaJogo(Screen):
                 self.lbl_pontos.text=f"FIM! {self.pontos} pts"
                 Clock.schedule_once(lambda x:setattr(self.manager,'current','inicio'),1.5); return
             else:
-                self.player=list(PAC_INICIAL); self.direcao=(0,0); self.prox_direcao=(0,0)
+                self.resetar_posicoes()
         self.atualizar_labels(); self.desenhar_tudo()
-        if self.pastilhas_restantes<=0:
+        restantes = sum(row.count(0)+row.count(2) for row in self.mapa)
+        if restantes <= 0:
             salvar_recorde(self.fase,self.pontos); self.iniciar_fase(self.fase+1,self.pontos,self.vidas)
 
 class PacmanApp(App):
